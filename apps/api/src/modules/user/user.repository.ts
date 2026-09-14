@@ -1,6 +1,12 @@
+import type { UserRole } from "../../generated/prisma/enums";
 import { prisma } from "../../libs/prisma";
 
 export const userRepository = {
+	findMany: () =>
+		prisma.user.findMany({
+			orderBy: { createdAt: "desc" },
+		}),
+
 	findById: (id: string) =>
 		prisma.user.findUnique({
 			where: { id },
@@ -31,5 +37,11 @@ export const userRepository = {
 		prisma.user.update({
 			where: { id },
 			data: { googleId },
+		}),
+
+	updateRole: (id: string, role: UserRole) =>
+		prisma.user.update({
+			where: { id },
+			data: { role },
 		}),
 };

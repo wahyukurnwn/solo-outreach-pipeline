@@ -1,0 +1,44 @@
+import { zValidator } from "@hono/zod-validator";
+import { Hono } from "hono";
+import { requireAdmin, requireAuth } from "../../middleware/auth";
+import type { AppEnv } from "../../types";
+import { listResponse } from "../../utils/response";
+import { updateUserRoleSchema, userIdParamSchema } from "./admin.schema";
+import { adminService } from "./admin.service";
+
+const adminRoute = new Hono<AppEnv>()
+	.get("/api/admin/users", requireAuth, requireAdmin, async (c) => {
+		const users = await adminService.listUsers();
+
+		return c.json(listResponse(users));
+	})
+	.get(
+		"/api/admin/users/:id",
+		requireAuth,
+		requireAdmin,
+		zValidator("param", userIdParamSchema),
+		async (c) => {
+			const { id } = c.req.valid("param");
+
+			const user = await adminService.getUserById(id);
+
+			return c.json(user);
+		},
+	)
+	.patch(
+		"/api/admin/users/:id/role",
+		requireAuth,
+		requireAdmin,
+		zValidator("param", userIdParamSchema),
+		zValidator("json", updateUserRoleSchema),
+		async (c) => {
+			const { id } = c.req.valid("param");
+			const body = c.req.valid("json");
+
+			const user = await adminService.updateUserRole(id, body);
+
+			return c.json(user);
+		},
+	);
+
+export default adminRoute;
