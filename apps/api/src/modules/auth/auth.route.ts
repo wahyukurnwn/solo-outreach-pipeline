@@ -1,8 +1,12 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import { UnauthorizedError } from "../../exceptions";
 import { googleAuthMiddleware } from "../../libs/auth.";
 import { signToken } from "../../libs/jwt";
+import { requireAuth } from "../../middleware/auth";
+import type { AppEnv } from "../../types";
 import { createdAccountResponse, messageResponse } from "../../utils/response";
+import { userRepository } from "../user/user.repository";
 import {
 	forgotPasswordSchema,
 	loginSchema,
@@ -11,7 +15,7 @@ import {
 } from "./auth.schema";
 import { credentialService } from "./credential.service";
 
-const authRoute = new Hono()
+const authRoute = new Hono<AppEnv>()
 	.post("/api/auth/signup", zValidator("json", registerSchema), async (c) => {
 		const body = c.req.valid("json");
 
@@ -76,6 +80,14 @@ const authRoute = new Hono()
 				messageResponse("Password berhasil direset. Silahkan login."),
 			);
 		},
-	);
+	)
+	.get("/api/auth/me", requireAuth, async (c) => {
+		const { id } = c.get("user");
+
+		const user = await userRepository.findById(id);
+		if (!user) throw new UnauthorizedError();
+
+		return c.json({ id: user.id, email: user.email, role: user.role });
+	});
 
 export default authRoute;
