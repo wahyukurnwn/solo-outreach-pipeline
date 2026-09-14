@@ -1,5 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import { googleAuthMiddleware } from "../../libs/auth.";
+import { signToken } from "../../libs/jwt";
 import { createdAccountResponse } from "../../utils/response";
 import { loginSchema, registerSchema } from "./auth.schema";
 import { credentialService } from "./credential.service";
@@ -21,7 +23,26 @@ const authRoute = new Hono()
 
 		const { user } = await credentialService.login(body);
 
-		return c.json({ id: user.id, email: user.email });
+		const accessToken = signToken({
+			id: user.id,
+			email: user.email,
+			role: user.role,
+		});
+
+		return c.json({ id: user.id, email: user.email, accessToken });
+	})
+	.get("/api/auth/google", googleAuthMiddleware, async (c) => {
+		const googleUser = c.get("user-google");
+
+		const { user } = await credentialService.loginWithGoogle(googleUser ?? {});
+
+		const accessToken = signToken({
+			id: user.id,
+			email: user.email,
+			role: user.role,
+		});
+
+		return c.json({ id: user.id, email: user.email, accessToken });
 	});
 
 export default authRoute;

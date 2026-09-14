@@ -59,3 +59,24 @@ export class InvalidCredentialsError extends AppError {
 		super(401, "INVALID_CREDENTIALS", "Email atau password salah");
 	}
 }
+
+/** Sudah login, tapi role-nya tidak cukup — beda dari 401. */
+export class ForbiddenError extends AppError {
+	constructor(message = "Akses ditolak") {
+		super(403, "FORBIDDEN", message);
+	}
+}
+
+/** Token tidak ada/kedaluwarsa/tidak sah — client harus login ulang. */
+export class UnauthorizedError extends AppError {
+	constructor(message = "Autentikasi dibutuhkan", code = "UNAUTHORIZED") {
+		super(401, code, message);
+	}
+}
+
+/** Dependency eksternal belum dikonfigurasi (mis. kredensial Google kosong). */
+export class ServiceUnavailableError extends AppError {
+	constructor(message: string, code = "SERVICE_UNAVAILABLE") {
+		super(503, code, message);
+	}
+}

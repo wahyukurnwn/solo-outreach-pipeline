@@ -1,3 +1,4 @@
+import type { GoogleUser } from "@hono/oauth-providers/google";
 import type z from "zod";
 import {
 	AlreadyExistsError,
@@ -32,5 +33,23 @@ export const credentialService = {
 		if (!isPasswordValid) throw new InvalidCredentialsError();
 
 		return { user: existingUser };
+	},
+	async loginWithGoogle({ id: googleId, email }: Partial<GoogleUser>) {
+		if (!googleId || !email) throw new InvalidCredentialsError();
+
+		const existingUserByGoogleId =
+			await userRepository.findByGoogleId(googleId);
+		if (existingUserByGoogleId) return { user: existingUserByGoogleId };
+
+		const existingUserByEmail = await userRepository.findByEmail(email);
+		if (existingUserByEmail)
+			return {
+				user: await userRepository.linkGoogleId(
+					existingUserByEmail.id,
+					googleId,
+				),
+			};
+
+		return { user: await userRepository.create({ email, googleId }) };
 	},
 };

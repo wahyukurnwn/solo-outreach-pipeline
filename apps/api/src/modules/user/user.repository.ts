@@ -11,7 +11,12 @@ export const userRepository = {
 			where: { email },
 		}),
 
-	create: (data: { email: string; password?: string }) =>
+	findByGoogleId: (googleId: string) =>
+		prisma.user.findUnique({
+			where: { googleId },
+		}),
+
+	create: (data: { email: string; password?: string; googleId?: string }) =>
 		prisma.user.create({
 			data,
 		}),
@@ -20,5 +25,11 @@ export const userRepository = {
 		prisma.user.update({
 			where: { id },
 			data: { password },
+		}),
+
+	linkGoogleId: (id: string, googleId: string) =>
+		prisma.user.update({
+			where: { id },
+			data: { googleId },
 		}),
 };
