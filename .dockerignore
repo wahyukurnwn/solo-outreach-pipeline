@@ -1,0 +1,67 @@
+# Dependencies (installed fresh in the image)
+node_modules
+**/node_modules
+
+
+# Build output — di-build ulang di dalam image
+dist
+**/dist
+.output
+.tanstack
+.vinxi
+.nitro
+
+# Build output (rebuilt in the image)
+**/dist
+**/dist-ssr
+**/.output
+**/.vinxi
+**/.nitro
+**/.tanstack
+
+
+# Env files
+.env
+.env.*
+!.env.example
+*.local
+
+# Git
+.git
+.gitignore
+
+# Editor / OS
+.DS_Store
+.vscode
+.idea
+
+# Logs
+*.log
+
+# Docs & misc
+README.md
+*.md
+todos.json
+coverage
+
+
+
+# Tidak dibutuhkan runtime
+.git
+.github
+.husky
+.vscode
+.idea
+context/
+PRD.md
+*.md
+docker-compose*.yaml
+coverage
+*.log
+
+# Generated agent config
+apps/api/.agents
+apps/api/.claude
+apps/api/.cursor
+apps/api/.devin
+apps/api/.windsurf

@@ -1,0 +1,43 @@
+/* Token visual "Soft Notion-like" — satu sumber untuk packages/ui dan setiap app pemakainya. */
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-paper: #fbfaf7;
+  --color-sidebar: #f4f2ed;
+  --color-subtle: #faf8f4;
+  --color-line: #ebe7df;
+  --color-line-strong: #ddd8cd;
+
+  --color-ink: #2d2a26;
+  --color-ink-soft: #5f594f;
+  --color-muted: #736d64;
+  --color-faint: #a39d93;
+
+  --color-lavender-50: #f3effc;
+  --color-lavender-100: #e6dcfa;
+  --color-lavender-700: #6a4bd6;
+
+  --color-mint-50: #edf7f1;
+  --color-mint-100: #d4ecdf;
+  --color-mint-700: #2f7d55;
+
+  --color-peach-50: #fdf1e7;
+  --color-peach-100: #fadcc6;
+  --color-peach-700: #a4521c;
+
+  --color-cloud-50: #eef4fc;
+  --color-cloud-100: #d8e6f8;
+  --color-cloud-700: #3567a8;
+
+  --color-lagoon-50: #e3f6f8;
+  --color-lagoon-100: #cdeef1;
+  --color-lagoon-700: #0b6e77;
+
+  --color-blush-50: #fdf0ec;
+  --color-blush-100: #fbe0d8;
+  --color-blush-700: #b0432c;
+
+  --color-sand-50: #fbf5e6;
+  --color-sand-100: #f5e7c2;
+  --color-sand-700: #8f5f12;
+}
