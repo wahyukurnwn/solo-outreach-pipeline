@@ -15,6 +15,10 @@ export const prospectService = {
 		return prospectRepository.findManyByUserId(userId);
 	},
 
+	listFollowUpsDue(userId: string) {
+		return prospectRepository.findFollowUpsDueByUserId(userId, new Date());
+	},
+
 	async findById(userId: string, id: string) {
 		const prospect = await prospectRepository.findByIdAndUserId(id, userId);
 

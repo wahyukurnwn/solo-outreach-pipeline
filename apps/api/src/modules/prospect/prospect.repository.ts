@@ -16,6 +16,12 @@ export const prospectRepository = {
 			orderBy: { createdAt: "desc" },
 		}),
 
+	findFollowUpsDueByUserId: (userId: string, dueBy: Date) =>
+		prisma.prospect.findMany({
+			where: { userId, followUpDate: { lte: dueBy } },
+			orderBy: { followUpDate: "asc" },
+		}),
+
 	findByIdAndUserId: (id: string, userId: string) =>
 		prisma.prospect.findFirst({
 			where: { id, userId },

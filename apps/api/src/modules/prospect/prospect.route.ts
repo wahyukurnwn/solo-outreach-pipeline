@@ -31,6 +31,13 @@ const prospectRoute = new Hono<AppEnv>()
 
 		return c.json(listResponse(prospects));
 	})
+	.get("/api/prospects/follow-ups", requireAuth, async (c) => {
+		const { id: userId } = c.get("user");
+
+		const prospects = await prospectService.listFollowUpsDue(userId);
+
+		return c.json(listResponse(prospects));
+	})
 	.get(
 		"/api/prospects/:id",
 		requireAuth,
