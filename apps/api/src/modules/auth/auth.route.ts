@@ -2,8 +2,13 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { googleAuthMiddleware } from "../../libs/auth.";
 import { signToken } from "../../libs/jwt";
-import { createdAccountResponse } from "../../utils/response";
-import { loginSchema, registerSchema } from "./auth.schema";
+import { createdAccountResponse, messageResponse } from "../../utils/response";
+import {
+	forgotPasswordSchema,
+	loginSchema,
+	registerSchema,
+	resetPasswordSchema,
+} from "./auth.schema";
 import { credentialService } from "./credential.service";
 
 const authRoute = new Hono()
@@ -43,6 +48,34 @@ const authRoute = new Hono()
 		});
 
 		return c.json({ id: user.id, email: user.email, accessToken });
-	});
+	})
+	.post(
+		"/api/auth/forgot-password",
+		zValidator("json", forgotPasswordSchema),
+		async (c) => {
+			const body = c.req.valid("json");
+
+			await credentialService.forgotPassword(body);
+
+			return c.json(
+				messageResponse(
+					"Jika email terdaftar, link reset password sudah dikirim.",
+				),
+			);
+		},
+	)
+	.post(
+		"/api/auth/reset-password",
+		zValidator("json", resetPasswordSchema),
+		async (c) => {
+			const body = c.req.valid("json");
+
+			await credentialService.resetPassword(body);
+
+			return c.json(
+				messageResponse("Password berhasil direset. Silahkan login."),
+			);
+		},
+	);
 
 export default authRoute;

@@ -80,3 +80,14 @@ export class ServiceUnavailableError extends AppError {
 		super(503, code, message);
 	}
 }
+
+/** Token reset password tidak ditemukan, sudah dipakai, atau sudah kedaluwarsa. */
+export class InvalidResetTokenError extends AppError {
+	constructor() {
+		super(
+			400,
+			"INVALID_RESET_TOKEN",
+			"Token reset password tidak valid atau sudah kedaluwarsa",
+		);
+	}
+}
