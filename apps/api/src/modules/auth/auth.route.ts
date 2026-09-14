@@ -25,6 +25,7 @@ const authRoute = new Hono<AppEnv>()
 			createdAccountResponse(
 				"Register berhasil. Silahkan ke halaman login page!",
 			),
+			201,
 		);
 	})
 	.post("/api/auth/signin", validate("json", loginSchema), async (c) => {

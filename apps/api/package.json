@@ -8,7 +8,8 @@
 		"with-env": "dotenv -e ../../.env",
 		"db:migrate": "pnpm prisma migrate dev",
 		"db:generate": "pnpm prisma generate",
-		"db:studio": "pnpm prisma studio"
+		"db:studio": "pnpm prisma studio",
+		"test": "pnpm run with-env -- vitest run"
 	},
 	"dependencies": {
 		"@hono/node-server": "^2.1.1",
@@ -31,6 +32,7 @@
 		"jsonwebtoken": "^9.0.3",
 		"prisma": "7.10.0",
 		"tsx": "^4.23.0",
-		"typescript": "^7.0.2"
+		"typescript": "^7.0.2",
+		"vitest": "^5.0.0"
 	}
 }
