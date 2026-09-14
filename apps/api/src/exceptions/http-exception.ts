@@ -98,3 +98,10 @@ export class NotFoundError extends AppError {
 		super(404, "NOT_FOUND", message);
 	}
 }
+
+/** Body/param/query request tidak lolos validasi Zod — disamakan formatnya dengan error lain lewat AppError. */
+export class ValidationError extends AppError {
+	constructor(details: unknown) {
+		super(422, "VALIDATION_ERROR", "Data yang dikirim tidak valid", details);
+	}
+}

@@ -1,5 +1,5 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import { validate } from "../../libs/validate";
 import { requireAuth } from "../../middleware/auth";
 import type { AppEnv } from "../../types";
 import { listResponse, messageResponse } from "../../utils/response";
@@ -14,7 +14,7 @@ const prospectRoute = new Hono<AppEnv>()
 	.post(
 		"/api/prospects",
 		requireAuth,
-		zValidator("json", createProspectSchema),
+		validate("json", createProspectSchema),
 		async (c) => {
 			const { id: userId } = c.get("user");
 			const body = c.req.valid("json");
@@ -41,7 +41,7 @@ const prospectRoute = new Hono<AppEnv>()
 	.get(
 		"/api/prospects/:id",
 		requireAuth,
-		zValidator("param", prospectIdParamSchema),
+		validate("param", prospectIdParamSchema),
 		async (c) => {
 			const { id: userId } = c.get("user");
 			const { id } = c.req.valid("param");
@@ -54,8 +54,8 @@ const prospectRoute = new Hono<AppEnv>()
 	.patch(
 		"/api/prospects/:id",
 		requireAuth,
-		zValidator("param", prospectIdParamSchema),
-		zValidator("json", updateProspectSchema),
+		validate("param", prospectIdParamSchema),
+		validate("json", updateProspectSchema),
 		async (c) => {
 			const { id: userId } = c.get("user");
 			const { id } = c.req.valid("param");
@@ -69,7 +69,7 @@ const prospectRoute = new Hono<AppEnv>()
 	.delete(
 		"/api/prospects/:id",
 		requireAuth,
-		zValidator("param", prospectIdParamSchema),
+		validate("param", prospectIdParamSchema),
 		async (c) => {
 			const { id: userId } = c.get("user");
 			const { id } = c.req.valid("param");

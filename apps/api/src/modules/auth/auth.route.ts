@@ -1,8 +1,8 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { UnauthorizedError } from "../../exceptions";
 import { googleAuthMiddleware } from "../../libs/auth.";
 import { signToken } from "../../libs/jwt";
+import { validate } from "../../libs/validate";
 import { requireAuth } from "../../middleware/auth";
 import type { AppEnv } from "../../types";
 import { createdAccountResponse, messageResponse } from "../../utils/response";
@@ -16,7 +16,7 @@ import {
 import { credentialService } from "./credential.service";
 
 const authRoute = new Hono<AppEnv>()
-	.post("/api/auth/signup", zValidator("json", registerSchema), async (c) => {
+	.post("/api/auth/signup", validate("json", registerSchema), async (c) => {
 		const body = c.req.valid("json");
 
 		await credentialService.register(body);
@@ -27,7 +27,7 @@ const authRoute = new Hono<AppEnv>()
 			),
 		);
 	})
-	.post("/api/auth/signin", zValidator("json", loginSchema), async (c) => {
+	.post("/api/auth/signin", validate("json", loginSchema), async (c) => {
 		const body = c.req.valid("json");
 
 		const { user } = await credentialService.login(body);
@@ -55,7 +55,7 @@ const authRoute = new Hono<AppEnv>()
 	})
 	.post(
 		"/api/auth/forgot-password",
-		zValidator("json", forgotPasswordSchema),
+		validate("json", forgotPasswordSchema),
 		async (c) => {
 			const body = c.req.valid("json");
 
@@ -70,7 +70,7 @@ const authRoute = new Hono<AppEnv>()
 	)
 	.post(
 		"/api/auth/reset-password",
-		zValidator("json", resetPasswordSchema),
+		validate("json", resetPasswordSchema),
 		async (c) => {
 			const body = c.req.valid("json");
 

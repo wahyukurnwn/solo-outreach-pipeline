@@ -1,5 +1,5 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import { validate } from "../../libs/validate";
 import { requireAdmin, requireAuth } from "../../middleware/auth";
 import type { AppEnv } from "../../types";
 import { listResponse } from "../../utils/response";
@@ -16,7 +16,7 @@ const adminRoute = new Hono<AppEnv>()
 		"/api/admin/users/:id",
 		requireAuth,
 		requireAdmin,
-		zValidator("param", userIdParamSchema),
+		validate("param", userIdParamSchema),
 		async (c) => {
 			const { id } = c.req.valid("param");
 
@@ -29,8 +29,8 @@ const adminRoute = new Hono<AppEnv>()
 		"/api/admin/users/:id/role",
 		requireAuth,
 		requireAdmin,
-		zValidator("param", userIdParamSchema),
-		zValidator("json", updateUserRoleSchema),
+		validate("param", userIdParamSchema),
+		validate("json", updateUserRoleSchema),
 		async (c) => {
 			const { id } = c.req.valid("param");
 			const body = c.req.valid("json");
