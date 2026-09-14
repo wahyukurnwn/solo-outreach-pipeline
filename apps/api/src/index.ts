@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { AppError } from "./exceptions";
+import activityRoute from "./modules/activity/activity.route";
 import authRoute from "./modules/auth/auth.route";
 import prospectRoute from "./modules/prospect/prospect.route";
 
@@ -12,7 +13,8 @@ app
 		return c.json("Hello, hono!");
 	})
 	.route("/", authRoute)
-	.route("/", prospectRoute);
+	.route("/", prospectRoute)
+	.route("/", activityRoute);
 
 app.onError((err, c) => {
 	if (err instanceof AppError) return c.json(err.toBody(), err.status);
