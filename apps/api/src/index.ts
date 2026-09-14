@@ -1,17 +1,10 @@
 import { serve } from "@hono/node-server";
-import { config } from "dotenv";
 import { Hono } from "hono";
-
-config({
-	path: "../../.env",
-});
 
 const app = new Hono();
 
-console.log("Logging: -----", process.env.TEST);
-
-app.get("/", (c) => {
-	return c.text("Hello Hono!");
+app.get("/", async (c) => {
+	return c.json("Hello, hono!");
 });
 
 serve(
