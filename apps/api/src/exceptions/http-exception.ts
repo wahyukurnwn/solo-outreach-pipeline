@@ -91,3 +91,10 @@ export class InvalidResetTokenError extends AppError {
 		);
 	}
 }
+
+/** Resource tidak ditemukan, atau ditemukan tapi bukan milik user yang login — sengaja disamakan jadi 404 supaya tidak bocor keberadaan data milik user lain. */
+export class NotFoundError extends AppError {
+	constructor(message = "Data tidak ditemukan") {
+		super(404, "NOT_FOUND", message);
+	}
+}
