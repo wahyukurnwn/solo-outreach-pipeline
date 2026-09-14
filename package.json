@@ -1,22 +1,27 @@
 {
-  "name": "fullstack-tanstack-app",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "pnpm run -r --parallel dev",
-    "admin:dev": "pnpm run --filter=admin dev",
-    "api:dev": "pnpm run --filter=api dev",
-    "platform:dev": "pnpm run --filter=platform dev",
-    "ui:dev": "pnpm run --filter=@mycustom/ui dev",
-    "lint": "pnpx @biomejs/biome check",
-    "lint:fix": "pnpx @biomejs/biome check --write --unsafe"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.30.3",
-  "dependencies": {
-    "dotenv-cli": "^11.0.0"
-  }
+	"name": "fullstack-tanstack-app",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"dev": "pnpm run -r --parallel dev",
+		"admin:dev": "pnpm run --filter=admin dev",
+		"api:dev": "pnpm run --filter=api dev",
+		"platform:dev": "pnpm run --filter=platform dev",
+		"ui:dev": "pnpm run --filter=@mycustom/ui dev",
+		"lint": "biome check",
+		"lint:fix": "biome check --write --unsafe",
+		"prepare": "husky"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.30.3",
+	"dependencies": {
+		"dotenv-cli": "^11.0.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.13",
+		"husky": "^9.1.7"
+	}
 }

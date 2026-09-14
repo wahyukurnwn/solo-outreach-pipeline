@@ -1,29 +1,29 @@
 {
-  "name": "@mycustom/ui",
-  "version": "1.0.0",
-  "description": "",
-  "type": "module",
-  "main": "index.js",
-  "exports": {
-    "./": "./src/index.ts",
-    "./globals.css": "./dist/globals.css",
-    "./theme.css": "./src/theme.css"
-  },
-  "scripts": {
-    "dev": "pnpx @tailwindcss/cli -i ./src/globals.css -o ./dist/globals.css --watch",
-    "build": "pnpx @tailwindcss/cli -i ./src/globals.css -o ./dist/globals.css"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.30.3",
-  "dependencies": {
-    "@tailwindcss/cli": "^4.3.3",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
-    "tailwindcss": "^4.3.3",
-    "typescript": "^7.0.2"
-  }
+	"name": "@mycustom/ui",
+	"version": "1.0.0",
+	"description": "",
+	"type": "module",
+	"main": "index.js",
+	"exports": {
+		"./": "./src/index.ts",
+		"./globals.css": "./dist/globals.css",
+		"./theme.css": "./src/theme.css"
+	},
+	"scripts": {
+		"dev": "pnpx @tailwindcss/cli -i ./src/globals.css -o ./dist/globals.css --watch",
+		"build": "pnpx @tailwindcss/cli -i ./src/globals.css -o ./dist/globals.css"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.30.3",
+	"dependencies": {
+		"@tailwindcss/cli": "^4.3.3",
+		"@types/react": "^19.3.0",
+		"@types/react-dom": "^19.3.0",
+		"react": "^19.3.0",
+		"react-dom": "^19.3.0",
+		"tailwindcss": "^4.3.3",
+		"typescript": "^7.0.2"
+	}
 }
