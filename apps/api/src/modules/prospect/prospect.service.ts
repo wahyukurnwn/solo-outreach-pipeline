@@ -15,8 +15,14 @@ export const prospectService = {
 		return prospectRepository.findManyByUserId(userId);
 	},
 
-	listFollowUpsDue(userId: string) {
-		return prospectRepository.findFollowUpsDueByUserId(userId, new Date());
+	// `date` = tanggal lokal user (YYYY-MM-DD). followUpDate berupa @db.Date di
+	// tengah malam UTC, jadi batas jatuh tempo = tengah malam UTC tanggal itu.
+	// Tanpa `date`, server memakai waktu sekarang — yang meleset untuk zona UTC+
+	// (mis. WIB sebelum 07.00, follow-up hari ini belum dianggap jatuh tempo).
+	listFollowUpsDue(userId: string, date?: string) {
+		const dueBy = date ? new Date(`${date}T00:00:00.000Z`) : new Date();
+
+		return prospectRepository.findFollowUpsDueByUserId(userId, dueBy);
 	},
 
 	async findById(userId: string, id: string) {

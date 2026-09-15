@@ -5,6 +5,7 @@ import type { AppEnv } from "../../types";
 import { listResponse, messageResponse } from "../../utils/response";
 import {
 	createProspectSchema,
+	followUpsQuerySchema,
 	prospectIdParamSchema,
 	updateProspectSchema,
 } from "./prospect.schema";
@@ -31,13 +32,19 @@ const prospectRoute = new Hono<AppEnv>()
 
 		return c.json(listResponse(prospects));
 	})
-	.get("/api/prospects/follow-ups", requireAuth, async (c) => {
-		const { id: userId } = c.get("user");
+	.get(
+		"/api/prospects/follow-ups",
+		requireAuth,
+		validate("query", followUpsQuerySchema),
+		async (c) => {
+			const { id: userId } = c.get("user");
+			const { date } = c.req.valid("query");
 
-		const prospects = await prospectService.listFollowUpsDue(userId);
+			const prospects = await prospectService.listFollowUpsDue(userId, date);
 
-		return c.json(listResponse(prospects));
-	})
+			return c.json(listResponse(prospects));
+		},
+	)
 	.get(
 		"/api/prospects/:id",
 		requireAuth,

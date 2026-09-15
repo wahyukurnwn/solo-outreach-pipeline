@@ -127,4 +127,42 @@ describe("prospects", () => {
 		expect(json.data).toHaveLength(1);
 		expect(json.data[0].id).toBe(due.id);
 	});
+
+	it("treats ?date as the caller's local today when listing follow-ups", async () => {
+		const { id, authHeaders } = await createTestUser();
+		createdUserIds.push(id);
+
+		const dueOnDate = await createProspect(authHeaders, {
+			name: "Due on the given date",
+			followUpDate: "2099-01-01",
+		});
+
+		const onDateRes = await app.request(
+			"/api/prospects/follow-ups?date=2099-01-01",
+			{ headers: authHeaders },
+		);
+		const onDate = await onDateRes.json();
+		const dayBeforeRes = await app.request(
+			"/api/prospects/follow-ups?date=2098-12-31",
+			{ headers: authHeaders },
+		);
+		const dayBefore = await dayBeforeRes.json();
+
+		expect(onDateRes.status).toBe(200);
+		expect(
+			onDate.data.map((prospect: { id: string }) => prospect.id),
+		).toContain(dueOnDate.id);
+		expect(dayBefore.data).toHaveLength(0);
+	});
+
+	it("rejects an invalid ?date when listing follow-ups", async () => {
+		const { id, authHeaders } = await createTestUser();
+		createdUserIds.push(id);
+
+		const res = await app.request("/api/prospects/follow-ups?date=not-a-date", {
+			headers: authHeaders,
+		});
+
+		expect(res.status).toBe(422);
+	});
 });

@@ -18,3 +18,7 @@ export const updateProspectSchema = createProspectSchema.partial();
 export const prospectIdParamSchema = z.object({
 	id: z.uuid(),
 });
+
+export const followUpsQuerySchema = z.object({
+	date: z.iso.date().optional(),
+});
