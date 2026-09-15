@@ -5,6 +5,7 @@ import { env } from "./config/env";
 import { AppError } from "./exceptions";
 import activityRoute from "./modules/activity/activity.route";
 import adminRoute from "./modules/admin/admin.route";
+import analyticsRoute from "./modules/analytics/analytics.route";
 import authRoute from "./modules/auth/auth.route";
 import prospectRoute from "./modules/prospect/prospect.route";
 
@@ -23,7 +24,8 @@ export const app = new Hono()
 	.route("/", authRoute)
 	.route("/", prospectRoute)
 	.route("/", activityRoute)
-	.route("/", adminRoute);
+	.route("/", adminRoute)
+	.route("/", analyticsRoute);
 
 app.onError((err, c) => {
 	if (err instanceof AppError) return c.json(err.toBody(), err.status);
