@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as DemoIndexRouteImport } from './routes/demo/index'
 import { Route as AppAnalyticIndexRouteImport } from './routes/_app/analytic/index'
 import { Route as AppDashboardIndexRouteImport } from './routes/_app/dashboard/index'
 import { Route as AppProspectIndexRouteImport } from './routes/_app/prospect/index'
@@ -19,6 +20,7 @@ import { Route as AuthForgotPasswordIndexRouteImport } from './routes/auth/forgo
 import { Route as AuthResetPasswordIndexRouteImport } from './routes/auth/reset-password/index'
 import { Route as AuthSigninIndexRouteImport } from './routes/auth/signin/index'
 import { Route as AuthSignupIndexRouteImport } from './routes/auth/signup/index'
+import { Route as DemoIdIndexRouteImport } from './routes/demo/$id/index'
 import { Route as AppProspectIdIndexRouteImport } from './routes/_app/prospect/$id/index'
 import { Route as AuthCallbackGoogleIndexRouteImport } from './routes/auth/callback/google/index'
 
@@ -29,6 +31,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AppRoute = AppRouteImport.update({
   id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoIndexRoute = DemoIndexRouteImport.update({
+  id: '/demo/',
+  path: '/demo/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppAnalyticIndexRoute = AppAnalyticIndexRouteImport.update({
@@ -71,6 +78,11 @@ const AuthSignupIndexRoute = AuthSignupIndexRouteImport.update({
   path: '/auth/signup/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoIdIndexRoute = DemoIdIndexRouteImport.update({
+  id: '/demo/$id/',
+  path: '/demo/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppProspectIdIndexRoute = AppProspectIdIndexRouteImport.update({
   id: '/prospect/$id/',
   path: '/prospect/$id/',
@@ -84,6 +96,7 @@ const AuthCallbackGoogleIndexRoute = AuthCallbackGoogleIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/demo/': typeof DemoIndexRoute
   '/analytic/': typeof AppAnalyticIndexRoute
   '/dashboard/': typeof AppDashboardIndexRoute
   '/prospect/': typeof AppProspectIndexRoute
@@ -92,11 +105,13 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password/': typeof AuthResetPasswordIndexRoute
   '/auth/signin/': typeof AuthSigninIndexRoute
   '/auth/signup/': typeof AuthSignupIndexRoute
+  '/demo/$id/': typeof DemoIdIndexRoute
   '/prospect/$id/': typeof AppProspectIdIndexRoute
   '/auth/callback/google/': typeof AuthCallbackGoogleIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/demo': typeof DemoIndexRoute
   '/analytic': typeof AppAnalyticIndexRoute
   '/dashboard': typeof AppDashboardIndexRoute
   '/prospect': typeof AppProspectIndexRoute
@@ -105,6 +120,7 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordIndexRoute
   '/auth/signin': typeof AuthSigninIndexRoute
   '/auth/signup': typeof AuthSignupIndexRoute
+  '/demo/$id': typeof DemoIdIndexRoute
   '/prospect/$id': typeof AppProspectIdIndexRoute
   '/auth/callback/google': typeof AuthCallbackGoogleIndexRoute
 }
@@ -112,6 +128,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/demo/': typeof DemoIndexRoute
   '/_app/analytic/': typeof AppAnalyticIndexRoute
   '/_app/dashboard/': typeof AppDashboardIndexRoute
   '/_app/prospect/': typeof AppProspectIndexRoute
@@ -120,6 +137,7 @@ export interface FileRoutesById {
   '/auth/reset-password/': typeof AuthResetPasswordIndexRoute
   '/auth/signin/': typeof AuthSigninIndexRoute
   '/auth/signup/': typeof AuthSignupIndexRoute
+  '/demo/$id/': typeof DemoIdIndexRoute
   '/_app/prospect/$id/': typeof AppProspectIdIndexRoute
   '/auth/callback/google/': typeof AuthCallbackGoogleIndexRoute
 }
@@ -127,6 +145,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/demo/'
     | '/analytic/'
     | '/dashboard/'
     | '/prospect/'
@@ -135,11 +154,13 @@ export interface FileRouteTypes {
     | '/auth/reset-password/'
     | '/auth/signin/'
     | '/auth/signup/'
+    | '/demo/$id/'
     | '/prospect/$id/'
     | '/auth/callback/google/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/demo'
     | '/analytic'
     | '/dashboard'
     | '/prospect'
@@ -148,12 +169,14 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/signin'
     | '/auth/signup'
+    | '/demo/$id'
     | '/prospect/$id'
     | '/auth/callback/google'
   id:
     | '__root__'
     | '/'
     | '/_app'
+    | '/demo/'
     | '/_app/analytic/'
     | '/_app/dashboard/'
     | '/_app/prospect/'
@@ -162,6 +185,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password/'
     | '/auth/signin/'
     | '/auth/signup/'
+    | '/demo/$id/'
     | '/_app/prospect/$id/'
     | '/auth/callback/google/'
   fileRoutesById: FileRoutesById
@@ -169,10 +193,12 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  DemoIndexRoute: typeof DemoIndexRoute
   AuthForgotPasswordIndexRoute: typeof AuthForgotPasswordIndexRoute
   AuthResetPasswordIndexRoute: typeof AuthResetPasswordIndexRoute
   AuthSigninIndexRoute: typeof AuthSigninIndexRoute
   AuthSignupIndexRoute: typeof AuthSignupIndexRoute
+  DemoIdIndexRoute: typeof DemoIdIndexRoute
   AuthCallbackGoogleIndexRoute: typeof AuthCallbackGoogleIndexRoute
 }
 
@@ -190,6 +216,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/': {
+      id: '/demo/'
+      path: '/demo'
+      fullPath: '/demo/'
+      preLoaderRoute: typeof DemoIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/analytic/': {
@@ -248,6 +281,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignupIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo/$id/': {
+      id: '/demo/$id/'
+      path: '/demo/$id'
+      fullPath: '/demo/$id/'
+      preLoaderRoute: typeof DemoIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/prospect/$id/': {
       id: '/_app/prospect/$id/'
       path: '/prospect/$id'
@@ -286,10 +326,12 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  DemoIndexRoute: DemoIndexRoute,
   AuthForgotPasswordIndexRoute: AuthForgotPasswordIndexRoute,
   AuthResetPasswordIndexRoute: AuthResetPasswordIndexRoute,
   AuthSigninIndexRoute: AuthSigninIndexRoute,
   AuthSignupIndexRoute: AuthSignupIndexRoute,
+  DemoIdIndexRoute: DemoIdIndexRoute,
   AuthCallbackGoogleIndexRoute: AuthCallbackGoogleIndexRoute,
 }
 export const routeTree = rootRouteImport

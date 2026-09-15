@@ -38,9 +38,9 @@ export const HeroSection = () => (
 					Open the app
 					<ArrowRight className="size-4" />
 				</Link>
-				<a href="#how-it-works" className={secondaryCtaClassName}>
-					See how it works
-				</a>
+				<Link to="/demo" className={secondaryCtaClassName}>
+					See live demo
+				</Link>
 			</div>
 
 			<p className="mt-6 flex items-center gap-2 text-xs text-muted">
