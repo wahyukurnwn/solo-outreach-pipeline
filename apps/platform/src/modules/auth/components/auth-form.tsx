@@ -6,11 +6,11 @@ import {
 	inputClassName,
 	labelClassName,
 	labelTextClassName,
-	primaryButtonClassName,
 } from "#/components/form-styles";
 import { Loader } from "#/components/loader";
 import { useSignIn } from "../hooks/use-sign-in";
 import { useSignUp } from "../hooks/use-sign-up";
+import { authSubmitButtonClassName } from "../styles";
 
 export type AuthMode = "signin" | "signup";
 
@@ -101,7 +101,7 @@ export const AuthForm = ({ mode, onSignedUp }: AuthFormProps) => {
 			<button
 				type="submit"
 				disabled={isPending}
-				className={`${primaryButtonClassName} mt-1 h-11 bg-linear-to-b from-[#4a453f] to-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_10px_20px_-10px_rgba(45,42,38,0.65)] hover:brightness-110`}
+				className={`${authSubmitButtonClassName} mt-1`}
 			>
 				{isPending ? <Loader /> : <Mail className="size-4" />}
 				{mode === "signup"

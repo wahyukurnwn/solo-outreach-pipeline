@@ -1,8 +1,13 @@
 export { AuthCard } from "./components/auth-card";
 export { AuthForm, type AuthMode } from "./components/auth-form";
+export { ForgotPasswordForm } from "./components/forgot-password-form";
+export { ResetPasswordForm } from "./components/reset-password-form";
+export { useForgotPassword } from "./hooks/use-forgot-password";
 export { meQueryKey, useMe } from "./hooks/use-me";
+export { useResetPassword } from "./hooks/use-reset-password";
 export { useSignIn } from "./hooks/use-sign-in";
 export { useSignOut } from "./hooks/use-sign-out";
 export { useSignUp } from "./hooks/use-sign-up";
 export type { AuthCredentials } from "./schema/auth.schema";
 export { authCredentialsSchema } from "./schema/auth.schema";
+export { authSubmitButtonClassName } from "./styles";

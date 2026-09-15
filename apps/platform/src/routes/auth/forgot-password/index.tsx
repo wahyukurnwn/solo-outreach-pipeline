@@ -1,13 +1,28 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { AuthCard, ForgotPasswordForm } from "#/modules/auth";
 
 export const Route = createFileRoute("/auth/forgot-password/")({
-	component: ForgotPassworPage,
+	component: ForgotPasswordPage,
 });
 
-function ForgotPassworPage() {
+function ForgotPasswordPage() {
 	return (
-		<div className="flex flex-col gap-7 px-6 py-8 sm:px-12 sm:py-10">
-			<h1>Welcome to Forgot Password page!</h1>
-		</div>
+		<AuthCard
+			title="Lupa password?"
+			description="Masukkan email akun Anda. Kami kirim link untuk membuat password baru."
+			footer={
+				<span className="text-muted">
+					Ingat password Anda?{" "}
+					<Link
+						to="/auth/signin"
+						className="font-semibold text-ink transition-colors hover:text-lavender-700"
+					>
+						Masuk
+					</Link>
+				</span>
+			}
+		>
+			<ForgotPasswordForm />
+		</AuthCard>
 	);
 }
