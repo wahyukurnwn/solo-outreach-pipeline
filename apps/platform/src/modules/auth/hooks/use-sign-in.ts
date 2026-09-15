@@ -1,12 +1,16 @@
 import { useMutation } from "@tanstack/react-query";
+import type { InferRequestType } from "hono/client";
 import { apiClient } from "#/libs/api-client";
 import { extractErrorMessage } from "#/libs/api-error";
 import { setAuthToken } from "#/libs/auth.token";
-import type { AuthCredentials } from "#/modules/auth/schema/auth.schema";
+
+export type SignInInput = InferRequestType<
+	typeof apiClient.api.auth.signin.$post
+>["json"];
 
 export const useSignIn = () => {
 	return useMutation({
-		mutationFn: async (credentials: AuthCredentials) => {
+		mutationFn: async (credentials: SignInInput) => {
 			const res = await apiClient.api.auth.signin.$post({ json: credentials });
 
 			if (!res.ok)
