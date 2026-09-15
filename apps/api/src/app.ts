@@ -8,18 +8,15 @@ import adminRoute from "./modules/admin/admin.route";
 import authRoute from "./modules/auth/auth.route";
 import prospectRoute from "./modules/prospect/prospect.route";
 
-export const app = new Hono();
-
-app.use(
-	"*",
-	cors({
-		origin: env.corsOrigins,
-		allowHeaders: ["Content-Type", "Authorization"],
-		allowMethods: ["GET", "POST", "PATCH", "DELETE"],
-	}),
-);
-
-app
+export const app = new Hono()
+	.use(
+		"*",
+		cors({
+			origin: env.corsOrigins,
+			allowHeaders: ["Content-Type", "Authorization"],
+			allowMethods: ["GET", "POST", "PATCH", "DELETE"],
+		}),
+	)
 	.get("/", async (c) => {
 		return c.json("Hello, hono!");
 	})

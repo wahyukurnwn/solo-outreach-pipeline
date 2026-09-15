@@ -10,33 +10,146 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppAnalyticIndexRouteImport } from './routes/_app/analytic/index'
+import { Route as AppDashboardIndexRouteImport } from './routes/_app/dashboard/index'
+import { Route as AppProspectIndexRouteImport } from './routes/_app/prospect/index'
+import { Route as AuthForgotPasswordIndexRouteImport } from './routes/auth/forgot-password/index'
+import { Route as AuthResetPasswordIndexRouteImport } from './routes/auth/reset-password/index'
+import { Route as AuthSigninIndexRouteImport } from './routes/auth/signin/index'
+import { Route as AuthSignupIndexRouteImport } from './routes/auth/signup/index'
+import { Route as AuthCallbackGoogleIndexRouteImport } from './routes/auth/callback/google/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppAnalyticIndexRoute = AppAnalyticIndexRouteImport.update({
+  id: '/analytic/',
+  path: '/analytic/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardIndexRoute = AppDashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProspectIndexRoute = AppProspectIndexRouteImport.update({
+  id: '/prospect/',
+  path: '/prospect/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AuthForgotPasswordIndexRoute = AuthForgotPasswordIndexRouteImport.update({
+  id: '/auth/forgot-password/',
+  path: '/auth/forgot-password/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthResetPasswordIndexRoute = AuthResetPasswordIndexRouteImport.update({
+  id: '/auth/reset-password/',
+  path: '/auth/reset-password/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthSigninIndexRoute = AuthSigninIndexRouteImport.update({
+  id: '/auth/signin/',
+  path: '/auth/signin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthSignupIndexRoute = AuthSignupIndexRouteImport.update({
+  id: '/auth/signup/',
+  path: '/auth/signup/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackGoogleIndexRoute = AuthCallbackGoogleIndexRouteImport.update({
+  id: '/auth/callback/google/',
+  path: '/auth/callback/google/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analytic/': typeof AppAnalyticIndexRoute
+  '/dashboard/': typeof AppDashboardIndexRoute
+  '/prospect/': typeof AppProspectIndexRoute
+  '/auth/forgot-password/': typeof AuthForgotPasswordIndexRoute
+  '/auth/reset-password/': typeof AuthResetPasswordIndexRoute
+  '/auth/signin/': typeof AuthSigninIndexRoute
+  '/auth/signup/': typeof AuthSignupIndexRoute
+  '/auth/callback/google/': typeof AuthCallbackGoogleIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analytic': typeof AppAnalyticIndexRoute
+  '/dashboard': typeof AppDashboardIndexRoute
+  '/prospect': typeof AppProspectIndexRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordIndexRoute
+  '/auth/reset-password': typeof AuthResetPasswordIndexRoute
+  '/auth/signin': typeof AuthSigninIndexRoute
+  '/auth/signup': typeof AuthSignupIndexRoute
+  '/auth/callback/google': typeof AuthCallbackGoogleIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/analytic/': typeof AppAnalyticIndexRoute
+  '/_app/dashboard/': typeof AppDashboardIndexRoute
+  '/_app/prospect/': typeof AppProspectIndexRoute
+  '/auth/forgot-password/': typeof AuthForgotPasswordIndexRoute
+  '/auth/reset-password/': typeof AuthResetPasswordIndexRoute
+  '/auth/signin/': typeof AuthSigninIndexRoute
+  '/auth/signup/': typeof AuthSignupIndexRoute
+  '/auth/callback/google/': typeof AuthCallbackGoogleIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/analytic/'
+    | '/dashboard/'
+    | '/prospect/'
+    | '/auth/forgot-password/'
+    | '/auth/reset-password/'
+    | '/auth/signin/'
+    | '/auth/signup/'
+    | '/auth/callback/google/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/analytic'
+    | '/dashboard'
+    | '/prospect'
+    | '/auth/forgot-password'
+    | '/auth/reset-password'
+    | '/auth/signin'
+    | '/auth/signup'
+    | '/auth/callback/google'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_app/analytic/'
+    | '/_app/dashboard/'
+    | '/_app/prospect/'
+    | '/auth/forgot-password/'
+    | '/auth/reset-password/'
+    | '/auth/signin/'
+    | '/auth/signup/'
+    | '/auth/callback/google/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  AuthForgotPasswordIndexRoute: typeof AuthForgotPasswordIndexRoute
+  AuthResetPasswordIndexRoute: typeof AuthResetPasswordIndexRoute
+  AuthSigninIndexRoute: typeof AuthSigninIndexRoute
+  AuthSignupIndexRoute: typeof AuthSignupIndexRoute
+  AuthCallbackGoogleIndexRoute: typeof AuthCallbackGoogleIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +161,94 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/analytic/': {
+      id: '/_app/analytic/'
+      path: '/analytic'
+      fullPath: '/analytic/'
+      preLoaderRoute: typeof AppAnalyticIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dashboard/': {
+      id: '/_app/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof AppDashboardIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/prospect/': {
+      id: '/_app/prospect/'
+      path: '/prospect'
+      fullPath: '/prospect/'
+      preLoaderRoute: typeof AppProspectIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/auth/forgot-password/': {
+      id: '/auth/forgot-password/'
+      path: '/auth/forgot-password'
+      fullPath: '/auth/forgot-password/'
+      preLoaderRoute: typeof AuthForgotPasswordIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/reset-password/': {
+      id: '/auth/reset-password/'
+      path: '/auth/reset-password'
+      fullPath: '/auth/reset-password/'
+      preLoaderRoute: typeof AuthResetPasswordIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/signin/': {
+      id: '/auth/signin/'
+      path: '/auth/signin'
+      fullPath: '/auth/signin/'
+      preLoaderRoute: typeof AuthSigninIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/signup/': {
+      id: '/auth/signup/'
+      path: '/auth/signup'
+      fullPath: '/auth/signup/'
+      preLoaderRoute: typeof AuthSignupIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback/google/': {
+      id: '/auth/callback/google/'
+      path: '/auth/callback/google'
+      fullPath: '/auth/callback/google/'
+      preLoaderRoute: typeof AuthCallbackGoogleIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAnalyticIndexRoute: typeof AppAnalyticIndexRoute
+  AppDashboardIndexRoute: typeof AppDashboardIndexRoute
+  AppProspectIndexRoute: typeof AppProspectIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAnalyticIndexRoute: AppAnalyticIndexRoute,
+  AppDashboardIndexRoute: AppDashboardIndexRoute,
+  AppProspectIndexRoute: AppProspectIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  AuthForgotPasswordIndexRoute: AuthForgotPasswordIndexRoute,
+  AuthResetPasswordIndexRoute: AuthResetPasswordIndexRoute,
+  AuthSigninIndexRoute: AuthSigninIndexRoute,
+  AuthSignupIndexRoute: AuthSignupIndexRoute,
+  AuthCallbackGoogleIndexRoute: AuthCallbackGoogleIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -18,3 +18,7 @@ export const resetPasswordSchema = z.object({
 	token: z.string(),
 	password: z.string().min(8, "Password must be at least 8 characters long"),
 });
+
+export const googleExchangeSchema = z.object({
+	code: z.string(),
+});

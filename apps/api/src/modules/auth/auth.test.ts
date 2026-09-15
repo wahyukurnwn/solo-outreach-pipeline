@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { app } from "../../app";
+import { createExchangeCode } from "../../libs/oauth-exchange";
 import {
 	cleanupUser,
 	createTestUser,
@@ -89,5 +90,54 @@ describe("auth", () => {
 		const res = await app.request("/api/auth/me");
 
 		expect(res.status).toBe(401);
+	});
+
+	it("exchanges a valid one-time code for an access token", async () => {
+		const { id, email } = await createTestUser();
+		createdUserIds.push(id);
+
+		const code = createExchangeCode({ id, email, role: "USER" });
+
+		const res = await app.request("/api/auth/google/exchange", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ code }),
+		});
+		const json = await res.json();
+
+		expect(res.status).toBe(200);
+		expect(json.accessToken).toBeTypeOf("string");
+	});
+
+	it("rejects an exchange code that was never issued", async () => {
+		const res = await app.request("/api/auth/google/exchange", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ code: "never-issued" }),
+		});
+		const json = await res.json();
+
+		expect(res.status).toBe(400);
+		expect(json.error.code).toBe("INVALID_EXCHANGE_CODE");
+	});
+
+	it("rejects reusing an exchange code a second time", async () => {
+		const { id, email } = await createTestUser();
+		createdUserIds.push(id);
+
+		const code = createExchangeCode({ id, email, role: "USER" });
+
+		await app.request("/api/auth/google/exchange", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ code }),
+		});
+		const secondRes = await app.request("/api/auth/google/exchange", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ code }),
+		});
+
+		expect(secondRes.status).toBe(400);
 	});
 });

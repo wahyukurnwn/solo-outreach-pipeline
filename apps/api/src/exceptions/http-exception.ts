@@ -105,3 +105,14 @@ export class ValidationError extends AppError {
 		super(422, "VALIDATION_ERROR", "Data yang dikirim tidak valid", details);
 	}
 }
+
+/** Kode tukar (exchange code) OAuth Google tidak ditemukan, sudah dipakai, atau sudah kedaluwarsa. */
+export class InvalidExchangeCodeError extends AppError {
+	constructor() {
+		super(
+			400,
+			"INVALID_EXCHANGE_CODE",
+			"Kode OAuth tidak valid atau sudah kedaluwarsa",
+		);
+	}
+}

@@ -5,7 +5,7 @@
 	"type": "module",
 	"main": "index.js",
 	"exports": {
-		"./": "./src/index.ts",
+		".": "./src/index.ts",
 		"./globals.css": "./dist/globals.css",
 		"./theme.css": "./src/theme.css"
 	},
