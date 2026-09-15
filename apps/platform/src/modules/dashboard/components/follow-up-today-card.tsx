@@ -5,9 +5,8 @@ import {
 	daysOverdue,
 	followUpDueLabel,
 	type Prospect,
-	stageAvatarClass,
-	stageColor,
-	stageLabel,
+	ProspectAvatar,
+	StagePill,
 } from "#/modules/prospect";
 
 const MAX_ROWS = 5;
@@ -58,32 +57,28 @@ export const FollowUpTodayCard = ({ followUps }: { followUps: Prospect[] }) => {
 							: 0;
 
 						return (
-							<li
-								key={prospect.id}
-								className="flex items-center gap-3 rounded-[14px] bg-subtle px-3.5 py-3"
-							>
-								<span
-									className={`flex size-[38px] shrink-0 items-center justify-center rounded-xl text-sm font-bold uppercase ${stageAvatarClass[prospect.stage]}`}
+							<li key={prospect.id}>
+								<Link
+									to="/prospect/$id"
+									params={{ id: prospect.id }}
+									className="flex items-center gap-3 rounded-[14px] bg-subtle px-3.5 py-3 transition-colors hover:bg-sidebar"
 								>
-									{prospect.name.charAt(0)}
-								</span>
-								<div className="min-w-0 flex-1">
-									<p className="truncate text-sm font-semibold text-ink">
-										{prospect.name}
-									</p>
-									<p className="truncate text-[13px] text-muted">
-										{prospect.company ?? "Tanpa perusahaan"}
-									</p>
-								</div>
-								<Badge variant={days > 0 ? "danger" : "warning"}>
-									{followUpDueLabel(days)}
-								</Badge>
-								<span className="hidden items-center gap-1.5 rounded-full border border-line bg-white px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-ink-soft sm:inline-flex">
-									<span
-										className={`size-[7px] rounded-full ${stageColor[prospect.stage]}`}
-									/>
-									{stageLabel[prospect.stage]}
-								</span>
+									<ProspectAvatar prospect={prospect} />
+									<div className="min-w-0 flex-1">
+										<p className="truncate text-sm font-semibold text-ink">
+											{prospect.name}
+										</p>
+										<p className="truncate text-[13px] text-muted">
+											{prospect.company || "Tanpa perusahaan"}
+										</p>
+									</div>
+									<Badge variant={days > 0 ? "danger" : "warning"}>
+										{followUpDueLabel(days)}
+									</Badge>
+									<span className="hidden sm:inline-flex">
+										<StagePill stage={prospect.stage} />
+									</span>
+								</Link>
 							</li>
 						);
 					})}

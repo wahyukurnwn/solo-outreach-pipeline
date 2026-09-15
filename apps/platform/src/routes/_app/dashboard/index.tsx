@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
+import { useState } from "react";
+import { primaryButtonClassName } from "#/components/form-styles";
 import { PageHeader } from "#/components/page-header";
+import { QueryError } from "#/components/query-error";
 import {
-	DashboardError,
 	DashboardSkeleton,
 	DashboardStats,
 	FollowUpTodayCard,
@@ -9,7 +12,11 @@ import {
 	greetingFor,
 	StageBreakdownCard,
 } from "#/modules/dashboard";
-import { useFollowUps, useProspects } from "#/modules/prospect";
+import {
+	ProspectFormDialog,
+	useFollowUps,
+	useProspects,
+} from "#/modules/prospect";
 
 export const Route = createFileRoute("/_app/dashboard/")({
 	component: DashboardPage,
@@ -17,6 +24,7 @@ export const Route = createFileRoute("/_app/dashboard/")({
 
 function DashboardPage() {
 	const now = new Date();
+	const [isCreateOpen, setIsCreateOpen] = useState(false);
 
 	return (
 		<div className="flex flex-col gap-7 px-6 py-8 sm:px-12 sm:py-10">
@@ -24,8 +32,22 @@ function DashboardPage() {
 				eyebrow={formatLongDate(now)}
 				title={greetingFor(now)}
 				description="Ini kondisi pipeline Anda hari ini."
+				action={
+					<button
+						type="button"
+						onClick={() => setIsCreateOpen(true)}
+						className={primaryButtonClassName}
+					>
+						<Plus className="size-4" />
+						Tambah prospek
+					</button>
+				}
 			/>
 			<DashboardContent />
+			<ProspectFormDialog
+				open={isCreateOpen}
+				onClose={() => setIsCreateOpen(false)}
+			/>
 		</div>
 	);
 }
@@ -37,7 +59,8 @@ function DashboardContent() {
 
 	if (error)
 		return (
-			<DashboardError
+			<QueryError
+				title="Dashboard gagal dimuat"
 				message={error.message}
 				onRetry={() => {
 					prospectsQuery.refetch();

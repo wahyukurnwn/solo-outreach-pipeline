@@ -1,16 +1,19 @@
 import z from "zod";
 import { ContactChannel, PipelineStage } from "../../generated/prisma/enums";
 
+// Field opsional sengaja nullish (bukan cuma optional): PATCH dengan null
+// adalah satu-satunya cara mengosongkan kolom yang sudah terisi, mis. menghapus
+// tanggal follow-up setelah follow-up-nya selesai.
 export const createProspectSchema = z.object({
 	name: z.string().min(1, "Nama wajib diisi"),
-	company: z.string().optional(),
-	channel: z.enum(ContactChannel).optional(),
+	company: z.string().nullish(),
+	channel: z.enum(ContactChannel).nullish(),
 	stage: z.enum(PipelineStage).optional(),
-	notes: z.string().optional(),
+	notes: z.string().nullish(),
 	followUpDate: z.iso
 		.date()
 		.transform((value) => new Date(value))
-		.optional(),
+		.nullish(),
 });
 
 export const updateProspectSchema = createProspectSchema.partial();

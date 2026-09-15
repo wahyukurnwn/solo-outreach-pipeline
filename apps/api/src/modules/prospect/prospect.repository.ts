@@ -33,8 +33,13 @@ export const prospectRepository = {
 			data,
 		}),
 
+	// FK activities & prospect_tags ke prospects masih ON DELETE RESTRICT, jadi
+	// baris anaknya dihapus dulu dalam satu transaksi — tanpa ini, prospek yang
+	// sudah punya aktivitas tidak bisa dihapus sama sekali.
 	delete: (id: string) =>
-		prisma.prospect.delete({
-			where: { id },
-		}),
+		prisma.$transaction([
+			prisma.activity.deleteMany({ where: { prospectId: id } }),
+			prisma.prospectTag.deleteMany({ where: { prospectId: id } }),
+			prisma.prospect.delete({ where: { id } }),
+		]),
 };

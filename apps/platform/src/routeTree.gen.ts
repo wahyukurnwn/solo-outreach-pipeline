@@ -18,6 +18,7 @@ import { Route as AuthForgotPasswordIndexRouteImport } from './routes/auth/forgo
 import { Route as AuthResetPasswordIndexRouteImport } from './routes/auth/reset-password/index'
 import { Route as AuthSigninIndexRouteImport } from './routes/auth/signin/index'
 import { Route as AuthSignupIndexRouteImport } from './routes/auth/signup/index'
+import { Route as AppProspectIdIndexRouteImport } from './routes/_app/prospect/$id/index'
 import { Route as AuthCallbackGoogleIndexRouteImport } from './routes/auth/callback/google/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -64,6 +65,11 @@ const AuthSignupIndexRoute = AuthSignupIndexRouteImport.update({
   path: '/auth/signup/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppProspectIdIndexRoute = AppProspectIdIndexRouteImport.update({
+  id: '/prospect/$id/',
+  path: '/prospect/$id/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AuthCallbackGoogleIndexRoute = AuthCallbackGoogleIndexRouteImport.update({
   id: '/auth/callback/google/',
   path: '/auth/callback/google/',
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password/': typeof AuthResetPasswordIndexRoute
   '/auth/signin/': typeof AuthSigninIndexRoute
   '/auth/signup/': typeof AuthSignupIndexRoute
+  '/prospect/$id/': typeof AppProspectIdIndexRoute
   '/auth/callback/google/': typeof AuthCallbackGoogleIndexRoute
 }
 export interface FileRoutesByTo {
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordIndexRoute
   '/auth/signin': typeof AuthSigninIndexRoute
   '/auth/signup': typeof AuthSignupIndexRoute
+  '/prospect/$id': typeof AppProspectIdIndexRoute
   '/auth/callback/google': typeof AuthCallbackGoogleIndexRoute
 }
 export interface FileRoutesById {
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/auth/reset-password/': typeof AuthResetPasswordIndexRoute
   '/auth/signin/': typeof AuthSigninIndexRoute
   '/auth/signup/': typeof AuthSignupIndexRoute
+  '/_app/prospect/$id/': typeof AppProspectIdIndexRoute
   '/auth/callback/google/': typeof AuthCallbackGoogleIndexRoute
 }
 export interface FileRouteTypes {
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password/'
     | '/auth/signin/'
     | '/auth/signup/'
+    | '/prospect/$id/'
     | '/auth/callback/google/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/signin'
     | '/auth/signup'
+    | '/prospect/$id'
     | '/auth/callback/google'
   id:
     | '__root__'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password/'
     | '/auth/signin/'
     | '/auth/signup/'
+    | '/_app/prospect/$id/'
     | '/auth/callback/google/'
   fileRoutesById: FileRoutesById
 }
@@ -217,6 +229,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignupIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/prospect/$id/': {
+      id: '/_app/prospect/$id/'
+      path: '/prospect/$id'
+      fullPath: '/prospect/$id/'
+      preLoaderRoute: typeof AppProspectIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/auth/callback/google/': {
       id: '/auth/callback/google/'
       path: '/auth/callback/google'
@@ -231,12 +250,14 @@ interface AppRouteChildren {
   AppAnalyticIndexRoute: typeof AppAnalyticIndexRoute
   AppDashboardIndexRoute: typeof AppDashboardIndexRoute
   AppProspectIndexRoute: typeof AppProspectIndexRoute
+  AppProspectIdIndexRoute: typeof AppProspectIdIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAnalyticIndexRoute: AppAnalyticIndexRoute,
   AppDashboardIndexRoute: AppDashboardIndexRoute,
   AppProspectIndexRoute: AppProspectIndexRoute,
+  AppProspectIdIndexRoute: AppProspectIdIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

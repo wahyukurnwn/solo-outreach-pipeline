@@ -165,4 +165,57 @@ describe("prospects", () => {
 
 		expect(res.status).toBe(422);
 	});
+
+	it("clears nullable fields when they are patched with null", async () => {
+		const { id, authHeaders } = await createTestUser();
+		createdUserIds.push(id);
+
+		const prospect = await createProspect(authHeaders, {
+			company: "Studio Arsa",
+			followUpDate: "2099-01-01",
+		});
+
+		const res = await app.request(`/api/prospects/${prospect.id}`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...authHeaders },
+			body: JSON.stringify({ company: null, followUpDate: null }),
+		});
+		const updated = await res.json();
+
+		expect(res.status).toBe(200);
+		expect(updated.company).toBeNull();
+		expect(updated.followUpDate).toBeNull();
+	});
+
+	it("deletes a prospect that already has activities", async () => {
+		const { id, authHeaders } = await createTestUser();
+		createdUserIds.push(id);
+
+		const prospect = await createProspect(authHeaders);
+		const activityRes = await app.request(
+			`/api/prospects/${prospect.id}/activities`,
+			{
+				method: "POST",
+				headers: { "Content-Type": "application/json", ...authHeaders },
+				body: JSON.stringify({
+					channel: "EMAIL",
+					outcome: "sent",
+					activityDate: "2026-01-01",
+				}),
+			},
+		);
+		expect(activityRes.status).toBe(201);
+
+		const deleteRes = await app.request(`/api/prospects/${prospect.id}`, {
+			method: "DELETE",
+			headers: authHeaders,
+		});
+		expect(deleteRes.status).toBe(200);
+
+		const activitiesAfterDeleteRes = await app.request(
+			`/api/prospects/${prospect.id}/activities`,
+			{ headers: authHeaders },
+		);
+		expect(activitiesAfterDeleteRes.status).toBe(404);
+	});
 });
