@@ -6,6 +6,7 @@ import {
 	cleanupUser,
 	createGoogleOnlyTestUser,
 	createTestUser,
+	linkGoogleId,
 	signin,
 	signup,
 	uniqueEmail,
@@ -332,6 +333,131 @@ describe("auth", () => {
 				currentPassword: "password123",
 				newPassword: "newpassword123",
 			}),
+		});
+
+		expect(res.status).toBe(401);
+	});
+
+	it("rejects unlinking google when the account was never linked", async () => {
+		const { id, authHeaders } = await createTestUser();
+		createdUserIds.push(id);
+
+		const res = await app.request("/api/auth/google", {
+			method: "DELETE",
+			headers: authHeaders,
+		});
+		const json = await res.json();
+
+		expect(res.status).toBe(409);
+		expect(json.error.code).toBe("GOOGLE_NOT_LINKED");
+	});
+
+	it("rejects unlinking google when it is the only login method left", async () => {
+		const { id, authHeaders } = await createGoogleOnlyTestUser();
+		createdUserIds.push(id);
+
+		const res = await app.request("/api/auth/google", {
+			method: "DELETE",
+			headers: authHeaders,
+		});
+		const json = await res.json();
+
+		expect(res.status).toBe(409);
+		expect(json.error.code).toBe("LAST_AUTH_METHOD");
+	});
+
+	it("unlinks google when the account still has a password", async () => {
+		const { id, authHeaders } = await createTestUser();
+		createdUserIds.push(id);
+		await linkGoogleId(id);
+
+		const res = await app.request("/api/auth/google", {
+			method: "DELETE",
+			headers: authHeaders,
+		});
+
+		expect(res.status).toBe(200);
+	});
+
+	it("rejects unlinking google without a token", async () => {
+		const res = await app.request("/api/auth/google", { method: "DELETE" });
+
+		expect(res.status).toBe(401);
+	});
+
+	it("rejects removing the password for an account that has no password (google-only)", async () => {
+		const { id, authHeaders } = await createGoogleOnlyTestUser();
+		createdUserIds.push(id);
+
+		const res = await app.request("/api/auth/password", {
+			method: "DELETE",
+			headers: { "Content-Type": "application/json", ...authHeaders },
+			body: JSON.stringify({ currentPassword: "anything" }),
+		});
+		const json = await res.json();
+
+		expect(res.status).toBe(409);
+		expect(json.error.code).toBe("PASSWORD_NOT_SET");
+	});
+
+	it("rejects removing the password when it is the only login method left", async () => {
+		const { id, authHeaders } = await createTestUser();
+		createdUserIds.push(id);
+
+		const res = await app.request("/api/auth/password", {
+			method: "DELETE",
+			headers: { "Content-Type": "application/json", ...authHeaders },
+			body: JSON.stringify({ currentPassword: "password123" }),
+		});
+		const json = await res.json();
+
+		expect(res.status).toBe(409);
+		expect(json.error.code).toBe("LAST_AUTH_METHOD");
+	});
+
+	it("rejects removing the password when the current password is wrong", async () => {
+		const { id, authHeaders } = await createTestUser();
+		createdUserIds.push(id);
+		await linkGoogleId(id);
+
+		const res = await app.request("/api/auth/password", {
+			method: "DELETE",
+			headers: { "Content-Type": "application/json", ...authHeaders },
+			body: JSON.stringify({ currentPassword: "wrong-password" }),
+		});
+		const json = await res.json();
+
+		expect(res.status).toBe(401);
+		expect(json.error.code).toBe("INVALID_CURRENT_PASSWORD");
+	});
+
+	it("removes the password when google is linked and the current password is correct", async () => {
+		const { id, email, authHeaders } = await createTestUser();
+		createdUserIds.push(id);
+		await linkGoogleId(id);
+
+		const res = await app.request("/api/auth/password", {
+			method: "DELETE",
+			headers: { "Content-Type": "application/json", ...authHeaders },
+			body: JSON.stringify({ currentPassword: "password123" }),
+		});
+
+		expect(res.status).toBe(200);
+
+		const signinRes = await app.request("/api/auth/signin", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ email, password: "password123" }),
+		});
+
+		expect(signinRes.status).toBe(401);
+	});
+
+	it("rejects removing the password without a token", async () => {
+		const res = await app.request("/api/auth/password", {
+			method: "DELETE",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ currentPassword: "password123" }),
 		});
 
 		expect(res.status).toBe(401);

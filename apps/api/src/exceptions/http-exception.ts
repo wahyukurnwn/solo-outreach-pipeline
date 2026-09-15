@@ -134,3 +134,25 @@ export class PasswordNotSetError extends AppError {
 		);
 	}
 }
+
+/** Akun belum terhubung dengan Google — tidak ada apa-apa buat di-unlink. */
+export class GoogleNotLinkedError extends AppError {
+	constructor() {
+		super(409, "GOOGLE_NOT_LINKED", "Akun ini belum terhubung dengan Google");
+	}
+}
+
+/**
+ * Invariant ERD: setiap user wajib punya minimal satu dari password atau
+ * googleId — mencegah aksi (unlink Google / hapus password) yang bakal
+ * bikin user kehilangan semua cara login.
+ */
+export class LastAuthMethodError extends AppError {
+	constructor() {
+		super(
+			409,
+			"LAST_AUTH_METHOD",
+			"Tidak bisa menghapus metode login terakhir. Pastikan akun masih punya cara login lain sebelum ini dihapus.",
+		);
+	}
+}

@@ -18,6 +18,7 @@ import {
 	googleExchangeSchema,
 	loginSchema,
 	registerSchema,
+	removePasswordSchema,
 	resetPasswordSchema,
 } from "./auth.schema";
 import { credentialService } from "./credential.service";
@@ -125,6 +126,26 @@ const authRoute = new Hono<AppEnv>()
 
 			return c.json(messageResponse("Password berhasil diubah."));
 		},
-	);
+	)
+	.delete(
+		"/api/auth/password",
+		requireAuth,
+		validate("json", removePasswordSchema),
+		async (c) => {
+			const { id } = c.get("user");
+			const body = c.req.valid("json");
+
+			await credentialService.removePassword(id, body);
+
+			return c.json(messageResponse("Password berhasil dihapus."));
+		},
+	)
+	.delete("/api/auth/google", requireAuth, async (c) => {
+		const { id } = c.get("user");
+
+		await credentialService.unlinkGoogle(id);
+
+		return c.json(messageResponse("Akun Google berhasil dilepas."));
+	});
 
 export default authRoute;

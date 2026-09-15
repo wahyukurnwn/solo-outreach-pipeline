@@ -3,10 +3,12 @@ import type z from "zod";
 import { env } from "../../config/env";
 import {
 	AlreadyExistsError,
+	GoogleNotLinkedError,
 	InvalidCredentialsError,
 	InvalidCurrentPasswordError,
 	InvalidMinimumLengthPassword,
 	InvalidResetTokenError,
+	LastAuthMethodError,
 	PasswordNotSetError,
 	UnauthorizedError,
 } from "../../exceptions";
@@ -19,6 +21,7 @@ import type {
 	forgotPasswordSchema,
 	loginSchema,
 	registerSchema,
+	removePasswordSchema,
 	resetPasswordSchema,
 } from "./auth.schema";
 import { passwordResetTokenRepository } from "./password-reset-token.repository";
@@ -123,5 +126,32 @@ export const credentialService = {
 		const passwordHash = await hashPassword(newPassword);
 
 		await userRepository.updatePassword(userId, passwordHash);
+	},
+	async unlinkGoogle(userId: string) {
+		const existingUser = await userRepository.findById(userId);
+		if (!existingUser) throw new UnauthorizedError();
+
+		if (!existingUser.googleId) throw new GoogleNotLinkedError();
+		if (!existingUser.password) throw new LastAuthMethodError();
+
+		await userRepository.unlinkGoogle(userId);
+	},
+	async removePassword(
+		userId: string,
+		{ currentPassword }: z.infer<typeof removePasswordSchema>,
+	) {
+		const existingUser = await userRepository.findById(userId);
+		if (!existingUser) throw new UnauthorizedError();
+
+		if (!existingUser.password) throw new PasswordNotSetError();
+		if (!existingUser.googleId) throw new LastAuthMethodError();
+
+		const isCurrentPasswordValid = await comparePassword(
+			currentPassword,
+			existingUser.password,
+		);
+		if (!isCurrentPasswordValid) throw new InvalidCurrentPasswordError();
+
+		await userRepository.removePassword(userId);
 	},
 };

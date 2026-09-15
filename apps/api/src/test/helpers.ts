@@ -49,6 +49,10 @@ export async function promoteToAdmin(userId: string) {
 	await prisma.user.update({ where: { id: userId }, data: { role: "ADMIN" } });
 }
 
+export async function linkGoogleId(userId: string, googleId = randomUUID()) {
+	await prisma.user.update({ where: { id: userId }, data: { googleId } });
+}
+
 export async function createGoogleOnlyTestUser() {
 	const email = uniqueEmail();
 	const user = await prisma.user.create({

@@ -39,6 +39,18 @@ export const userRepository = {
 			data: { googleId },
 		}),
 
+	unlinkGoogle: (id: string) =>
+		prisma.user.update({
+			where: { id },
+			data: { googleId: null },
+		}),
+
+	removePassword: (id: string) =>
+		prisma.user.update({
+			where: { id },
+			data: { password: null },
+		}),
+
 	updateRole: (id: string, role: UserRole) =>
 		prisma.user.update({
 			where: { id },
