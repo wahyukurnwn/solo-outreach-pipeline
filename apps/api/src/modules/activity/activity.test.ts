@@ -109,4 +109,24 @@ describe("activities", () => {
 		expect(updateRes.status).toBe(404);
 		expect(deleteRes.status).toBe(404);
 	});
+
+	it("clears the message text when it is patched with null", async () => {
+		const { id, authHeaders } = await createTestUser();
+		createdUserIds.push(id);
+
+		const prospect = await createProspect(authHeaders);
+		const activity = await (
+			await createActivity(authHeaders, prospect.id, { messageText: "Halo" })
+		).json();
+
+		const res = await app.request(`/api/activities/${activity.id}`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...authHeaders },
+			body: JSON.stringify({ messageText: null }),
+		});
+		const updated = await res.json();
+
+		expect(res.status).toBe(200);
+		expect(updated.messageText).toBeNull();
+	});
 });

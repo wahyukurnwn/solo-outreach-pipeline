@@ -1,13 +1,37 @@
-import { IconBox, SectionHeader } from "@mycustom/ui";
-import { Clock } from "lucide-react";
+import { AlertDialog, IconBox, SectionHeader } from "@mycustom/ui";
+import { Clock, Pencil, Trash } from "lucide-react";
+import { useState } from "react";
+import toast from "react-hot-toast";
 import { formatDateOnly } from "#/libs/date";
 import { channelLabel } from "#/modules/prospect";
 import { useActivities } from "../hooks/use-activities";
+import { useDeleteActivity } from "../hooks/use-delete-activity";
 import { outcomeClass, outcomeDotClass, outcomeLabel } from "../labels";
 import type { Activity } from "../types";
+import { ActivityFormDialog } from "./activity-form-dialog";
 
 export const ActivityTimeline = ({ prospectId }: { prospectId: string }) => {
 	const activitiesQuery = useActivities(prospectId);
+	const deleteActivity = useDeleteActivity(prospectId);
+	const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+	const [deletingActivity, setDeletingActivity] = useState<Activity | null>(
+		null,
+	);
+
+	function handleDelete() {
+		if (!deletingActivity || deleteActivity.isPending) return;
+
+		deleteActivity.mutate(deletingActivity.id, {
+			onSuccess: () => {
+				toast.success("Aktivitas dihapus");
+				setDeletingActivity(null);
+			},
+			onError: (err) => {
+				toast.error(err.message);
+				setDeletingActivity(null);
+			},
+		});
+	}
 
 	return (
 		<section className="flex flex-col gap-3.5">
@@ -29,18 +53,45 @@ export const ActivityTimeline = ({ prospectId }: { prospectId: string }) => {
 			<TimelineBody
 				activities={activitiesQuery.data}
 				errorMessage={activitiesQuery.error?.message}
+				onEdit={setEditingActivity}
+				onDelete={setDeletingActivity}
+			/>
+
+			{editingActivity ? (
+				<ActivityFormDialog
+					open
+					activity={editingActivity}
+					onClose={() => setEditingActivity(null)}
+				/>
+			) : null}
+			<AlertDialog
+				open={deletingActivity !== null}
+				title="Hapus aktivitas ini?"
+				description="Catatan outreach ini akan dihapus permanen dan tidak lagi dihitung di analitik."
+				confirmLabel={deleteActivity.isPending ? "Menghapus..." : "Hapus"}
+				onConfirm={handleDelete}
+				onCancel={() => setDeletingActivity(null)}
 			/>
 		</section>
 	);
 };
 
+interface TimelineBodyProps {
+	activities?: Activity[];
+	errorMessage?: string;
+	onEdit: (activity: Activity) => void;
+	onDelete: (activity: Activity) => void;
+}
+
+const iconButtonClassName =
+	"flex size-7 items-center justify-center rounded-lg text-faint transition-colors";
+
 function TimelineBody({
 	activities,
 	errorMessage,
-}: {
-	activities?: Activity[];
-	errorMessage?: string;
-}) {
+	onEdit,
+	onDelete,
+}: TimelineBodyProps) {
 	if (errorMessage)
 		return (
 			<p className="rounded-2xl bg-blush-50 px-4 py-3 text-[13px] text-blush-700">
@@ -87,7 +138,7 @@ function TimelineBody({
 								<span className="text-[13px] font-semibold text-ink">
 									{formatDateOnly(activity.activityDate)}
 								</span>
-								<div className="flex gap-1.5">
+								<div className="flex items-center gap-1.5">
 									<span className="rounded-full bg-sidebar px-2.5 py-0.5 text-xs font-semibold text-ink-soft">
 										{channelLabel[activity.channel]}
 									</span>
@@ -96,6 +147,22 @@ function TimelineBody({
 									>
 										{outcomeLabel[activity.outcome]}
 									</span>
+									<button
+										type="button"
+										aria-label="Edit aktivitas"
+										onClick={() => onEdit(activity)}
+										className={`${iconButtonClassName} hover:bg-sidebar hover:text-ink`}
+									>
+										<Pencil className="size-3.5" />
+									</button>
+									<button
+										type="button"
+										aria-label="Hapus aktivitas"
+										onClick={() => onDelete(activity)}
+										className={`${iconButtonClassName} hover:bg-blush-50 hover:text-blush-700`}
+									>
+										<Trash className="size-3.5" />
+									</button>
 								</div>
 							</div>
 							{activity.messageText ? (

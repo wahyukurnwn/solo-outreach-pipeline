@@ -4,7 +4,8 @@ import { ActivityOutcome, ContactChannel } from "../../generated/prisma/enums";
 export const createActivitySchema = z.object({
 	channel: z.enum(ContactChannel),
 	outcome: z.enum(ActivityOutcome),
-	messageText: z.string().optional(),
+	// nullish: PATCH dengan null satu-satunya cara mengosongkan catatan pesan.
+	messageText: z.string().nullish(),
 	activityDate: z.iso.date().transform((value) => new Date(value)),
 });
 

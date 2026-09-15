@@ -2,33 +2,19 @@ import { Card, IconBox, SectionHeader } from "@mycustom/ui";
 import { NotebookPen, Send } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import {
-	inputClassName,
-	labelClassName,
-	primaryButtonClassName,
-} from "#/components/form-styles";
+import { primaryButtonClassName } from "#/components/form-styles";
 import { Loader } from "#/components/loader";
-import {
-	channelLabel,
-	channelOptions,
-	type Prospect,
-	toLocalIsoDate,
-} from "#/modules/prospect";
-import {
-	type ActivityInput,
-	useCreateActivity,
-} from "../hooks/use-create-activity";
-import { outcomeLabel, outcomeOptions } from "../labels";
+import { type Prospect, toLocalIsoDate } from "#/modules/prospect";
+import { useCreateActivity } from "../hooks/use-create-activity";
+import { ActivityFields, type ActivityFieldValues } from "./activity-fields";
 
 export const ActivityLogForm = ({ prospect }: { prospect: Prospect }) => {
-	const [channel, setChannel] = useState<ActivityInput["channel"]>(
-		prospect.channel ?? "EMAIL",
-	);
-	const [outcome, setOutcome] = useState<ActivityInput["outcome"]>("sent");
-	const [activityDate, setActivityDate] = useState(() =>
-		toLocalIsoDate(new Date()),
-	);
-	const [messageText, setMessageText] = useState("");
+	const [values, setValues] = useState<ActivityFieldValues>(() => ({
+		channel: prospect.channel ?? "EMAIL",
+		outcome: "sent",
+		activityDate: toLocalIsoDate(new Date()),
+		messageText: "",
+	}));
 	const createActivity = useCreateActivity(prospect.id);
 
 	function handleSubmit(event: React.SubmitEvent) {
@@ -36,15 +22,15 @@ export const ActivityLogForm = ({ prospect }: { prospect: Prospect }) => {
 
 		createActivity.mutate(
 			{
-				channel,
-				outcome,
-				activityDate,
-				messageText: messageText.trim() || undefined,
+				channel: values.channel,
+				outcome: values.outcome,
+				activityDate: values.activityDate,
+				messageText: values.messageText.trim() || undefined,
 			},
 			{
 				onSuccess: () => {
 					toast.success("Aktivitas dicatat");
-					setMessageText("");
+					setValues((current) => ({ ...current, messageText: "" }));
 				},
 				onError: (err) => toast.error(err.message),
 			},
@@ -63,74 +49,11 @@ export const ActivityLogForm = ({ prospect }: { prospect: Prospect }) => {
 			/>
 
 			<form onSubmit={handleSubmit} className="flex flex-col gap-3">
-				<div className="grid grid-cols-2 gap-2.5">
-					<div>
-						<label htmlFor="activity-channel" className={labelClassName}>
-							Channel
-						</label>
-						<select
-							id="activity-channel"
-							value={channel}
-							onChange={(event) =>
-								setChannel(event.target.value as ActivityInput["channel"])
-							}
-							className={inputClassName}
-						>
-							{channelOptions.map((option) => (
-								<option key={option} value={option}>
-									{channelLabel[option]}
-								</option>
-							))}
-						</select>
-					</div>
-					<div>
-						<label htmlFor="activity-outcome" className={labelClassName}>
-							Hasil
-						</label>
-						<select
-							id="activity-outcome"
-							value={outcome}
-							onChange={(event) =>
-								setOutcome(event.target.value as ActivityInput["outcome"])
-							}
-							className={inputClassName}
-						>
-							{outcomeOptions.map((option) => (
-								<option key={option} value={option}>
-									{outcomeLabel[option]}
-								</option>
-							))}
-						</select>
-					</div>
-				</div>
-
-				<div>
-					<label htmlFor="activity-date" className={labelClassName}>
-						Tanggal
-					</label>
-					<input
-						id="activity-date"
-						type="date"
-						value={activityDate}
-						onChange={(event) => setActivityDate(event.target.value)}
-						required
-						className={inputClassName}
-					/>
-				</div>
-
-				<div>
-					<label htmlFor="activity-message" className={labelClassName}>
-						Catatan pesan
-					</label>
-					<textarea
-						id="activity-message"
-						value={messageText}
-						onChange={(event) => setMessageText(event.target.value)}
-						rows={3}
-						placeholder="Ringkasan singkat pesan yang dikirim..."
-						className={`${inputClassName} resize-none`}
-					/>
-				</div>
+				<ActivityFields
+					idPrefix="activity-log"
+					values={values}
+					onChange={setValues}
+				/>
 
 				<button
 					type="submit"
