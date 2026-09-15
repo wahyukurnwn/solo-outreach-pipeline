@@ -112,7 +112,14 @@ const authRoute = new Hono<AppEnv>()
 		const user = await userRepository.findById(id);
 		if (!user) throw new UnauthorizedError();
 
-		return c.json({ id: user.id, email: user.email, role: user.role });
+		// Cuma boolean — hash password dan googleId sendiri tidak pernah dikirim.
+		return c.json({
+			id: user.id,
+			email: user.email,
+			role: user.role,
+			hasPassword: user.password !== null,
+			hasGoogle: user.googleId !== null,
+		});
 	})
 	.patch(
 		"/api/auth/password",

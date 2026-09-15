@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppAnalyticIndexRouteImport } from './routes/_app/analytic/index'
 import { Route as AppDashboardIndexRouteImport } from './routes/_app/dashboard/index'
 import { Route as AppProspectIndexRouteImport } from './routes/_app/prospect/index'
+import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
 import { Route as AuthForgotPasswordIndexRouteImport } from './routes/auth/forgot-password/index'
 import { Route as AuthResetPasswordIndexRouteImport } from './routes/auth/reset-password/index'
 import { Route as AuthSigninIndexRouteImport } from './routes/auth/signin/index'
@@ -43,6 +44,11 @@ const AppDashboardIndexRoute = AppDashboardIndexRouteImport.update({
 const AppProspectIndexRoute = AppProspectIndexRouteImport.update({
   id: '/prospect/',
   path: '/prospect/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
   getParentRoute: () => AppRoute,
 } as any)
 const AuthForgotPasswordIndexRoute = AuthForgotPasswordIndexRouteImport.update({
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/analytic/': typeof AppAnalyticIndexRoute
   '/dashboard/': typeof AppDashboardIndexRoute
   '/prospect/': typeof AppProspectIndexRoute
+  '/settings/': typeof AppSettingsIndexRoute
   '/auth/forgot-password/': typeof AuthForgotPasswordIndexRoute
   '/auth/reset-password/': typeof AuthResetPasswordIndexRoute
   '/auth/signin/': typeof AuthSigninIndexRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/analytic': typeof AppAnalyticIndexRoute
   '/dashboard': typeof AppDashboardIndexRoute
   '/prospect': typeof AppProspectIndexRoute
+  '/settings': typeof AppSettingsIndexRoute
   '/auth/forgot-password': typeof AuthForgotPasswordIndexRoute
   '/auth/reset-password': typeof AuthResetPasswordIndexRoute
   '/auth/signin': typeof AuthSigninIndexRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/_app/analytic/': typeof AppAnalyticIndexRoute
   '/_app/dashboard/': typeof AppDashboardIndexRoute
   '/_app/prospect/': typeof AppProspectIndexRoute
+  '/_app/settings/': typeof AppSettingsIndexRoute
   '/auth/forgot-password/': typeof AuthForgotPasswordIndexRoute
   '/auth/reset-password/': typeof AuthResetPasswordIndexRoute
   '/auth/signin/': typeof AuthSigninIndexRoute
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/analytic/'
     | '/dashboard/'
     | '/prospect/'
+    | '/settings/'
     | '/auth/forgot-password/'
     | '/auth/reset-password/'
     | '/auth/signin/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/analytic'
     | '/dashboard'
     | '/prospect'
+    | '/settings'
     | '/auth/forgot-password'
     | '/auth/reset-password'
     | '/auth/signin'
@@ -146,6 +157,7 @@ export interface FileRouteTypes {
     | '/_app/analytic/'
     | '/_app/dashboard/'
     | '/_app/prospect/'
+    | '/_app/settings/'
     | '/auth/forgot-password/'
     | '/auth/reset-password/'
     | '/auth/signin/'
@@ -201,6 +213,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProspectIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/settings/': {
+      id: '/_app/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AppSettingsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/auth/forgot-password/': {
       id: '/auth/forgot-password/'
       path: '/auth/forgot-password'
@@ -250,6 +269,7 @@ interface AppRouteChildren {
   AppAnalyticIndexRoute: typeof AppAnalyticIndexRoute
   AppDashboardIndexRoute: typeof AppDashboardIndexRoute
   AppProspectIndexRoute: typeof AppProspectIndexRoute
+  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
   AppProspectIdIndexRoute: typeof AppProspectIdIndexRoute
 }
 
@@ -257,6 +277,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAnalyticIndexRoute: AppAnalyticIndexRoute,
   AppDashboardIndexRoute: AppDashboardIndexRoute,
   AppProspectIndexRoute: AppProspectIndexRoute,
+  AppSettingsIndexRoute: AppSettingsIndexRoute,
   AppProspectIdIndexRoute: AppProspectIdIndexRoute,
 }
 

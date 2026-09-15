@@ -89,6 +89,24 @@ describe("auth", () => {
 		expect(json.email).toBe(email);
 	});
 
+	it("reports which login methods are connected on /me without exposing secrets", async () => {
+		const passwordUser = await createTestUser();
+		const googleUser = await createGoogleOnlyTestUser();
+		createdUserIds.push(passwordUser.id, googleUser.id);
+
+		const passwordMe = await (
+			await app.request("/api/auth/me", { headers: passwordUser.authHeaders })
+		).json();
+		const googleMe = await (
+			await app.request("/api/auth/me", { headers: googleUser.authHeaders })
+		).json();
+
+		expect(passwordMe).toMatchObject({ hasPassword: true, hasGoogle: false });
+		expect(googleMe).toMatchObject({ hasPassword: false, hasGoogle: true });
+		expect(passwordMe).not.toHaveProperty("password");
+		expect(googleMe).not.toHaveProperty("googleId");
+	});
+
 	it("rejects /me without a token", async () => {
 		const res = await app.request("/api/auth/me");
 

@@ -5,6 +5,7 @@ import {
 	LayoutDashboard,
 	LogOut,
 	Menu,
+	Settings,
 	Users,
 	X,
 } from "lucide-react";
@@ -26,6 +27,12 @@ const navItems = [
 const navRowClassName =
 	"flex items-center gap-2.5 rounded-xl px-2.5 py-[7px] text-sm transition-colors";
 
+const activeNavClassName =
+	"bg-white font-semibold text-ink shadow-[0_1px_2px_rgba(45,42,38,0.07)]";
+
+const inactiveNavClassName =
+	"font-medium text-muted hover:bg-white/60 hover:text-ink";
+
 // Kelas aktif & non-aktif dipisah lewat activeProps/inactiveProps (bukan
 // ditumpuk di className) supaya text-ink dan text-muted tidak pernah hadir
 // bersamaan — urutan utility Tailwind di CSS tidak mengikuti urutan di string.
@@ -38,14 +45,8 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 					to={to}
 					onClick={onNavigate}
 					className={navRowClassName}
-					activeProps={{
-						className:
-							"bg-white font-semibold text-ink shadow-[0_1px_2px_rgba(45,42,38,0.07)]",
-					}}
-					inactiveProps={{
-						className:
-							"font-medium text-muted hover:bg-white/60 hover:text-ink",
-					}}
+					activeProps={{ className: activeNavClassName }}
+					inactiveProps={{ className: inactiveNavClassName }}
 				>
 					<IconBox tone={tone} size="sm">
 						<Icon className="size-3.5" />
@@ -57,7 +58,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 	);
 }
 
-function AccountFooter() {
+function AccountFooter({ onNavigate }: { onNavigate?: () => void }) {
 	const { data: me } = useMe();
 	const signOut = useSignOut();
 
@@ -73,10 +74,22 @@ function AccountFooter() {
 					</span>
 				</div>
 			) : null}
+			<Link
+				to="/settings"
+				onClick={onNavigate}
+				className={navRowClassName}
+				activeProps={{ className: activeNavClassName }}
+				inactiveProps={{ className: inactiveNavClassName }}
+			>
+				<IconBox size="sm">
+					<Settings className="size-3.5" />
+				</IconBox>
+				Pengaturan
+			</Link>
 			<button
 				type="button"
 				onClick={signOut}
-				className={`${navRowClassName} font-medium text-muted hover:bg-white/60 hover:text-ink`}
+				className={`${navRowClassName} ${inactiveNavClassName}`}
 			>
 				<IconBox size="sm">
 					<LogOut className="size-3.5" />
@@ -89,6 +102,7 @@ function AccountFooter() {
 
 export const AppShell = ({ children }: { children: React.ReactNode }) => {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
+	const closeMenu = () => setIsMenuOpen(false);
 
 	return (
 		<div className="min-h-screen bg-paper md:flex">
@@ -123,8 +137,8 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
 				</div>
 				{isMenuOpen ? (
 					<div className="flex flex-col gap-3 px-3 pb-4">
-						<SidebarNav onNavigate={() => setIsMenuOpen(false)} />
-						<AccountFooter />
+						<SidebarNav onNavigate={closeMenu} />
+						<AccountFooter onNavigate={closeMenu} />
 					</div>
 				) : null}
 			</header>
