@@ -38,6 +38,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			},
 		],
 		links: [
+			// Favicon inline: tanpa ini browser selalu meminta /favicon.ico, yang
+			// tidak punya route dan memicu notFound di setiap page load.
+			{
+				rel: "icon",
+				type: "image/svg+xml",
+				href: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%232d2a26'/%3E%3Cpath d='M18 4 8 18h7l-2 10 11-15h-7z' fill='%23fff'/%3E%3C/svg%3E",
+			},
 			{
 				rel: "preconnect",
 				href: "https://fonts.googleapis.com",
