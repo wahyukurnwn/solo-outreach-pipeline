@@ -156,3 +156,10 @@ export class LastAuthMethodError extends AppError {
 		);
 	}
 }
+
+/** Belum ada user dengan is_demo=true — endpoint /api/demo/* belum bisa dipakai sampai satu akun ditandai sebagai demo. */
+export class DemoUnavailableError extends AppError {
+	constructor() {
+		super(503, "DEMO_UNAVAILABLE", "Data demo belum tersedia");
+	}
+}

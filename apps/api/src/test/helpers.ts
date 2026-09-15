@@ -53,6 +53,20 @@ export async function linkGoogleId(userId: string, googleId = randomUUID()) {
 	await prisma.user.update({ where: { id: userId }, data: { googleId } });
 }
 
+export async function markAsDemo(userId: string) {
+	await prisma.user.update({ where: { id: userId }, data: { isDemo: true } });
+}
+
+// Invariant is_demo (paling banyak satu row true) tidak dijaga oleh DB —
+// dipakai test /api/demo/* supaya findDemoUser() tidak kejegal user demo lain
+// yang kebetulan masih ada dari test/dev sebelumnya.
+export async function clearDemoUsers() {
+	await prisma.user.updateMany({
+		where: { isDemo: true },
+		data: { isDemo: false },
+	});
+}
+
 export async function createGoogleOnlyTestUser() {
 	const email = uniqueEmail();
 	const user = await prisma.user.create({

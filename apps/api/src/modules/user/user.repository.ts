@@ -22,6 +22,13 @@ export const userRepository = {
 			where: { googleId },
 		}),
 
+	// Invariant: paling banyak satu row is_demo=true (dijaga manual/ops, bukan
+	// lewat endpoint — lihat catatan ERD). findFirst cukup karena itu.
+	findDemoUser: () =>
+		prisma.user.findFirst({
+			where: { isDemo: true },
+		}),
+
 	create: (data: { email: string; password?: string; googleId?: string }) =>
 		prisma.user.create({
 			data,
