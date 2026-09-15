@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Zap } from "lucide-react";
 import { useState } from "react";
 import { AuthCard, AuthForm, type AuthMode } from "#/modules/auth";
 import { AuthTabs } from "#/modules/auth/components/auth-tabs";
@@ -19,7 +18,6 @@ function SignInPage() {
 
 	return (
 		<AuthCard
-			icon={<Zap className="size-6" />}
 			title={mode === "signup" ? "Buat Akun Baru" : "Selamat Datang Kembali"}
 			description={
 				mode === "signup"
@@ -30,7 +28,7 @@ function SignInPage() {
 			<div className="flex flex-col gap-5">
 				<GoogleSignInButton />
 
-				<div className="flex items-center gap-3 text-xs font-medium text-muted">
+				<div className="flex items-center gap-3 text-[11px] font-semibold tracking-[0.08em] text-faint">
 					<span className="h-px flex-1 bg-line" />
 					ATAU
 					<span className="h-px flex-1 bg-line" />

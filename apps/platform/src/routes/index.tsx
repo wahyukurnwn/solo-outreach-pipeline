@@ -1,16 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
+import {
+	CtaSection,
+	FeaturesSection,
+	GapSection,
+	HeroSection,
+	LandingFooter,
+	LandingNav,
+	LoopSection,
+	StackSection,
+} from "#/modules/landing";
 
-export const Route = createFileRoute("/")({ component: Home });
+export const Route = createFileRoute("/")({ component: LandingPage });
 
-console.log("Logging: -----", import.meta.env.VITE_TEST);
-
-function Home() {
+function LandingPage() {
 	return (
-		<div className="p-8">
-			<h1 className="text-4xl font-bold">Welcome to TanStack Start</h1>
-			<p className="mt-4 text-lg">
-				Edit <code>src/routes/index.tsx</code> to get started.
-			</p>
+		<div className="min-h-screen bg-paper">
+			<LandingNav />
+			<main>
+				<HeroSection />
+				<GapSection />
+				<FeaturesSection />
+				<LoopSection />
+				<StackSection />
+				<CtaSection />
+			</main>
+			<LandingFooter />
 		</div>
 	);
 }

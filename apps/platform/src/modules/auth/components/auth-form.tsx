@@ -80,7 +80,7 @@ export const AuthForm = ({ mode, onSignedUp }: AuthFormProps) => {
 					{mode === "signin" ? (
 						<Link
 							to="/auth/forgot-password"
-							className="text-[13px] font-medium text-lavender-700 no-underline hover:text-ink"
+							className="text-[13px] font-medium text-ink-soft no-underline transition-colors hover:text-lavender-700"
 						>
 							Lupa password?
 						</Link>
@@ -101,7 +101,7 @@ export const AuthForm = ({ mode, onSignedUp }: AuthFormProps) => {
 			<button
 				type="submit"
 				disabled={isPending}
-				className={primaryButtonClassName}
+				className={`${primaryButtonClassName} mt-1 h-11 bg-linear-to-b from-[#4a453f] to-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_10px_20px_-10px_rgba(45,42,38,0.65)] hover:brightness-110`}
 			>
 				{isPending ? <Loader /> : <Mail className="size-4" />}
 				{mode === "signup"

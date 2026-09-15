@@ -1,15 +1,46 @@
 @import "tailwindcss";
+@import "@mycustom/ui/theme.css";
 
-* {
-	box-sizing: border-box;
+/* Komponen packages/ui dipakai sebagai source .tsx, jadi kelasnya harus ikut dipindai di sini. */
+@source "../../../packages/ui/src";
+
+@layer base {
+	html {
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		html {
+			scroll-behavior: smooth;
+		}
+	}
+
+	body {
+		background-color: var(--color-paper);
+		color: var(--color-ink);
+	}
+
+	::selection {
+		background-color: var(--color-lavender-100);
+		color: var(--color-ink);
+	}
 }
 
-html,
-body,
-#app {
-	min-height: 100%;
+@utility glow-hero {
+	background-image:
+		radial-gradient(
+			55% 60% at 80% 0%,
+			color-mix(in oklab, var(--color-lavender-100) 75%, transparent),
+			transparent 70%
+		),
+		radial-gradient(40% 45% at 10% 15%, var(--color-peach-50), transparent 70%);
 }
 
-body {
-	margin: 0;
+@utility glow-cta {
+	background-image: radial-gradient(
+		60% 70% at 50% 0%,
+		var(--color-lavender-50),
+		transparent 75%
+	);
 }

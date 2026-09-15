@@ -1,7 +1,8 @@
-import { IconBox } from "@mycustom/ui";
+import { Link } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
+import { BrandMark } from "#/components/brand-mark";
 
 interface AuthCardProps {
-	icon: React.ReactNode;
 	title: string;
 	description: string;
 	children: React.ReactNode;
@@ -9,25 +10,41 @@ interface AuthCardProps {
 }
 
 export const AuthCard = ({
-	icon,
 	title,
 	description,
 	children,
 	footer,
 }: AuthCardProps) => (
-	<div className="flex min-h-screen items-center justify-center bg-paper p-4">
-		<div className="w-full max-w-sm rounded-3xl border border-line bg-white p-8 shadow-[0_1px_2px_rgba(45,42,38,0.05)]">
-			<div className="flex flex-col items-center text-center">
-				<IconBox tone="lavender" size="xl">
-					{icon}
-				</IconBox>
-				<h1 className="mt-4 text-xl font-bold text-ink">{title}</h1>
-				<p className="mt-1 text-sm text-muted">{description}</p>
+	<div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-paper px-4 py-12">
+		<div
+			aria-hidden="true"
+			className="glow-hero pointer-events-none absolute inset-0"
+		/>
+
+		<div className="relative w-full max-w-[400px]">
+			<div className="rounded-3xl border border-line bg-white p-7 shadow-[0_24px_60px_-32px_rgba(45,42,38,0.3),0_1px_2px_rgba(45,42,38,0.04)] sm:p-9">
+				<div className="flex flex-col items-center text-center">
+					<BrandMark size="lg" />
+					<h1 className="mt-5 text-2xl font-bold tracking-tight text-ink">
+						{title}
+					</h1>
+					<p className="mt-2 text-sm text-muted">{description}</p>
+				</div>
+
+				<div className="mt-7">{children}</div>
+
+				{footer ? (
+					<div className="mt-6 text-center text-sm">{footer}</div>
+				) : null}
 			</div>
 
-			<div className="mt-6">{children}</div>
-
-			{footer ? <div className="mt-5 text-center text-sm">{footer}</div> : null}
+			<Link
+				to="/"
+				className="mx-auto mt-6 flex w-fit items-center gap-1.5 text-[13px] font-medium text-muted transition-colors hover:text-ink"
+			>
+				<ArrowLeft className="size-3.5" />
+				Kembali ke beranda
+			</Link>
 		</div>
 	</div>
 );

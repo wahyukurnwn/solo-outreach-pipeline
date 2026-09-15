@@ -1,9 +1,17 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { AppShell } from "#/components/layout/app-shell";
+import { requireAuthenticated } from "#/modules/auth/guard";
 
 export const Route = createFileRoute("/_app")({
-	component: RouteComponent,
+	ssr: false,
+	beforeLoad: requireAuthenticated,
+	component: AppLayout,
 });
 
-function RouteComponent() {
-	return <div>Hello "/_app"!</div>;
+function AppLayout() {
+	return (
+		<AppShell>
+			<Outlet />
+		</AppShell>
+	);
 }

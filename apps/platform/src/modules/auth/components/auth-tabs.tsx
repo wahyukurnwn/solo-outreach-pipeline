@@ -17,10 +17,11 @@ export const AuthTabs = ({ mode, onChange }: AuthTabsProps) => {
 				<button
 					key={tab.mode}
 					type="button"
+					aria-pressed={mode === tab.mode}
 					onClick={() => onChange(tab.mode)}
-					className={`flex-1 rounded-lg py-2 text-sm font-semibold transition-colors ${
+					className={`h-9 flex-1 rounded-lg text-sm font-semibold transition-all ${
 						mode === tab.mode
-							? "bg-white text-ink shadow-[0_1px_2px_rgba(45,42,38,0.08)]"
+							? "bg-white text-ink shadow-[0_1px_2px_rgba(45,42,38,0.08),0_1px_1px_rgba(45,42,38,0.04)]"
 							: "text-muted hover:text-ink"
 					}`}
 				>
