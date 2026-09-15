@@ -116,3 +116,21 @@ export class InvalidExchangeCodeError extends AppError {
 		);
 	}
 }
+
+/** Password saat ini yang dikirim ke endpoint ganti password tidak cocok. */
+export class InvalidCurrentPasswordError extends AppError {
+	constructor() {
+		super(401, "INVALID_CURRENT_PASSWORD", "Password saat ini salah");
+	}
+}
+
+/** Akun belum pernah punya password (mis. cuma pernah signup/login lewat Google) — arahkan ke alur forgot-password buat membuat password pertama kali. */
+export class PasswordNotSetError extends AppError {
+	constructor() {
+		super(
+			409,
+			"PASSWORD_NOT_SET",
+			"Akun ini belum punya password. Gunakan fitur lupa password untuk membuat password baru.",
+		);
+	}
+}

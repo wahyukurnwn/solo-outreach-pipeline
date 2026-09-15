@@ -22,3 +22,8 @@ export const resetPasswordSchema = z.object({
 export const googleExchangeSchema = z.object({
 	code: z.string(),
 });
+
+export const changePasswordSchema = z.object({
+	currentPassword: z.string(),
+	newPassword: z.string().min(8, "Password must be at least 8 characters long"),
+});

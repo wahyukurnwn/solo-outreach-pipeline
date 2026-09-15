@@ -13,6 +13,7 @@ import type { AppEnv } from "../../types";
 import { createdAccountResponse, messageResponse } from "../../utils/response";
 import { userRepository } from "../user/user.repository";
 import {
+	changePasswordSchema,
 	forgotPasswordSchema,
 	googleExchangeSchema,
 	loginSchema,
@@ -111,6 +112,19 @@ const authRoute = new Hono<AppEnv>()
 		if (!user) throw new UnauthorizedError();
 
 		return c.json({ id: user.id, email: user.email, role: user.role });
-	});
+	})
+	.patch(
+		"/api/auth/password",
+		requireAuth,
+		validate("json", changePasswordSchema),
+		async (c) => {
+			const { id } = c.get("user");
+			const body = c.req.valid("json");
+
+			await credentialService.changePassword(id, body);
+
+			return c.json(messageResponse("Password berhasil diubah."));
+		},
+	);
 
 export default authRoute;

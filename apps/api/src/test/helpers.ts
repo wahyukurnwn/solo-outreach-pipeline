@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { app } from "../app";
+import { signToken } from "../libs/jwt";
 import { prisma } from "../libs/prisma";
 
 export const TEST_PASSWORD = "password123";
@@ -46,6 +47,25 @@ export async function createTestUser(password = TEST_PASSWORD) {
 
 export async function promoteToAdmin(userId: string) {
 	await prisma.user.update({ where: { id: userId }, data: { role: "ADMIN" } });
+}
+
+export async function createGoogleOnlyTestUser() {
+	const email = uniqueEmail();
+	const user = await prisma.user.create({
+		data: { email, googleId: randomUUID() },
+	});
+	const accessToken = signToken({
+		id: user.id,
+		email: user.email,
+		role: user.role,
+	});
+
+	return {
+		id: user.id,
+		email: user.email,
+		accessToken,
+		authHeaders: { Authorization: `Bearer ${accessToken}` },
+	};
 }
 
 export async function createTestAdmin(password = TEST_PASSWORD) {

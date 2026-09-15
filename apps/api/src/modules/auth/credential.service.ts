@@ -4,14 +4,18 @@ import { env } from "../../config/env";
 import {
 	AlreadyExistsError,
 	InvalidCredentialsError,
+	InvalidCurrentPasswordError,
 	InvalidMinimumLengthPassword,
 	InvalidResetTokenError,
+	PasswordNotSetError,
+	UnauthorizedError,
 } from "../../exceptions";
 import { mailer } from "../../libs/mailer";
 import { comparePassword, hashPassword } from "../../libs/password";
 import { generateResetToken, hashResetToken } from "../../libs/reset-token";
 import { userRepository } from "../user/user.repository";
 import type {
+	changePasswordSchema,
 	forgotPasswordSchema,
 	loginSchema,
 	registerSchema,
@@ -81,7 +85,7 @@ export const credentialService = {
 			expiresAt,
 		});
 
-		const resetUrl = `${env.corsOrigins[0]}/reset-password?token=${rawToken}`;
+		const resetUrl = `${env.corsOrigins[0]}/auth/reset-password?token=${rawToken}`;
 
 		await mailer.sendPasswordResetEmail(existingUser.email, resetUrl);
 	},
@@ -100,5 +104,24 @@ export const credentialService = {
 
 		await userRepository.updatePassword(resetToken.userId, passwordHash);
 		await passwordResetTokenRepository.markUsed(resetToken.id);
+	},
+	async changePassword(
+		userId: string,
+		{ currentPassword, newPassword }: z.infer<typeof changePasswordSchema>,
+	) {
+		const existingUser = await userRepository.findById(userId);
+		if (!existingUser) throw new UnauthorizedError();
+
+		if (!existingUser.password) throw new PasswordNotSetError();
+
+		const isCurrentPasswordValid = await comparePassword(
+			currentPassword,
+			existingUser.password,
+		);
+		if (!isCurrentPasswordValid) throw new InvalidCurrentPasswordError();
+
+		const passwordHash = await hashPassword(newPassword);
+
+		await userRepository.updatePassword(userId, passwordHash);
 	},
 };
