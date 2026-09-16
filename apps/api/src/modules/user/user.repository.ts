@@ -64,6 +64,29 @@ export const userRepository = {
 			data: { role },
 		}),
 
+	// Update role + catat siapa (actorId) mengubah role siapa dalam satu
+	// transaksi, supaya audit trail tidak pernah kehilangan entry kalau salah
+	// satu langkah gagal. Dipanggil hanya saat role benar-benar berubah — lihat
+	// admin.service.ts (no-op set ke role yang sama tidak menghasilkan log).
+	updateRoleWithLog: (
+		id: string,
+		fromRole: UserRole,
+		toRole: UserRole,
+		actorId: string,
+	) =>
+		prisma.$transaction(async (tx) => {
+			const updated = await tx.user.update({
+				where: { id },
+				data: { role: toRole },
+			});
+
+			await tx.roleChangeLog.create({
+				data: { actorId, targetId: id, fromRole, toRole },
+			});
+
+			return updated;
+		}),
+
 	// Invariant "paling banyak satu is_demo=true" ditegakkan di sini (bukan di
 	// service) lewat transaksi: mematikan demo user lama dulu sebelum
 	// menyalakan yang baru, supaya findDemoUser() tidak pernah ambigu.

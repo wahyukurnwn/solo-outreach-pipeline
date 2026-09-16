@@ -52,12 +52,32 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @map("updated_at")
 
-  passwordResetTokens PasswordResetToken[]
-  prospects           Prospect[]
-  activities          Activity[]
-  tags                Tag[]
+  passwordResetTokens  PasswordResetToken[]
+  prospects            Prospect[]
+  activities           Activity[]
+  tags                 Tag[]
+  roleChangesPerformed RoleChangeLog[]      @relation("RoleChangeActor")
+  roleChangesReceived  RoleChangeLog[]      @relation("RoleChangeTarget")
 
   @@map("users")
+}
+
+// Audit trail untuk "siapa mengubah role siapa" — dicatat setiap kali
+// PATCH /api/admin/users/:id/role benar-benar mengubah nilai role (bukan
+// no-op set ke role yang sama), lihat admin.service.ts.
+model RoleChangeLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String   @map("actor_id") @db.Uuid
+  targetId  String   @map("target_id") @db.Uuid
+  fromRole  UserRole @map("from_role")
+  toRole    UserRole @map("to_role")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  actor  User @relation("RoleChangeActor", fields: [actorId], references: [id])
+  target User @relation("RoleChangeTarget", fields: [targetId], references: [id])
+
+  @@index([targetId])
+  @@map("role_change_logs")
 }
 
 model PasswordResetToken {

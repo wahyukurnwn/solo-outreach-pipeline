@@ -60,6 +60,61 @@ describe("admin routes", () => {
 		expect(json.role).toBe("ADMIN");
 	});
 
+	it("logs who changed a user's role and to what", async () => {
+		const admin = await createTestAdmin();
+		const target = await createTestUser();
+		createdUserIds.push(admin.id, target.id);
+
+		await app.request(`/api/admin/users/${target.id}/role`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...admin.authHeaders },
+			body: JSON.stringify({ role: "ADMIN" }),
+		});
+
+		const res = await app.request(`/api/admin/users/${target.id}/role-logs`, {
+			headers: admin.authHeaders,
+		});
+		const { data } = await res.json();
+
+		expect(res.status).toBe(200);
+		expect(data).toHaveLength(1);
+		expect(data[0]).toMatchObject({
+			fromRole: "USER",
+			toRole: "ADMIN",
+			actor: { id: admin.id, email: admin.email },
+		});
+	});
+
+	it("does not log a no-op role update (setting the same role)", async () => {
+		const admin = await createTestAdmin();
+		const target = await createTestUser();
+		createdUserIds.push(admin.id, target.id);
+
+		await app.request(`/api/admin/users/${target.id}/role`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...admin.authHeaders },
+			body: JSON.stringify({ role: "USER" }),
+		});
+
+		const res = await app.request(`/api/admin/users/${target.id}/role-logs`, {
+			headers: admin.authHeaders,
+		});
+		const { data } = await res.json();
+
+		expect(data).toHaveLength(0);
+	});
+
+	it("rejects a regular user from reading role logs with 403", async () => {
+		const { id, authHeaders } = await createTestUser();
+		createdUserIds.push(id);
+
+		const res = await app.request(`/api/admin/users/${id}/role-logs`, {
+			headers: authHeaders,
+		});
+
+		expect(res.status).toBe(403);
+	});
+
 	it("returns 404 for a user id that doesn't exist", async () => {
 		const admin = await createTestAdmin();
 		createdUserIds.push(admin.id);

@@ -6,3 +6,9 @@ import type { apiClient } from "#/libs/api-client";
 type UsersResponse = InferResponseType<typeof apiClient.api.admin.users.$get>;
 
 export type UserSummary = UsersResponse["data"][number];
+
+type RoleLogsResponse = InferResponseType<
+	(typeof apiClient.api.admin.users)[":id"]["role-logs"]["$get"]
+>;
+
+export type RoleChangeLog = RoleLogsResponse["data"][number];

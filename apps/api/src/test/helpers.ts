@@ -118,5 +118,8 @@ export async function cleanupUser(userId: string) {
 	await prisma.activity.deleteMany({ where: { userId } });
 	await prisma.prospect.deleteMany({ where: { userId } });
 	await prisma.passwordResetToken.deleteMany({ where: { userId } });
+	await prisma.roleChangeLog.deleteMany({
+		where: { OR: [{ actorId: userId }, { targetId: userId }] },
+	});
 	await prisma.user.delete({ where: { id: userId } }).catch(() => {});
 }

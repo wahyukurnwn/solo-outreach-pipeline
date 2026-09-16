@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { QueryError } from "#/components/query-error";
-import { UserDetailCard, useUser } from "#/modules/user";
+import { RoleLogTimeline, UserDetailCard, useUser } from "#/modules/user";
 
 export const Route = createFileRoute("/_app/users/$id/")({
 	component: UserDetailPage,
@@ -28,7 +28,10 @@ function UserDetailPage() {
 					onRetry={() => userQuery.refetch()}
 				/>
 			) : userQuery.data ? (
-				<UserDetailCard user={userQuery.data} />
+				<>
+					<UserDetailCard user={userQuery.data} />
+					<RoleLogTimeline userId={userQuery.data.id} />
+				</>
 			) : (
 				<div
 					aria-busy="true"

@@ -5,6 +5,7 @@ import type {
 	updateUserDemoSchema,
 	updateUserRoleSchema,
 } from "./admin.schema";
+import { roleChangeLogRepository } from "./role-change-log.repository";
 
 // Jangan pernah kembalikan field password ke response admin.
 function toUserSummary(user: {
@@ -41,14 +42,40 @@ export const adminService = {
 	async updateUserRole(
 		id: string,
 		{ role }: z.infer<typeof updateUserRoleSchema>,
+		actorId: string,
 	) {
 		const existingUser = await userRepository.findById(id);
 
 		if (!existingUser) throw new NotFoundError("User tidak ditemukan");
 
-		const updatedUser = await userRepository.updateRole(id, role);
+		// Set ke role yang sama bukan perubahan sungguhan — tidak perlu bikin
+		// entry log baru untuk no-op.
+		if (existingUser.role === role) return toUserSummary(existingUser);
+
+		const updatedUser = await userRepository.updateRoleWithLog(
+			id,
+			existingUser.role,
+			role,
+			actorId,
+		);
 
 		return toUserSummary(updatedUser);
+	},
+
+	async getRoleLogs(id: string) {
+		const existingUser = await userRepository.findById(id);
+
+		if (!existingUser) throw new NotFoundError("User tidak ditemukan");
+
+		const logs = await roleChangeLogRepository.findByTargetId(id);
+
+		return logs.map((log) => ({
+			id: log.id,
+			fromRole: log.fromRole,
+			toRole: log.toRole,
+			createdAt: log.createdAt,
+			actor: log.actor,
+		}));
 	},
 
 	async updateUserDemo(

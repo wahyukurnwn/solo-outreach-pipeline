@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { InferRequestType } from "hono/client";
 import { apiClient } from "#/libs/api-client";
 import { extractErrorMessage } from "#/libs/api-error";
+import { roleLogsQueryKey } from "./use-role-logs";
 import { userQueryKey } from "./use-user";
 import { usersQueryKey } from "./use-users";
 
@@ -27,6 +28,7 @@ export const useUpdateUserRole = (id: string) => {
 		onSuccess: (updatedUser) => {
 			queryClient.setQueryData(userQueryKey(id), updatedUser);
 			queryClient.invalidateQueries({ queryKey: usersQueryKey });
+			queryClient.invalidateQueries({ queryKey: roleLogsQueryKey(id) });
 		},
 	});
 };
