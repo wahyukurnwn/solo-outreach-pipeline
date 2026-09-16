@@ -13,6 +13,7 @@
 		"with-env": "dotenv -e ../../.env"
 	},
 	"dependencies": {
+		"@mycustom/ui": "workspace:*",
 		"@tailwindcss/vite": "^4.1.18",
 		"@tanstack/react-devtools": "latest",
 		"@tanstack/react-query": "latest",
@@ -23,8 +24,10 @@
 		"@tanstack/react-start": "latest",
 		"dotenv": "^17.4.2",
 		"hono": "^4.13.7",
+		"lucide-react": "^1.46.0",
 		"react": "^19.2.0",
 		"react-dom": "^19.2.0",
+		"react-hot-toast": "^2.6.0",
 		"tailwindcss": "^4.1.18"
 	},
 	"devDependencies": {

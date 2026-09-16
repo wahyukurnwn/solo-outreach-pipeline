@@ -21,6 +21,9 @@ importers:
 
   apps/admin:
     dependencies:
+      '@mycustom/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@tailwindcss/vite':
         specifier: ^4.1.18
         version: 4.3.3(vite@8.3.0(@types/node@22.20.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13))
@@ -51,12 +54,18 @@ importers:
       hono:
         specifier: ^4.13.7
         version: 4.13.7
+      lucide-react:
+        specifier: ^1.46.0
+        version: 1.46.0(react@19.3.0)
       react:
         specifier: ^19.2.0
         version: 19.3.0
       react-dom:
         specifier: ^19.2.0
         version: 19.3.0(react@19.3.0)
+      react-hot-toast:
+        specifier: ^2.6.0
+        version: 2.6.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       tailwindcss:
         specifier: ^4.1.18
         version: 4.3.3

@@ -6,6 +6,7 @@ import {
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { Toaster } from "react-hot-toast";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import appCss from "../styles.css?url";
 
@@ -24,10 +25,36 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				content: "width=device-width, initial-scale=1",
 			},
 			{
-				title: "TanStack Start Starter",
+				title: "Pipeline Admin",
+			},
+			{
+				name: "description",
+				content: "Konsol admin untuk mengelola user dan role akses.",
+			},
+			{
+				name: "theme-color",
+				content: "#fbfaf7",
 			},
 		],
 		links: [
+			{
+				rel: "icon",
+				type: "image/svg+xml",
+				href: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%232d2a26'/%3E%3Cpath d='M18 4 8 18h7l-2 10 11-15h-7z' fill='%23fff'/%3E%3C/svg%3E",
+			},
+			{
+				rel: "preconnect",
+				href: "https://fonts.googleapis.com",
+			},
+			{
+				rel: "preconnect",
+				href: "https://fonts.gstatic.com",
+				crossOrigin: "anonymous",
+			},
+			{
+				rel: "stylesheet",
+				href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+			},
 			{
 				rel: "stylesheet",
 				href: appCss,
@@ -45,6 +72,18 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			</head>
 			<body>
 				{children}
+				<Toaster
+					position="top-center"
+					toastOptions={{
+						style: {
+							borderRadius: "12px",
+							background: "var(--color-ink)",
+							color: "#ffffff",
+							fontSize: "14px",
+							padding: "10px 14px",
+						},
+					}}
+				/>
 				<TanStackDevtools
 					config={{
 						position: "bottom-right",

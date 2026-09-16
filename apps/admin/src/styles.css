@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "@mycustom/ui/theme.css";
+
+/* Komponen packages/ui dipakai sebagai source .tsx, jadi kelasnya harus ikut dipindai di sini. */
+@source "../../../packages/ui/src";
 
 * {
 	box-sizing: border-box;
@@ -12,4 +16,8 @@ body,
 
 body {
 	margin: 0;
+	background-color: var(--color-paper);
+	color: var(--color-ink);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }

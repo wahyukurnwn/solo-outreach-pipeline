@@ -10,33 +10,74 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as SigninIndexRouteImport } from './routes/signin/index'
+import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
+import { Route as AppUsersIdIndexRouteImport } from './routes/_app/users/$id/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SigninIndexRoute = SigninIndexRouteImport.update({
+  id: '/signin/',
+  path: '/signin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppUsersIndexRoute = AppUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersIdIndexRoute = AppUsersIdIndexRouteImport.update({
+  id: '/users/$id/',
+  path: '/users/$id/',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/signin/': typeof SigninIndexRoute
+  '/users/': typeof AppUsersIndexRoute
+  '/users/$id/': typeof AppUsersIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/signin': typeof SigninIndexRoute
+  '/users': typeof AppUsersIndexRoute
+  '/users/$id': typeof AppUsersIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/signin/': typeof SigninIndexRoute
+  '/_app/users/': typeof AppUsersIndexRoute
+  '/_app/users/$id/': typeof AppUsersIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/signin/' | '/users/' | '/users/$id/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/signin' | '/users' | '/users/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/signin/'
+    | '/_app/users/'
+    | '/_app/users/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  SigninIndexRoute: typeof SigninIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +89,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signin/': {
+      id: '/signin/'
+      path: '/signin'
+      fullPath: '/signin/'
+      preLoaderRoute: typeof SigninIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/users/': {
+      id: '/_app/users/'
+      path: '/users'
+      fullPath: '/users/'
+      preLoaderRoute: typeof AppUsersIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/$id/': {
+      id: '/_app/users/$id/'
+      path: '/users/$id'
+      fullPath: '/users/$id/'
+      preLoaderRoute: typeof AppUsersIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppUsersIndexRoute: typeof AppUsersIndexRoute
+  AppUsersIdIndexRoute: typeof AppUsersIdIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppUsersIndexRoute: AppUsersIndexRoute,
+  AppUsersIdIndexRoute: AppUsersIdIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  SigninIndexRoute: SigninIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
