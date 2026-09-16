@@ -1,4 +1,5 @@
 import { Badge, Card } from "@mycustom/ui";
+import { maskEmail } from "#/libs/email-format";
 import type { Me } from "../types";
 
 export const ProfileCard = ({ me }: { me: Me }) => (
@@ -7,7 +8,9 @@ export const ProfileCard = ({ me }: { me: Me }) => (
 			{me.email.charAt(0)}
 		</span>
 		<div className="min-w-0 flex-1">
-			<p className="truncate text-base font-semibold text-ink">{me.email}</p>
+			<p className="truncate text-base font-semibold text-ink">
+				{maskEmail(me.email)}
+			</p>
 			<p className="text-[13px] text-muted">
 				Dipakai untuk masuk dan menerima link reset password.
 			</p>

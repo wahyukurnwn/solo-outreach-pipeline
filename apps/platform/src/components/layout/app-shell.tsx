@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { BrandMark } from "#/components/brand-mark";
+import { getEmailUsername } from "#/libs/email-format";
 import { useMe, useSignOut } from "#/modules/auth";
 
 const navItems = [
@@ -67,10 +68,10 @@ function AccountFooter({ onNavigate }: { onNavigate?: () => void }) {
 			{me ? (
 				<div className="flex items-center gap-2.5 px-2.5 py-1.5">
 					<span className="flex size-[26px] shrink-0 items-center justify-center rounded-lg bg-lavender-100 text-xs font-bold text-lavender-700 uppercase">
-						{me.email.charAt(0)}
+						{getEmailUsername(me.email).charAt(0)}
 					</span>
 					<span className="min-w-0 truncate text-[13px] text-ink-soft">
-						{me.email}
+						{getEmailUsername(me.email)}
 					</span>
 				</div>
 			) : null}
