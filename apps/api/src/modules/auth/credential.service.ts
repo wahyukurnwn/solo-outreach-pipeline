@@ -1,6 +1,6 @@
 import type { GoogleUser } from "@hono/oauth-providers/google";
 import type z from "zod";
-import { env } from "../../config/env";
+import { env, resetPasswordUrlByApp } from "../../config/env";
 import {
 	AlreadyExistsError,
 	GoogleNotLinkedError,
@@ -69,7 +69,7 @@ export const credentialService = {
 
 		return { user: await userRepository.create({ email, googleId }) };
 	},
-	async forgotPassword({ email }: z.infer<typeof forgotPasswordSchema>) {
+	async forgotPassword({ email, app }: z.infer<typeof forgotPasswordSchema>) {
 		const existingUser = await userRepository.findByEmail(email);
 
 		// Tidak melempar error kalau email tidak ditemukan — sama seperti InvalidCredentialsError,
@@ -88,7 +88,7 @@ export const credentialService = {
 			expiresAt,
 		});
 
-		const resetUrl = `${env.corsOrigins[0]}/auth/reset-password?token=${rawToken}`;
+		const resetUrl = `${resetPasswordUrlByApp[app]}?token=${rawToken}`;
 
 		await mailer.sendPasswordResetEmail(existingUser.email, resetUrl);
 	},

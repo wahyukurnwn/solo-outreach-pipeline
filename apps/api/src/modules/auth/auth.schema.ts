@@ -12,6 +12,10 @@ export const loginSchema = z.object({
 
 export const forgotPasswordSchema = z.object({
 	email: z.email(),
+	// Menentukan link reset password mengarah ke app mana (lihat
+	// config/env.ts:resetPasswordUrlByApp) — bukan dari Origin header, supaya
+	// tidak bisa dipakai untuk menyuntik URL sembarangan ke email reset.
+	app: z.enum(["platform", "admin"]).default("platform"),
 });
 
 export const resetPasswordSchema = z.object({

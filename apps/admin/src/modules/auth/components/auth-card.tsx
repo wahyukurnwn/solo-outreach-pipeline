@@ -4,9 +4,15 @@ interface AuthCardProps {
 	title: string;
 	description: string;
 	children: React.ReactNode;
+	footer?: React.ReactNode;
 }
 
-export const AuthCard = ({ title, description, children }: AuthCardProps) => (
+export const AuthCard = ({
+	title,
+	description,
+	children,
+	footer,
+}: AuthCardProps) => (
 	<div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-paper px-4 py-12">
 		<div
 			aria-hidden="true"
@@ -24,6 +30,10 @@ export const AuthCard = ({ title, description, children }: AuthCardProps) => (
 				</div>
 
 				<div className="mt-7">{children}</div>
+
+				{footer ? (
+					<div className="mt-6 text-center text-sm">{footer}</div>
+				) : null}
 			</div>
 		</div>
 	</div>

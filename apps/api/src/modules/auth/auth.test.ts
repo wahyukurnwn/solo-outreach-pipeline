@@ -184,6 +184,28 @@ describe("auth", () => {
 		sendSpy.mockRestore();
 	});
 
+	it("sends a reset link pointing to the admin /reset-password route when app is admin", async () => {
+		const { id, email } = await createTestUser();
+		createdUserIds.push(id);
+
+		const sendSpy = vi
+			.spyOn(mailer, "sendPasswordResetEmail")
+			.mockResolvedValue(undefined);
+
+		const res = await app.request("/api/auth/forgot-password", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ email, app: "admin" }),
+		});
+
+		expect(res.status).toBe(200);
+		const [, resetUrl] = sendSpy.mock.calls[0];
+		expect(resetUrl).toContain("/reset-password?token=");
+		expect(resetUrl).not.toContain("/auth/reset-password");
+
+		sendSpy.mockRestore();
+	});
+
 	it("does not send an email or leak whether an email is registered on forgot-password", async () => {
 		const sendSpy = vi
 			.spyOn(mailer, "sendPasswordResetEmail")

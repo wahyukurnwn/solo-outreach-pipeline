@@ -16,3 +16,12 @@ export const env = {
 	googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
 	passwordResetTtlMinutes: Number(process.env.PASSWORD_RESET_TTL_MINUTES ?? 15),
 } as const;
+
+// Base URL + path reset-password per app — dipetakan di server (bukan dari
+// Origin/Referer request) supaya email reset tidak bisa dipakai untuk
+// menyuntik link ke domain sembarangan. corsOrigins[1] (admin) fallback ke
+// corsOrigins[0] kalau cuma satu origin yang di-set (mis. di test).
+export const resetPasswordUrlByApp = {
+	platform: `${env.corsOrigins[0]}/auth/reset-password`,
+	admin: `${env.corsOrigins[1] ?? env.corsOrigins[0]}/reset-password`,
+} as const;

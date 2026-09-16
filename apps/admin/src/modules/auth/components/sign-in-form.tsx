@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Mail } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -47,9 +47,20 @@ export const SignInForm = () => {
 			</section>
 
 			<section>
-				<label htmlFor="password" className={labelClassName}>
-					Password
-				</label>
+				<div className="mb-1.5 flex items-center justify-between">
+					<label
+						htmlFor="password"
+						className="text-[13px] font-semibold text-ink-soft"
+					>
+						Password
+					</label>
+					<Link
+						to="/forgot-password"
+						className="text-[13px] font-medium text-ink-soft no-underline transition-colors hover:text-lavender-700"
+					>
+						Lupa password?
+					</Link>
+				</div>
 				<input
 					id="password"
 					type="password"

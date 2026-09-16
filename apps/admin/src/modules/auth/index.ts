@@ -1,6 +1,10 @@
 export { AuthCard } from "./components/auth-card";
+export { ForgotPasswordForm } from "./components/forgot-password-form";
+export { ResetPasswordForm } from "./components/reset-password-form";
 export { SignInForm } from "./components/sign-in-form";
 export { requireAuthenticated } from "./guard";
+export { useForgotPassword } from "./hooks/use-forgot-password";
 export { meQueryKey, useMe } from "./hooks/use-me";
+export { useResetPassword } from "./hooks/use-reset-password";
 export { type SignInInput, useSignIn } from "./hooks/use-sign-in";
 export { useSignOut } from "./hooks/use-sign-out";

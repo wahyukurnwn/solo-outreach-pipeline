@@ -6,6 +6,8 @@ export const inputClassName =
 export const labelClassName =
 	"mb-1.5 block text-[13px] font-semibold text-ink-soft";
 
+export const helperClassName = "mt-1.5 text-xs text-muted";
+
 export const primaryButtonClassName =
 	"inline-flex items-center justify-center gap-2 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink/90 disabled:opacity-50";
 
