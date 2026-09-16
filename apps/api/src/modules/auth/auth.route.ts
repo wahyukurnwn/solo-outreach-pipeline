@@ -7,6 +7,7 @@ import {
 	consumeExchangeCode,
 	createExchangeCode,
 } from "../../libs/oauth-exchange";
+import { authRateLimit } from "../../libs/rate-limit";
 import { validate } from "../../libs/validate";
 import { requireAuth } from "../../middleware/auth";
 import type { AppEnv } from "../../types";
@@ -23,32 +24,61 @@ import {
 } from "./auth.schema";
 import { credentialService } from "./credential.service";
 
+// Batas percobaan per IP — proteksi brute-force/spam. signin lebih longgar
+// dari signup/forgot-password karena typo password wajar terjadi berkali-kali
+// dalam sesi login yang sama, sementara bikin akun/kirim email berulang tidak.
+const SIGNUP_RATE_LIMIT = {
+	windowMs: 60 * 60 * 1000,
+	max: 5,
+	keyPrefix: "signup",
+};
+const SIGNIN_RATE_LIMIT = {
+	windowMs: 15 * 60 * 1000,
+	max: 10,
+	keyPrefix: "signin",
+};
+const FORGOT_PASSWORD_RATE_LIMIT = {
+	windowMs: 60 * 60 * 1000,
+	max: 5,
+	keyPrefix: "forgot-password",
+};
+
 const authRoute = new Hono<AppEnv>()
-	.post("/api/auth/signup", validate("json", registerSchema), async (c) => {
-		const body = c.req.valid("json");
+	.post(
+		"/api/auth/signup",
+		authRateLimit(SIGNUP_RATE_LIMIT),
+		validate("json", registerSchema),
+		async (c) => {
+			const body = c.req.valid("json");
 
-		await credentialService.register(body);
+			await credentialService.register(body);
 
-		return c.json(
-			createdAccountResponse(
-				"Register berhasil. Silahkan ke halaman login page!",
-			),
-			201,
-		);
-	})
-	.post("/api/auth/signin", validate("json", loginSchema), async (c) => {
-		const body = c.req.valid("json");
+			return c.json(
+				createdAccountResponse(
+					"Register berhasil. Silahkan ke halaman login page!",
+				),
+				201,
+			);
+		},
+	)
+	.post(
+		"/api/auth/signin",
+		authRateLimit(SIGNIN_RATE_LIMIT),
+		validate("json", loginSchema),
+		async (c) => {
+			const body = c.req.valid("json");
 
-		const { user } = await credentialService.login(body);
+			const { user } = await credentialService.login(body);
 
-		const accessToken = signToken({
-			id: user.id,
-			email: user.email,
-			role: user.role,
-		});
+			const accessToken = signToken({
+				id: user.id,
+				email: user.email,
+				role: user.role,
+			});
 
-		return c.json({ id: user.id, email: user.email, accessToken });
-	})
+			return c.json({ id: user.id, email: user.email, accessToken });
+		},
+	)
 	.get("/api/auth/callback/google", googleAuthMiddleware, async (c) => {
 		const googleUser = c.get("user-google");
 
@@ -80,6 +110,7 @@ const authRoute = new Hono<AppEnv>()
 	)
 	.post(
 		"/api/auth/forgot-password",
+		authRateLimit(FORGOT_PASSWORD_RATE_LIMIT),
 		validate("json", forgotPasswordSchema),
 		async (c) => {
 			const body = c.req.valid("json");

@@ -163,3 +163,17 @@ export class DemoUnavailableError extends AppError {
 		super(503, "DEMO_UNAVAILABLE", "Data demo belum tersedia");
 	}
 }
+
+/** Terlalu banyak percobaan dari IP yang sama dalam satu window waktu — proteksi brute-force di endpoint auth sensitif (signin/signup/forgot-password). */
+export class TooManyRequestsError extends AppError {
+	constructor(retryAfterSeconds: number) {
+		super(
+			429,
+			"TOO_MANY_REQUESTS",
+			"Terlalu banyak percobaan. Coba lagi nanti.",
+			{
+				retryAfterSeconds,
+			},
+		);
+	}
+}
