@@ -11,9 +11,11 @@ function getSecret() {
 }
 
 export function signToken(payload: AuthUser) {
-	const { jwtExpiresInDays } = env;
+	const { accessTokenExpiresInMinutes } = env;
 
-	return jwt.sign(payload, getSecret(), { expiresIn: `${jwtExpiresInDays}d` });
+	return jwt.sign(payload, getSecret(), {
+		expiresIn: `${accessTokenExpiresInMinutes}m`,
+	});
 }
 
 export function verifyToken(token: string) {

@@ -9,6 +9,15 @@ export function uniqueEmail() {
 	return `test-${randomUUID()}@example.com`;
 }
 
+// Parse nilai satu cookie dari header Set-Cookie mentah — dipakai test yang
+// perlu mengirim ulang refresh_token secara manual (fetch/app.request tidak
+// punya cookie jar otomatis seperti browser).
+export function extractCookieValue(res: Response, name: string) {
+	const raw = res.headers.get("set-cookie");
+	const match = raw?.match(new RegExp(`${name}=([^;]+)`));
+	return match?.[1];
+}
+
 export function signup(email: string, password = TEST_PASSWORD) {
 	return app.request("/api/auth/signup", {
 		method: "POST",
@@ -121,5 +130,6 @@ export async function cleanupUser(userId: string) {
 	await prisma.roleChangeLog.deleteMany({
 		where: { OR: [{ actorId: userId }, { targetId: userId }] },
 	});
+	await prisma.refreshToken.deleteMany({ where: { userId } });
 	await prisma.user.delete({ where: { id: userId } }).catch(() => {});
 }

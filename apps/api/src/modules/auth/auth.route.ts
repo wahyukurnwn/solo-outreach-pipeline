@@ -1,6 +1,12 @@
+import type { Context } from "hono";
 import { Hono } from "hono";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { env } from "../../config/env";
-import { InvalidExchangeCodeError, UnauthorizedError } from "../../exceptions";
+import {
+	InvalidExchangeCodeError,
+	InvalidRefreshTokenError,
+	UnauthorizedError,
+} from "../../exceptions";
 import { googleAuthMiddleware } from "../../libs/auth.";
 import { signToken } from "../../libs/jwt";
 import {
@@ -43,6 +49,25 @@ const FORGOT_PASSWORD_RATE_LIMIT = {
 	keyPrefix: "forgot-password",
 };
 
+const REFRESH_TOKEN_COOKIE = "refresh_token";
+
+// path:"/api/auth" supaya cookie ini cuma ikut terkirim ke endpoint auth
+// (refresh, logout), bukan ke setiap request API — mengecilkan permukaan
+// yang membawa credential ini.
+function setRefreshTokenCookie(c: Context, token: string) {
+	setCookie(c, REFRESH_TOKEN_COOKIE, token, {
+		httpOnly: true,
+		secure: env.isProduction,
+		sameSite: "Lax",
+		path: "/api/auth",
+		maxAge: env.refreshTokenExpiresInDays * 24 * 60 * 60,
+	});
+}
+
+function clearRefreshTokenCookie(c: Context) {
+	deleteCookie(c, REFRESH_TOKEN_COOKIE, { path: "/api/auth" });
+}
+
 const authRoute = new Hono<AppEnv>()
 	.post(
 		"/api/auth/signup",
@@ -75,6 +100,8 @@ const authRoute = new Hono<AppEnv>()
 				email: user.email,
 				role: user.role,
 			});
+			const refreshToken = await credentialService.issueRefreshToken(user.id);
+			setRefreshTokenCookie(c, refreshToken);
 
 			return c.json({ id: user.id, email: user.email, accessToken });
 		},
@@ -89,6 +116,12 @@ const authRoute = new Hono<AppEnv>()
 			email: user.email,
 			role: user.role,
 		});
+
+		// Cookie di-set di sini (bukan di /google/exchange) — Set-Cookie pada
+		// response redirect tetap tersimpan untuk origin api ini, terlepas ke
+		// mana browser diarahkan setelahnya.
+		const refreshToken = await credentialService.issueRefreshToken(user.id);
+		setRefreshTokenCookie(c, refreshToken);
 
 		return c.redirect(
 			`${env.corsOrigins[0]}/auth/callback/google?code=${code}`,
@@ -108,6 +141,29 @@ const authRoute = new Hono<AppEnv>()
 			return c.json({ id: user.id, email: user.email, accessToken });
 		},
 	)
+	.post("/api/auth/refresh", async (c) => {
+		const rawToken = getCookie(c, REFRESH_TOKEN_COOKIE);
+		if (!rawToken) throw new InvalidRefreshTokenError();
+
+		const { user, refreshToken } =
+			await credentialService.rotateRefreshToken(rawToken);
+		setRefreshTokenCookie(c, refreshToken);
+
+		const accessToken = signToken({
+			id: user.id,
+			email: user.email,
+			role: user.role,
+		});
+
+		return c.json({ accessToken });
+	})
+	.post("/api/auth/logout", async (c) => {
+		const rawToken = getCookie(c, REFRESH_TOKEN_COOKIE);
+		if (rawToken) await credentialService.revokeRefreshToken(rawToken);
+		clearRefreshTokenCookie(c);
+
+		return c.json(messageResponse("Berhasil logout."));
+	})
 	.post(
 		"/api/auth/forgot-password",
 		authRateLimit(FORGOT_PASSWORD_RATE_LIMIT),

@@ -7,6 +7,7 @@ import {
 	InvalidCredentialsError,
 	InvalidCurrentPasswordError,
 	InvalidMinimumLengthPassword,
+	InvalidRefreshTokenError,
 	InvalidResetTokenError,
 	LastAuthMethodError,
 	PasswordNotSetError,
@@ -14,6 +15,10 @@ import {
 } from "../../exceptions";
 import { mailer } from "../../libs/mailer";
 import { comparePassword, hashPassword } from "../../libs/password";
+import {
+	generateRefreshToken,
+	hashRefreshToken,
+} from "../../libs/refresh-token";
 import { generateResetToken, hashResetToken } from "../../libs/reset-token";
 import { userRepository } from "../user/user.repository";
 import type {
@@ -25,6 +30,7 @@ import type {
 	resetPasswordSchema,
 } from "./auth.schema";
 import { passwordResetTokenRepository } from "./password-reset-token.repository";
+import { refreshTokenRepository } from "./refresh-token.repository";
 
 export const credentialService = {
 	async register({ email, password }: z.infer<typeof registerSchema>) {
@@ -68,6 +74,52 @@ export const credentialService = {
 			};
 
 		return { user: await userRepository.create({ email, googleId }) };
+	},
+	async issueRefreshToken(userId: string) {
+		const rawToken = generateRefreshToken();
+		const tokenHash = hashRefreshToken(rawToken);
+		const expiresAt = new Date(
+			Date.now() + env.refreshTokenExpiresInDays * 24 * 60 * 60 * 1000,
+		);
+
+		await refreshTokenRepository.create({ userId, tokenHash, expiresAt });
+
+		return rawToken;
+	},
+	// Rotasi: setiap refresh me-revoke token lama dan menerbitkan yang baru.
+	// Kalau token yang sama dipakai lagi setelah ini (mis. dicuri & disalin),
+	// findByTokenHash masih akan menemukannya tapi revokedAt sudah terisi,
+	// jadi ditolak sebagai InvalidRefreshTokenError.
+	async rotateRefreshToken(rawToken: string) {
+		const tokenHash = hashRefreshToken(rawToken);
+		const existingToken =
+			await refreshTokenRepository.findByTokenHash(tokenHash);
+
+		if (
+			!existingToken ||
+			existingToken.revokedAt ||
+			existingToken.expiresAt < new Date()
+		)
+			throw new InvalidRefreshTokenError();
+
+		const user = await userRepository.findById(existingToken.userId);
+		if (!user) throw new InvalidRefreshTokenError();
+
+		await refreshTokenRepository.revoke(existingToken.id);
+		const newRawToken = await credentialService.issueRefreshToken(user.id);
+
+		return { user, refreshToken: newRawToken };
+	},
+	// Idempotent — logout tetap dianggap sukses walau cookie sudah kedaluwarsa
+	// atau token tidak ditemukan, supaya client tidak perlu menangani error
+	// khusus saat sekadar membersihkan sesi.
+	async revokeRefreshToken(rawToken: string) {
+		const tokenHash = hashRefreshToken(rawToken);
+		const existingToken =
+			await refreshTokenRepository.findByTokenHash(tokenHash);
+
+		if (existingToken && !existingToken.revokedAt)
+			await refreshTokenRepository.revoke(existingToken.id);
 	},
 	async forgotPassword({ email, app }: z.infer<typeof forgotPasswordSchema>) {
 		const existingUser = await userRepository.findByEmail(email);

@@ -92,6 +92,17 @@ export class InvalidResetTokenError extends AppError {
 	}
 }
 
+/** Refresh token tidak ada, sudah di-revoke, atau sudah kedaluwarsa — client harus login ulang dari awal (bukan retry silent-refresh). */
+export class InvalidRefreshTokenError extends AppError {
+	constructor() {
+		super(
+			401,
+			"INVALID_REFRESH_TOKEN",
+			"Sesi sudah berakhir, silakan login kembali",
+		);
+	}
+}
+
 /** Resource tidak ditemukan, atau ditemukan tapi bukan milik user yang login — sengaja disamakan jadi 404 supaya tidak bocor keberadaan data milik user lain. */
 export class NotFoundError extends AppError {
 	constructor(message = "Data tidak ditemukan") {

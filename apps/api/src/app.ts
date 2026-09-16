@@ -17,6 +17,11 @@ export const app = new Hono()
 			origin: env.corsOrigins,
 			allowHeaders: ["Content-Type", "Authorization"],
 			allowMethods: ["GET", "POST", "PATCH", "DELETE"],
+			// credentials:true supaya cookie httpOnly refresh_token ikut terkirim
+			// dari apps/platform & apps/admin (origin berbeda) ke /api/auth/refresh
+			// dan /api/auth/logout — wajib dipasangkan dengan credentials:"include"
+			// di fetch sisi client (lihat apps/*/src/libs/api-client.ts).
+			credentials: true,
 		}),
 	)
 	.get("/", async (c) => {

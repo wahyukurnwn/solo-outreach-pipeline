@@ -5,7 +5,17 @@ config({ path: "../../.env" });
 export const env = {
 	databaseUrl: process.env.DATABASE_URL,
 	jwtSecret: process.env.JWT_SECRET,
-	jwtExpiresInDays: Number(process.env.JWT_EXPIRES_IN_DAYS ?? 7),
+	// Access token sengaja pendek (menit, bukan hari) sekarang ada refresh
+	// token — kalau access token dicuri, umurnya cuma sebentar. Sesi panjang
+	// datang dari refresh token yang disimpan di httpOnly cookie, bukan dari
+	// access token yang berumur panjang.
+	accessTokenExpiresInMinutes: Number(
+		process.env.ACCESS_TOKEN_EXPIRES_IN_MINUTES ?? 15,
+	),
+	refreshTokenExpiresInDays: Number(
+		process.env.REFRESH_TOKEN_EXPIRES_IN_DAYS ?? 30,
+	),
+	isProduction: process.env.NODE_ENV === "production",
 	// CORS_ORIGIN dipisah koma untuk banyak origin (apps/platform, apps/admin).
 	// corsOrigins[0] juga dipakai sebagai base URL link (mis. reset password).
 	corsOrigins: (process.env.CORS_ORIGIN || "http://localhost:3000")
