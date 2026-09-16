@@ -7,6 +7,7 @@ import {
 	dangerSoftButtonClassName,
 	softButtonClassName,
 } from "#/components/form-styles";
+import { maskEmail } from "#/libs/email-format";
 import { GoogleIcon } from "#/modules/auth/components/google-icon";
 import { useGoogleSignIn } from "#/modules/auth/hooks/use-google-signin";
 import { useUnlinkGoogle } from "../hooks/use-unlink-google";
@@ -147,8 +148,10 @@ export const LoginMethodsCard = ({ me }: { me: Me }) => {
 				{me.hasGoogle ? null : (
 					<p>
 						Akun Google baru tertaut kalau email-nya sama dengan{" "}
-						<span className="font-semibold text-ink-soft">{me.email}</span>.
-						Email Google yang berbeda akan membuat akun terpisah.
+						<span className="font-semibold text-ink-soft">
+							{maskEmail(me.email)}
+						</span>
+						. Email Google yang berbeda akan membuat akun terpisah.
 					</p>
 				)}
 				{me.hasPassword ? null : (
@@ -166,7 +169,7 @@ export const LoginMethodsCard = ({ me }: { me: Me }) => {
 			<AlertDialog
 				open={isUnlinkGoogleOpen}
 				title="Lepas akun Google?"
-				description={`Setelah dilepas, Anda hanya bisa masuk dengan email ${me.email} dan password.`}
+				description={`Setelah dilepas, Anda hanya bisa masuk dengan email ${maskEmail(me.email)} dan password.`}
 				confirmLabel={unlinkGoogle.isPending ? "Melepas..." : "Lepas Google"}
 				onConfirm={handleUnlinkGoogle}
 				onCancel={() => setIsUnlinkGoogleOpen(false)}
