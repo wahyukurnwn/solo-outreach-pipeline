@@ -13,7 +13,7 @@ export const AuthCard = ({ title, description, children }: AuthCardProps) => (
 			className="glow-hero pointer-events-none absolute inset-0"
 		/>
 
-		<div className="relative w-full max-w-[400px]">
+		<div className="relative w-full max-w-100">
 			<div className="rounded-3xl border border-line bg-white p-7 shadow-[0_24px_60px_-32px_rgba(45,42,38,0.3),0_1px_2px_rgba(45,42,38,0.04)] sm:p-9">
 				<div className="flex flex-col items-center text-center">
 					<BrandMark size="lg" />

@@ -1,7 +1,10 @@
 import type z from "zod";
 import { NotFoundError } from "../../exceptions";
 import { userRepository } from "../user/user.repository";
-import type { updateUserRoleSchema } from "./admin.schema";
+import type {
+	updateUserDemoSchema,
+	updateUserRoleSchema,
+} from "./admin.schema";
 
 // Jangan pernah kembalikan field password ke response admin.
 function toUserSummary(user: {
@@ -44,6 +47,21 @@ export const adminService = {
 		if (!existingUser) throw new NotFoundError("User tidak ditemukan");
 
 		const updatedUser = await userRepository.updateRole(id, role);
+
+		return toUserSummary(updatedUser);
+	},
+
+	async updateUserDemo(
+		id: string,
+		{ isDemo }: z.infer<typeof updateUserDemoSchema>,
+	) {
+		const existingUser = await userRepository.findById(id);
+
+		if (!existingUser) throw new NotFoundError("User tidak ditemukan");
+
+		const updatedUser = isDemo
+			? await userRepository.setDemoUser(id)
+			: await userRepository.unsetDemoUser(id);
 
 		return toUserSummary(updatedUser);
 	},

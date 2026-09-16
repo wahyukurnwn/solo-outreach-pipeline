@@ -1,7 +1,9 @@
 import { Badge, Card } from "@mycustom/ui";
 import toast from "react-hot-toast";
+import { softButtonClassName } from "#/components/form-styles";
 import { Loader } from "#/components/loader";
 import { useMe } from "../../auth/hooks/use-me";
+import { useUpdateUserDemo } from "../hooks/use-update-user-demo";
 import { useUpdateUserRole } from "../hooks/use-update-user-role";
 import type { UserSummary } from "../types";
 import { RoleBadge } from "./role-badge";
@@ -17,6 +19,7 @@ function formatDate(iso: string) {
 export const UserDetailCard = ({ user }: { user: UserSummary }) => {
 	const { data: me } = useMe();
 	const updateRole = useUpdateUserRole(user.id);
+	const updateDemo = useUpdateUserDemo(user.id);
 	const isSelf = me?.id === user.id;
 
 	function handleToggleRole() {
@@ -29,6 +32,22 @@ export const UserDetailCard = ({ user }: { user: UserSummary }) => {
 						nextRole === "ADMIN"
 							? "User dipromosikan menjadi admin"
 							: "Akses admin dicabut dari user ini",
+					),
+				onError: (err) => toast.error(err.message),
+			},
+		);
+	}
+
+	function handleToggleDemo() {
+		const nextIsDemo = !user.isDemo;
+		updateDemo.mutate(
+			{ isDemo: nextIsDemo },
+			{
+				onSuccess: () =>
+					toast.success(
+						nextIsDemo
+							? "User ini sekarang jadi akun demo publik"
+							: "Status demo dicabut dari user ini",
 					),
 				onError: (err) => toast.error(err.message),
 			},
@@ -73,6 +92,25 @@ export const UserDetailCard = ({ user }: { user: UserSummary }) => {
 						{user.role === "ADMIN" ? "Cabut akses admin" : "Jadikan admin"}
 					</button>
 				)}
+			</div>
+
+			<div className="mt-6 border-t border-line pt-5">
+				<p className="text-[13px] font-semibold text-ink-soft">Akun demo</p>
+				<p className="mt-1 text-[13px] text-muted">
+					{user.isDemo
+						? "Akun ini yang dipakai oleh halaman demo publik (/demo)."
+						: "Hanya satu akun bisa jadi demo publik dalam satu waktu — menyalakan di sini otomatis mematikan demo user lain."}
+				</p>
+
+				<button
+					type="button"
+					onClick={handleToggleDemo}
+					disabled={updateDemo.isPending}
+					className={`mt-3 ${softButtonClassName}`}
+				>
+					{updateDemo.isPending ? <Loader /> : null}
+					{user.isDemo ? "Cabut status demo" : "Jadikan akun demo"}
+				</button>
 			</div>
 		</Card>
 	);

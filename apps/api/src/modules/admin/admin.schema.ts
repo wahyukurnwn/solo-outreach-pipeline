@@ -8,3 +8,7 @@ export const userIdParamSchema = z.object({
 export const updateUserRoleSchema = z.object({
 	role: z.enum(UserRole),
 });
+
+export const updateUserDemoSchema = z.object({
+	isDemo: z.boolean(),
+});

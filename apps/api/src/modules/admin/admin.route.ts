@@ -3,7 +3,11 @@ import { validate } from "../../libs/validate";
 import { requireAdmin, requireAuth } from "../../middleware/auth";
 import type { AppEnv } from "../../types";
 import { listResponse } from "../../utils/response";
-import { updateUserRoleSchema, userIdParamSchema } from "./admin.schema";
+import {
+	updateUserDemoSchema,
+	updateUserRoleSchema,
+	userIdParamSchema,
+} from "./admin.schema";
 import { adminService } from "./admin.service";
 
 const adminRoute = new Hono<AppEnv>()
@@ -36,6 +40,21 @@ const adminRoute = new Hono<AppEnv>()
 			const body = c.req.valid("json");
 
 			const user = await adminService.updateUserRole(id, body);
+
+			return c.json(user);
+		},
+	)
+	.patch(
+		"/api/admin/users/:id/demo",
+		requireAuth,
+		requireAdmin,
+		validate("param", userIdParamSchema),
+		validate("json", updateUserDemoSchema),
+		async (c) => {
+			const { id } = c.req.valid("param");
+			const body = c.req.valid("json");
+
+			const user = await adminService.updateUserDemo(id, body);
 
 			return c.json(user);
 		},

@@ -63,4 +63,26 @@ export const userRepository = {
 			where: { id },
 			data: { role },
 		}),
+
+	// Invariant "paling banyak satu is_demo=true" ditegakkan di sini (bukan di
+	// service) lewat transaksi: mematikan demo user lama dulu sebelum
+	// menyalakan yang baru, supaya findDemoUser() tidak pernah ambigu.
+	setDemoUser: (id: string) =>
+		prisma.$transaction(async (tx) => {
+			await tx.user.updateMany({
+				where: { isDemo: true, NOT: { id } },
+				data: { isDemo: false },
+			});
+
+			return tx.user.update({
+				where: { id },
+				data: { isDemo: true },
+			});
+		}),
+
+	unsetDemoUser: (id: string) =>
+		prisma.user.update({
+			where: { id },
+			data: { isDemo: false },
+		}),
 };

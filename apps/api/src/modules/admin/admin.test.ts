@@ -71,4 +71,48 @@ describe("admin routes", () => {
 
 		expect(res.status).toBe(404);
 	});
+
+	it("lets an admin flag a user as the demo account", async () => {
+		const admin = await createTestAdmin();
+		const target = await createTestUser();
+		createdUserIds.push(admin.id, target.id);
+
+		const res = await app.request(`/api/admin/users/${target.id}/demo`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...admin.authHeaders },
+			body: JSON.stringify({ isDemo: true }),
+		});
+		const json = await res.json();
+
+		expect(res.status).toBe(200);
+		expect(json.isDemo).toBe(true);
+	});
+
+	it("unsets the previous demo user when a new one is flagged", async () => {
+		const admin = await createTestAdmin();
+		const previousDemo = await createTestUser();
+		const nextDemo = await createTestUser();
+		createdUserIds.push(admin.id, previousDemo.id, nextDemo.id);
+
+		await app.request(`/api/admin/users/${previousDemo.id}/demo`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...admin.authHeaders },
+			body: JSON.stringify({ isDemo: true }),
+		});
+
+		await app.request(`/api/admin/users/${nextDemo.id}/demo`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...admin.authHeaders },
+			body: JSON.stringify({ isDemo: true }),
+		});
+
+		const listRes = await app.request("/api/admin/users", {
+			headers: admin.authHeaders,
+		});
+		const { data } = await listRes.json();
+		const demoUsers = data.filter((user: { isDemo: boolean }) => user.isDemo);
+
+		expect(demoUsers).toHaveLength(1);
+		expect(demoUsers[0].id).toBe(nextDemo.id);
+	});
 });
