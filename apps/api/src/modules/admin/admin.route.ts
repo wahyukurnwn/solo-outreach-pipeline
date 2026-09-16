@@ -67,10 +67,24 @@ const adminRoute = new Hono<AppEnv>()
 		async (c) => {
 			const { id } = c.req.valid("param");
 			const body = c.req.valid("json");
+			const actor = c.get("user");
 
-			const user = await adminService.updateUserDemo(id, body);
+			const user = await adminService.updateUserDemo(id, body, actor.id);
 
 			return c.json(user);
+		},
+	)
+	.get(
+		"/api/admin/users/:id/demo-logs",
+		requireAuth,
+		requireAdmin,
+		validate("param", userIdParamSchema),
+		async (c) => {
+			const { id } = c.req.valid("param");
+
+			const logs = await adminService.getDemoLogs(id);
+
+			return c.json(listResponse(logs));
 		},
 	);
 

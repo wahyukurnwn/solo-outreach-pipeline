@@ -59,8 +59,29 @@ model User {
   tags                 Tag[]
   roleChangesPerformed RoleChangeLog[]      @relation("RoleChangeActor")
   roleChangesReceived  RoleChangeLog[]      @relation("RoleChangeTarget")
+  demoChangesPerformed DemoChangeLog[]      @relation("DemoChangeActor")
+  demoChangesReceived  DemoChangeLog[]      @relation("DemoChangeTarget")
 
   @@map("users")
+}
+
+// Audit trail untuk "siapa mengubah status akun demo siapa" — dicatat
+// setiap kali is_demo benar-benar berubah lewat admin.service.ts, termasuk
+// efek samping saat menyalakan demo di satu user otomatis mematikannya di
+// user lain (invariant "paling banyak satu is_demo=true").
+model DemoChangeLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String   @map("actor_id") @db.Uuid
+  targetId  String   @map("target_id") @db.Uuid
+  fromDemo  Boolean  @map("from_demo")
+  toDemo    Boolean  @map("to_demo")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  actor  User @relation("DemoChangeActor", fields: [actorId], references: [id])
+  target User @relation("DemoChangeTarget", fields: [targetId], references: [id])
+
+  @@index([targetId])
+  @@map("demo_change_logs")
 }
 
 // Refresh token disimpan sebagai hash (bukan raw) — sama seperti

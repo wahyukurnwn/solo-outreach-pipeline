@@ -12,3 +12,9 @@ type RoleLogsResponse = InferResponseType<
 >;
 
 export type RoleChangeLog = RoleLogsResponse["data"][number];
+
+type DemoLogsResponse = InferResponseType<
+	(typeof apiClient.api.admin.users)[":id"]["demo-logs"]["$get"]
+>;
+
+export type DemoChangeLog = DemoLogsResponse["data"][number];

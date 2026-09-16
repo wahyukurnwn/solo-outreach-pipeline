@@ -130,6 +130,9 @@ export async function cleanupUser(userId: string) {
 	await prisma.roleChangeLog.deleteMany({
 		where: { OR: [{ actorId: userId }, { targetId: userId }] },
 	});
+	await prisma.demoChangeLog.deleteMany({
+		where: { OR: [{ actorId: userId }, { targetId: userId }] },
+	});
 	await prisma.refreshToken.deleteMany({ where: { userId } });
 	await prisma.user.delete({ where: { id: userId } }).catch(() => {});
 }

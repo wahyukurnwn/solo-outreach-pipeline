@@ -89,23 +89,56 @@ export const userRepository = {
 
 	// Invariant "paling banyak satu is_demo=true" ditegakkan di sini (bukan di
 	// service) lewat transaksi: mematikan demo user lama dulu sebelum
-	// menyalakan yang baru, supaya findDemoUser() tidak pernah ambigu.
-	setDemoUser: (id: string) =>
+	// menyalakan yang baru, supaya findDemoUser() tidak pernah ambigu. Efek
+	// samping "mematikan demo user lama" juga dicatat sebagai log tersendiri
+	// (actor sama), supaya riwayat tetap menjelaskan kenapa status demo user
+	// lama berubah walau bukan dia yang di-target request ini.
+	setDemoUserWithLog: (id: string, actorId: string) =>
 		prisma.$transaction(async (tx) => {
-			await tx.user.updateMany({
+			const previousDemoUsers = await tx.user.findMany({
 				where: { isDemo: true, NOT: { id } },
-				data: { isDemo: false },
+				select: { id: true },
 			});
 
-			return tx.user.update({
+			if (previousDemoUsers.length > 0) {
+				await tx.user.updateMany({
+					where: { isDemo: true, NOT: { id } },
+					data: { isDemo: false },
+				});
+
+				await tx.demoChangeLog.createMany({
+					data: previousDemoUsers.map((user) => ({
+						actorId,
+						targetId: user.id,
+						fromDemo: true,
+						toDemo: false,
+					})),
+				});
+			}
+
+			const updated = await tx.user.update({
 				where: { id },
 				data: { isDemo: true },
 			});
+
+			await tx.demoChangeLog.create({
+				data: { actorId, targetId: id, fromDemo: false, toDemo: true },
+			});
+
+			return updated;
 		}),
 
-	unsetDemoUser: (id: string) =>
-		prisma.user.update({
-			where: { id },
-			data: { isDemo: false },
+	unsetDemoUserWithLog: (id: string, actorId: string) =>
+		prisma.$transaction(async (tx) => {
+			const updated = await tx.user.update({
+				where: { id },
+				data: { isDemo: false },
+			});
+
+			await tx.demoChangeLog.create({
+				data: { actorId, targetId: id, fromDemo: true, toDemo: false },
+			});
+
+			return updated;
 		}),
 };

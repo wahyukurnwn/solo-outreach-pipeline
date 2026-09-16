@@ -170,4 +170,76 @@ describe("admin routes", () => {
 		expect(demoUsers).toHaveLength(1);
 		expect(demoUsers[0].id).toBe(nextDemo.id);
 	});
+
+	it("logs who flagged a user as demo and to what", async () => {
+		const admin = await createTestAdmin();
+		const target = await createTestUser();
+		createdUserIds.push(admin.id, target.id);
+
+		await app.request(`/api/admin/users/${target.id}/demo`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...admin.authHeaders },
+			body: JSON.stringify({ isDemo: true }),
+		});
+
+		const res = await app.request(`/api/admin/users/${target.id}/demo-logs`, {
+			headers: admin.authHeaders,
+		});
+		const { data } = await res.json();
+
+		expect(res.status).toBe(200);
+		expect(data).toHaveLength(1);
+		expect(data[0]).toMatchObject({
+			fromDemo: false,
+			toDemo: true,
+			actor: { id: admin.id, email: admin.email },
+		});
+	});
+
+	it("also logs the side effect of unsetting the previous demo user", async () => {
+		const admin = await createTestAdmin();
+		const previousDemo = await createTestUser();
+		const nextDemo = await createTestUser();
+		createdUserIds.push(admin.id, previousDemo.id, nextDemo.id);
+
+		await app.request(`/api/admin/users/${previousDemo.id}/demo`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...admin.authHeaders },
+			body: JSON.stringify({ isDemo: true }),
+		});
+
+		await app.request(`/api/admin/users/${nextDemo.id}/demo`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...admin.authHeaders },
+			body: JSON.stringify({ isDemo: true }),
+		});
+
+		const res = await app.request(
+			`/api/admin/users/${previousDemo.id}/demo-logs`,
+			{ headers: admin.authHeaders },
+		);
+		const { data } = await res.json();
+
+		expect(data).toHaveLength(2);
+		expect(data[0]).toMatchObject({ fromDemo: true, toDemo: false });
+	});
+
+	it("does not log a no-op demo update (setting the same status)", async () => {
+		const admin = await createTestAdmin();
+		const target = await createTestUser();
+		createdUserIds.push(admin.id, target.id);
+
+		await app.request(`/api/admin/users/${target.id}/demo`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...admin.authHeaders },
+			body: JSON.stringify({ isDemo: false }),
+		});
+
+		const res = await app.request(`/api/admin/users/${target.id}/demo-logs`, {
+			headers: admin.authHeaders,
+		});
+		const { data } = await res.json();
+
+		expect(data).toHaveLength(0);
+	});
 });

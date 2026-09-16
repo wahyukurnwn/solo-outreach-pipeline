@@ -1,10 +1,12 @@
+export { DemoLogTimeline } from "./components/demo-log-timeline";
 export { RoleBadge } from "./components/role-badge";
 export { RoleLogTimeline } from "./components/role-log-timeline";
 export { UserDetailCard } from "./components/user-detail-card";
 export { UserTable } from "./components/user-table";
+export { useDemoLogs } from "./hooks/use-demo-logs";
 export { useRoleLogs } from "./hooks/use-role-logs";
 export { useUpdateUserDemo } from "./hooks/use-update-user-demo";
 export { useUpdateUserRole } from "./hooks/use-update-user-role";
 export { useUser } from "./hooks/use-user";
 export { useUsers } from "./hooks/use-users";
-export type { RoleChangeLog, UserSummary } from "./types";
+export type { DemoChangeLog, RoleChangeLog, UserSummary } from "./types";
