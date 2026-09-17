@@ -25,6 +25,10 @@ export const env = {
 	googleClientId: process.env.GOOGLE_CLIENT_ID,
 	googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
 	passwordResetTtlMinutes: Number(process.env.PASSWORD_RESET_TTL_MINUTES ?? 15),
+	// Kosong = mailer fallback ke console.log (lihat libs/mailer.ts) — dev/test
+	// tetap jalan tanpa API key asli. Wajib diisi di production.
+	resendApiKey: process.env.RESEND_API_KEY,
+	emailFrom: process.env.EMAIL_FROM || "no-reply@localhost",
 } as const;
 
 // Base URL + path reset-password per app — dipetakan di server (bukan dari
