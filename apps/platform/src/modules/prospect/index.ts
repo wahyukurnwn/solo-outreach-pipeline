@@ -13,6 +13,7 @@ export {
 } from "./hooks/use-create-prospect";
 export { useDeleteProspect } from "./hooks/use-delete-prospect";
 export { followUpsQueryKey, useFollowUps } from "./hooks/use-follow-ups";
+export { useGenerateDraft } from "./hooks/use-generate-draft";
 export { prospectDetailQueryKey, useProspect } from "./hooks/use-prospect";
 export { prospectsQueryKey, useProspects } from "./hooks/use-prospects";
 export {

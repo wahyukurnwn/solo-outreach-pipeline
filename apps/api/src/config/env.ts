@@ -29,6 +29,11 @@ export const env = {
 	// tetap jalan tanpa API key asli. Wajib diisi di production.
 	resendApiKey: process.env.RESEND_API_KEY,
 	emailFrom: process.env.EMAIL_FROM || "no-reply@localhost",
+	// Kosong = endpoint POST /api/prospects/:id/draft membalas 503, fitur lain
+	// tetap jalan (lihat libs/openrouter.ts).
+	openRouterApiKey: process.env.OPENROUTER_API_KEY,
+	openRouterModel:
+		process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-ultra-550b-a55b:free",
 } as const;
 
 // Base URL + path reset-password per app — dipetakan di server (bukan dari

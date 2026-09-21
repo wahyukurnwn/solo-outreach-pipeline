@@ -79,4 +79,40 @@ describe("rateLimit middleware", () => {
 		expect(first.status).toBe(200);
 		expect(second.status).toBe(429);
 	});
+
+	it("keys by a custom extractor instead of ip when given one", async () => {
+		// userRateLimit() pakai pola ini (keyExtractor = userId) supaya biaya
+		// yang menempel ke akun (mis. draft AI) dibatasi per-akun, bukan per-IP
+		// yang bisa dibagi banyak user atau gampang diganti.
+		const app = new Hono().get(
+			"/ping",
+			rateLimit({
+				windowMs: 60_000,
+				max: 1,
+				keyPrefix: "test-custom-key",
+				keyExtractor: (c) => c.req.header("x-user-id") ?? "anon",
+			}),
+			(c) => c.json({ ok: true }),
+		);
+		app.onError((err, c) => {
+			if (err instanceof AppError) return c.json(err.toBody(), err.status);
+			throw err;
+		});
+
+		const userA1 = await app.request("/ping", {
+			headers: { "x-user-id": "user-a", "x-forwarded-for": "203.0.113.9" },
+		});
+		const userA2 = await app.request("/ping", {
+			// IP beda, user sama — tetap kena limit karena key-nya userId.
+			headers: { "x-user-id": "user-a", "x-forwarded-for": "203.0.113.99" },
+		});
+		const userB1 = await app.request("/ping", {
+			// IP sama dengan userA1, user beda — tidak ikut kena limit.
+			headers: { "x-user-id": "user-b", "x-forwarded-for": "203.0.113.9" },
+		});
+
+		expect(userA1.status).toBe(200);
+		expect(userA2.status).toBe(429);
+		expect(userB1.status).toBe(200);
+	});
 });

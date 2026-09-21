@@ -2,11 +2,16 @@ import { getConnInfo } from "@hono/node-server/conninfo";
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import { TooManyRequestsError } from "../exceptions";
+import type { AppEnv } from "../types";
 
 interface RateLimitOptions {
 	windowMs: number;
 	max: number;
 	keyPrefix: string;
+	// Default per-IP (proteksi brute-force sebelum login). Endpoint yang
+	// sudah requireAuth dan biayanya nempel ke akun (mis. draft AI) pakai
+	// userId lewat userRateLimit() di bawah, bukan IP — lihat alasannya di sana.
+	keyExtractor?: (c: Context) => string;
 }
 
 const buckets = new Map<string, { count: number; resetAt: number }>();
@@ -28,9 +33,14 @@ function getClientIp(c: Context) {
 	}
 }
 
-export function rateLimit({ windowMs, max, keyPrefix }: RateLimitOptions) {
+export function rateLimit({
+	windowMs,
+	max,
+	keyPrefix,
+	keyExtractor = getClientIp,
+}: RateLimitOptions) {
 	return createMiddleware(async (c, next) => {
-		const key = `${keyPrefix}:${getClientIp(c)}`;
+		const key = `${keyPrefix}:${keyExtractor(c)}`;
 		const now = Date.now();
 		const bucket = buckets.get(key);
 
@@ -63,4 +73,18 @@ const noopMiddleware = createMiddleware(async (_c, next) => next());
 
 export function authRateLimit(options: RateLimitOptions) {
 	return isTestEnv ? noopMiddleware : rateLimit(options);
+}
+
+// Limit berbasis userId, bukan IP — dipakai endpoint yang sudah requireAuth
+// dan biayanya nempel ke akun (mis. draft AI, dibayar per panggilan ke
+// provider LLM). Per-IP salah di sini: beberapa user bisa berbagi satu IP
+// (WiFi kantor/kos) dan saling menghabiskan jatah orang lain, sementara user
+// yang niat spam gampang saja ganti IP tapi tidak akun.
+export function userRateLimit(options: Omit<RateLimitOptions, "keyExtractor">) {
+	if (isTestEnv) return noopMiddleware;
+
+	return rateLimit({
+		...options,
+		keyExtractor: (c) => (c as Context<AppEnv>).get("user").id,
+	});
 }
