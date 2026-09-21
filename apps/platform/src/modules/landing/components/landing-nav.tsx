@@ -2,6 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { BrandMark } from "#/components/brand-mark";
 import { containerClassName } from "../styles";
+import { GitHubIcon } from "./github-icon";
+
+// Ganti ke URL repo spesifik kalau sudah ada.
+const GITHUB_URL = "https://github.com/wahyukurnwn";
 
 const sectionLinks = [
 	{ href: "#why", label: "Why" },
@@ -32,18 +36,15 @@ export const LandingNav = () => (
 			</nav>
 
 			<div className="flex items-center gap-1.5">
-				<Link
-					to="/demo"
-					className="hidden rounded-full px-3 py-1.5 text-sm font-medium text-ink-soft transition-colors hover:text-ink sm:inline-flex"
+				<a
+					href={GITHUB_URL}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-ink-soft transition-colors hover:text-ink"
 				>
-					Live demo
-				</Link>
-				<Link
-					to="/auth/signin"
-					className="hidden rounded-full px-3 py-1.5 text-sm font-medium text-ink-soft transition-colors hover:text-ink sm:inline-flex"
-				>
-					Sign in
-				</Link>
+					<GitHubIcon />
+					GitHub
+				</a>
 				<Link
 					to="/dashboard"
 					className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-ink/90"

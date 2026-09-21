@@ -89,7 +89,7 @@ export const AppPreview = () => (
 			<div className="flex flex-col gap-5 bg-paper p-5 sm:p-8">
 				<div>
 					<p className="text-2xl font-bold tracking-tight text-ink sm:text-[28px]">
-						Good evening, <span className="text-lavender-700">Wahyu</span>
+						Good evening, <span className="text-lavender-700">John</span>
 					</p>
 					<p className="mt-1 text-sm text-muted">
 						Here&apos;s where your pipeline stands today.
