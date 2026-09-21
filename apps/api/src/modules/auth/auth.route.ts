@@ -7,7 +7,7 @@ import {
 	InvalidRefreshTokenError,
 	UnauthorizedError,
 } from "../../exceptions";
-import { googleAuthMiddleware } from "../../libs/auth.";
+import { googleAuthMiddleware } from "../../libs/google-auth";
 import { signToken } from "../../libs/jwt";
 import {
 	consumeExchangeCode,

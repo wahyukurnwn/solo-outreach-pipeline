@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { app } from "../../app";
+import { env } from "../../config/env";
 import { cleanupUser, uniqueEmail } from "../../test/helpers";
 
 function mockGoogleEndpoints(googleUser: { id: string; email: string }) {
@@ -99,5 +100,48 @@ describe("google oauth redirect flow", () => {
 		expect(exchangeJson.accessToken).toBeTypeOf("string");
 
 		createdUserIds.push(exchangeJson.id);
+	});
+});
+
+describe("google oauth configuration", () => {
+	const original = {
+		googleClientId: env.googleClientId,
+		googleClientSecret: env.googleClientSecret,
+	};
+
+	afterEach(() => {
+		Object.assign(env, original);
+	});
+
+	// Sign-in with Google is optional: the API boots without credentials and
+	// only this route reports that it is unavailable.
+	it("answers 503 instead of crashing when the credentials are missing", async () => {
+		Object.assign(env, { googleClientId: "", googleClientSecret: "" });
+
+		const res = await app.request("/api/auth/callback/google");
+		const json = await res.json();
+
+		expect(res.status).toBe(503);
+		expect(json.error.code).toBe("GOOGLE_AUTH_NOT_CONFIGURED");
+	});
+
+	it("does not affect email + password auth when Google is not configured", async () => {
+		Object.assign(env, { googleClientId: "", googleClientSecret: "" });
+
+		const res = await app.request("/api/auth/me");
+
+		expect(res.status).toBe(401);
+	});
+
+	it("redirects to Google's consent screen when the credentials are set", async () => {
+		Object.assign(env, {
+			googleClientId: "test-client-id",
+			googleClientSecret: "test-client-secret",
+		});
+
+		const res = await app.request("/api/auth/callback/google");
+
+		expect(res.status).toBe(302);
+		expect(res.headers.get("location")).toContain("accounts.google.com");
 	});
 });
