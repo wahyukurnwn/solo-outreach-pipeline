@@ -21,29 +21,49 @@ const NO_RETRY = { strategy: "none" } as const;
 // salah user dan bukan bug kita — user cukup diberi pesan yang jelas, bukan
 // "kesalahan pada server" generik. Penyebab aslinya tetap dicetak ke log
 // karena error jenis ini (mis. key dicabut) harus diketahui developer.
-function toUserFacingError(err: OpenRouterError) {
-	console.error(
-		`[openrouter] ${err.statusCode}: ${err.message} ${err.body ?? ""}`,
-	);
+//
+// Provider gratis yang kewalahan kadang dibalas OpenRouter dengan HTTP 200
+// yang isinya `{"error":{"code":503,...}}` — SDK gagal memvalidasinya sebagai
+// hasil chat dan melaporkan statusCode 200, jadi kode error yang sebenarnya
+// harus dibaca dari body.
+function effectiveStatus(err: OpenRouterError) {
+	try {
+		const code = JSON.parse(err.body)?.error?.code;
+		if (typeof code === "number") return code;
+	} catch {
+		// body bukan JSON — pakai status HTTP apa adanya
+	}
 
-	if (err.statusCode === 429)
+	return err.statusCode;
+}
+
+function toUserFacingError(err: OpenRouterError) {
+	const status = effectiveStatus(err);
+	console.error(`[openrouter] ${status}: ${err.message} ${err.body ?? ""}`);
+
+	if (status === 429)
 		return new ServiceUnavailableError(
 			"Kuota AI sedang penuh, coba lagi nanti",
 			"AI_DRAFTING_QUOTA_EXCEEDED",
 		);
 
-	if (
-		err.statusCode === 401 ||
-		err.statusCode === 402 ||
-		err.statusCode === 403 ||
-		err.statusCode >= 500
-	)
+	if (status === 401 || status === 402 || status === 403 || status >= 500)
 		return new ServiceUnavailableError(
 			"Layanan AI sedang tidak tersedia, coba lagi nanti",
 			"AI_DRAFTING_UNAVAILABLE",
 		);
 
 	return err;
+}
+
+// Timeout bisa datang dalam dua bentuk: RequestTimeoutError (saat koneksi/
+// header) atau DOMException TimeoutError mentah (saat SDK sedang membaca body
+// balasan) — model gratis yang lambat sering kena bentuk kedua.
+function isTimeout(err: unknown) {
+	return (
+		err instanceof RequestTimeoutError ||
+		(err instanceof Error && err.name === "TimeoutError")
+	);
 }
 
 export async function generateDraftMessage(prompt: string): Promise<string> {
@@ -72,7 +92,7 @@ export async function generateDraftMessage(prompt: string): Promise<string> {
 			{ timeoutMs: DRAFT_TIMEOUT_MS, retries: NO_RETRY },
 		)
 		.catch((err: unknown) => {
-			if (err instanceof RequestTimeoutError)
+			if (isTimeout(err))
 				throw new ServiceUnavailableError(
 					"Pembuatan draft terlalu lama, coba lagi sebentar lagi",
 					"AI_DRAFTING_TIMEOUT",

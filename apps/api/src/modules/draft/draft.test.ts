@@ -185,4 +185,66 @@ describe("draft", () => {
 			expect(json.error.code).toBe(code);
 		},
 	);
+	// Provider gratis yang kewalahan: OpenRouter membalas 200 dengan error di
+	// body (kejadian nyata) — harus tetap jadi pesan yang jelas, bukan 500.
+	it.each([
+		[503, "AI_DRAFTING_UNAVAILABLE"],
+		[429, "AI_DRAFTING_QUOTA_EXCEEDED"],
+	])(
+		"maps an upstream error %i wrapped in an HTTP 200 body to %s",
+		async (code, expected) => {
+			Object.assign(env, { openRouterApiKey: "test-key" });
+			vi.spyOn(console, "error").mockImplementation(() => {});
+			vi.stubGlobal(
+				"fetch",
+				vi.fn().mockResolvedValue(
+					new Response(
+						JSON.stringify({
+							id: "gen-test",
+							error: { message: "Upstream error: overloaded", code },
+						}),
+						{ status: 200, headers: { "Content-Type": "application/json" } },
+					),
+				),
+			);
+
+			const { id, authHeaders } = await createTestUser();
+			createdUserIds.push(id);
+			const prospect = await createProspect(authHeaders);
+
+			const res = await draftFor(prospect.id, authHeaders);
+			const json = await res.json();
+
+			expect(res.status).toBe(503);
+			expect(json.error.code).toBe(expected);
+		},
+	);
+	it("returns the timeout error when the response body stalls past the timeout", async () => {
+		Object.assign(env, { openRouterApiKey: "test-key" });
+		// Kejadian nyata: header sudah diterima, lalu timeout menyala saat body
+		// dibaca — errornya DOMException mentah, bukan RequestTimeoutError.
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockResolvedValue(
+				new Response(
+					new ReadableStream({
+						start(controller) {
+							controller.error(new DOMException("timed out", "TimeoutError"));
+						},
+					}),
+					{ status: 200, headers: { "Content-Type": "application/json" } },
+				),
+			),
+		);
+
+		const { id, authHeaders } = await createTestUser();
+		createdUserIds.push(id);
+		const prospect = await createProspect(authHeaders);
+
+		const res = await draftFor(prospect.id, authHeaders);
+		const json = await res.json();
+
+		expect(res.status).toBe(503);
+		expect(json.error.code).toBe("AI_DRAFTING_TIMEOUT");
+	});
 });
