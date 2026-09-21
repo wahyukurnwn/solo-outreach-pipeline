@@ -9,7 +9,8 @@
 		"db:migrate": "pnpm prisma migrate dev",
 		"db:generate": "pnpm prisma generate",
 		"db:studio": "pnpm prisma studio",
-		"test": "pnpm run with-env -- vitest run"
+		"db:test:setup": "pnpm run with-env -- tsx scripts/setup-test-db.ts",
+		"test": "pnpm db:test:setup && pnpm run with-env -- vitest run"
 	},
 	"dependencies": {
 		"@hono/node-server": "^2.1.1",
