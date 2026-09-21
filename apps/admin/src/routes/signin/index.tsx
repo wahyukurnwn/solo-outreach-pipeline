@@ -9,7 +9,10 @@ export const Route = createFileRoute("/signin/")({
 
 function SignInPage() {
 	return (
-		<AuthCard title="Masuk Admin" description="Khusus akun dengan akses admin.">
+		<AuthCard
+			title="Admin sign-in"
+			description="For accounts with admin access only."
+		>
 			<SignInForm />
 		</AuthCard>
 	);

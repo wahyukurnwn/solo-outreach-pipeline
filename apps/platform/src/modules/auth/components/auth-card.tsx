@@ -43,7 +43,7 @@ export const AuthCard = ({
 				className="mx-auto mt-6 flex w-fit items-center gap-1.5 text-[13px] font-medium text-muted transition-colors hover:text-ink"
 			>
 				<ArrowLeft className="size-3.5" />
-				Kembali ke beranda
+				Back to home
 			</Link>
 		</div>
 	</div>

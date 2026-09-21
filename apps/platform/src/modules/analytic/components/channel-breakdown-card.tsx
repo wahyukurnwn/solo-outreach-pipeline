@@ -30,7 +30,7 @@ export const ChannelBreakdownCard = ({
 							<span className="font-bold text-ink tabular-nums">
 								{formatRate(row.responseRate)}
 							</span>{" "}
-							· {row.replied} dari {row.contacted} membalas
+							· {row.replied} of {row.contacted} replied
 						</span>
 					</div>
 					<div className="h-2 overflow-hidden rounded-full bg-sidebar">

@@ -16,8 +16,8 @@ function SettingsPage() {
 	return (
 		<div className="flex flex-col gap-7 px-6 py-8 sm:px-12 sm:py-10">
 			<PageHeader
-				title="Pengaturan akun"
-				description="Kelola cara masuk dan keamanan akun Anda."
+				title="Account settings"
+				description="Manage how you sign in and keep your account secure."
 			/>
 			<SettingsContent />
 		</div>
@@ -30,7 +30,7 @@ function SettingsContent() {
 	if (meQuery.error)
 		return (
 			<QueryError
-				title="Pengaturan gagal dimuat"
+				title="Settings failed to load"
 				message={meQuery.error.message}
 				onRetry={() => meQuery.refetch()}
 			/>
@@ -41,12 +41,12 @@ function SettingsContent() {
 	if (meQuery.data === null)
 		return (
 			<p className="rounded-[20px] border border-line bg-white px-5 py-4 text-sm text-muted">
-				Sesi Anda sudah berakhir.{" "}
+				Your session has ended.{" "}
 				<Link
 					to="/auth/signin"
 					className="font-semibold text-ink transition-colors hover:text-lavender-700"
 				>
-					Masuk lagi
+					Sign in again
 				</Link>
 			</p>
 		);
@@ -67,7 +67,7 @@ function SettingsContent() {
 function SettingsSkeleton() {
 	return (
 		<div aria-busy="true" className="flex max-w-3xl flex-col gap-5">
-			<span className="sr-only">Memuat pengaturan…</span>
+			<span className="sr-only">Loading settings…</span>
 			<div className="h-24 animate-pulse rounded-[20px] border border-line bg-white" />
 			<div className="h-56 animate-pulse rounded-[20px] border border-line bg-white" />
 			<div className="h-72 animate-pulse rounded-[20px] border border-line bg-white" />

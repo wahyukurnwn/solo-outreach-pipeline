@@ -15,7 +15,7 @@ export const useSignIn = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Email atau password salah"),
+					await extractErrorMessage(res, "Incorrect email or password"),
 				);
 
 			const data = await res.json();
@@ -27,13 +27,13 @@ export const useSignIn = () => {
 			const meRes = await apiClient.api.auth.me.$get();
 			if (!meRes.ok) {
 				clearAuthToken();
-				throw new Error("Gagal memverifikasi akun");
+				throw new Error("Failed to verify the account");
 			}
 
 			const me = await meRes.json();
 			if (me.role !== "ADMIN") {
 				clearAuthToken();
-				throw new Error("Akses admin dibutuhkan untuk masuk ke halaman ini");
+				throw new Error("Admin access is required to sign in here");
 			}
 
 			return { ...data, role: me.role };

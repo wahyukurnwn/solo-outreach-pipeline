@@ -13,7 +13,7 @@ export const useUser = (id: string) => {
 			});
 
 			if (!res.ok)
-				throw new Error(await extractErrorMessage(res, "Gagal memuat user"));
+				throw new Error(await extractErrorMessage(res, "Failed to load user"));
 
 			return res.json();
 		},

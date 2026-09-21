@@ -15,7 +15,7 @@ export const useRoleLogs = (userId: string) => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal memuat riwayat role"),
+					await extractErrorMessage(res, "Failed to load role history"),
 				);
 
 			const { data } = await res.json();

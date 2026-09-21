@@ -27,7 +27,7 @@ export const activityService = {
 	async findById(userId: string, id: string) {
 		const activity = await activityRepository.findByIdAndUserId(id, userId);
 
-		if (!activity) throw new NotFoundError("Activity tidak ditemukan");
+		if (!activity) throw new NotFoundError("Activity not found");
 
 		return activity;
 	},

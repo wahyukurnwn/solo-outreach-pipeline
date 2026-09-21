@@ -12,7 +12,7 @@ export const useAnalytics = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal memuat analitik"),
+					await extractErrorMessage(res, "Failed to load analytics"),
 				);
 
 			return res.json();

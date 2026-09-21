@@ -19,7 +19,7 @@ export const DemoActivityTimeline = ({
 }) => (
 	<section className="flex flex-col gap-3.5">
 		<SectionHeader
-			title="Riwayat aktivitas"
+			title="Activity history"
 			icon={
 				<IconBox tone="lavender">
 					<Clock className="size-[15px]" />
@@ -28,7 +28,7 @@ export const DemoActivityTimeline = ({
 			action={
 				activities ? (
 					<span className="text-[13px] text-muted">
-						{activities.length} catatan
+						{activities.length} {activities.length === 1 ? "entry" : "entries"}
 					</span>
 				) : null
 			}
@@ -49,7 +49,7 @@ function TimelineBody({ activities }: { activities?: Activity[] }) {
 	if (activities.length === 0)
 		return (
 			<div className="rounded-2xl border border-dashed border-line-strong px-5 py-8 text-center">
-				<p className="text-sm font-semibold text-ink">Belum ada aktivitas</p>
+				<p className="text-sm font-semibold text-ink">No activity yet</p>
 			</div>
 		);
 

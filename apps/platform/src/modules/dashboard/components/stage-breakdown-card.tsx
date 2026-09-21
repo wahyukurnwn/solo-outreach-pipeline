@@ -56,12 +56,12 @@ export const StageBreakdownCard = ({
 			</ul>
 
 			<p className="text-xs text-faint">
-				Closed Won &amp; Closed Lost ada di halaman{" "}
+				Closed Won &amp; Closed Lost are on the{" "}
 				<Link
 					to="/analytic"
 					className="font-medium text-muted underline-offset-2 transition-colors hover:text-ink hover:underline"
 				>
-					Analitik
+					Analytics page
 				</Link>
 			</p>
 		</Card>

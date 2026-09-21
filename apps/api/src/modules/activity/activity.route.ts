@@ -68,7 +68,7 @@ const activityRoute = new Hono<AppEnv>()
 
 			await activityService.remove(userId, id);
 
-			return c.json(messageResponse("Activity berhasil dihapus."));
+			return c.json(messageResponse("Activity deleted."));
 		},
 	);
 

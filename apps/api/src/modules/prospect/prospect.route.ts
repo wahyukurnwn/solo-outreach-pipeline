@@ -83,7 +83,7 @@ const prospectRoute = new Hono<AppEnv>()
 
 			await prospectService.remove(userId, id);
 
-			return c.json(messageResponse("Prospect berhasil dihapus."));
+			return c.json(messageResponse("Prospect deleted."));
 		},
 	);
 

@@ -39,7 +39,7 @@ export const ProspectProperties = ({ prospect }: { prospect: Prospect }) => (
 		<PropertyRow icon={Layers} label="Stage">
 			<StagePill stage={prospect.stage} variant="tinted" />
 		</PropertyRow>
-		<PropertyRow icon={Briefcase} label="Perusahaan">
+		<PropertyRow icon={Briefcase} label="Company">
 			{prospect.company || <EmptyValue />}
 		</PropertyRow>
 		<PropertyRow icon={MessageSquare} label="Channel">

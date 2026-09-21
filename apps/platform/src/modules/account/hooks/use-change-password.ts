@@ -14,7 +14,7 @@ export const useChangePassword = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal mengganti password"),
+					await extractErrorMessage(res, "Failed to change password"),
 				);
 
 			return res.json();

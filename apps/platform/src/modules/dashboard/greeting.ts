@@ -1,13 +1,12 @@
 export function greetingFor(date: Date) {
 	const hour = date.getHours();
 
-	if (hour < 11) return "Selamat pagi";
-	if (hour < 15) return "Selamat siang";
-	if (hour < 18) return "Selamat sore";
-	return "Selamat malam";
+	if (hour < 12) return "Good morning";
+	if (hour < 18) return "Good afternoon";
+	return "Good evening";
 }
 
-const longDateFormatter = new Intl.DateTimeFormat("id-ID", {
+const longDateFormatter = new Intl.DateTimeFormat("en-US", {
 	weekday: "long",
 	day: "numeric",
 	month: "long",

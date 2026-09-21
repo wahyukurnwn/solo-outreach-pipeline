@@ -79,9 +79,7 @@ const authRoute = new Hono<AppEnv>()
 			await credentialService.register(body);
 
 			return c.json(
-				createdAccountResponse(
-					"Register berhasil. Silahkan ke halaman login page!",
-				),
+				createdAccountResponse("Account created. Please sign in."),
 				201,
 			);
 		},
@@ -162,7 +160,7 @@ const authRoute = new Hono<AppEnv>()
 		if (rawToken) await credentialService.revokeRefreshToken(rawToken);
 		clearRefreshTokenCookie(c);
 
-		return c.json(messageResponse("Berhasil logout."));
+		return c.json(messageResponse("Signed out."));
 	})
 	.post(
 		"/api/auth/forgot-password",
@@ -175,7 +173,7 @@ const authRoute = new Hono<AppEnv>()
 
 			return c.json(
 				messageResponse(
-					"Jika email terdaftar, link reset password sudah dikirim.",
+					"If the email is registered, a password reset link has been sent.",
 				),
 			);
 		},
@@ -188,9 +186,7 @@ const authRoute = new Hono<AppEnv>()
 
 			await credentialService.resetPassword(body);
 
-			return c.json(
-				messageResponse("Password berhasil direset. Silahkan login."),
-			);
+			return c.json(messageResponse("Password reset. Please sign in."));
 		},
 	)
 	.get("/api/auth/me", requireAuth, async (c) => {
@@ -218,7 +214,7 @@ const authRoute = new Hono<AppEnv>()
 
 			await credentialService.changePassword(id, body);
 
-			return c.json(messageResponse("Password berhasil diubah."));
+			return c.json(messageResponse("Password changed."));
 		},
 	)
 	.delete(
@@ -231,7 +227,7 @@ const authRoute = new Hono<AppEnv>()
 
 			await credentialService.removePassword(id, body);
 
-			return c.json(messageResponse("Password berhasil dihapus."));
+			return c.json(messageResponse("Password removed."));
 		},
 	)
 	.delete("/api/auth/google", requireAuth, async (c) => {
@@ -239,7 +235,7 @@ const authRoute = new Hono<AppEnv>()
 
 		await credentialService.unlinkGoogle(id);
 
-		return c.json(messageResponse("Akun Google berhasil dilepas."));
+		return c.json(messageResponse("Google account unlinked."));
 	});
 
 export default authRoute;

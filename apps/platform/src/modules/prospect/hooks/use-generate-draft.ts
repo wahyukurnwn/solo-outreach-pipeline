@@ -13,7 +13,9 @@ export const useGenerateDraft = (prospectId: string) => {
 			});
 
 			if (!res.ok)
-				throw new Error(await extractErrorMessage(res, "Gagal membuat draft"));
+				throw new Error(
+					await extractErrorMessage(res, "Failed to generate draft"),
+				);
 
 			const { draft } = await res.json();
 			return draft;

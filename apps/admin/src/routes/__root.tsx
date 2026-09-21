@@ -29,7 +29,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			},
 			{
 				name: "description",
-				content: "Konsol admin untuk mengelola user dan role akses.",
+				content: "Admin console for managing users and access roles.",
 			},
 			{
 				name: "theme-color",

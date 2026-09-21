@@ -35,8 +35,8 @@ function ProspectPage() {
 	return (
 		<div className="flex flex-col gap-7 px-6 py-8 sm:px-12 sm:py-10">
 			<PageHeader
-				title="Prospek"
-				description="Semua orang yang sedang Anda dekati, di satu tempat."
+				title="Prospects"
+				description="Everyone you're reaching out to, in one place."
 				action={
 					<button
 						type="button"
@@ -44,7 +44,7 @@ function ProspectPage() {
 						className={primaryButtonClassName}
 					>
 						<Plus className="size-4" />
-						Tambah prospek
+						Add prospect
 					</button>
 				}
 			/>
@@ -65,7 +65,7 @@ function ProspectDirectory({ onCreate }: { onCreate: () => void }) {
 	if (prospectsQuery.error)
 		return (
 			<QueryError
-				title="Daftar prospek gagal dimuat"
+				title="Prospects failed to load"
 				message={prospectsQuery.error.message}
 				onRetry={() => prospectsQuery.refetch()}
 			/>
@@ -91,13 +91,13 @@ function ProspectDirectory({ onCreate }: { onCreate: () => void }) {
 			<div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
 				<StageFilter prospects={prospects} activeStage={stage} />
 				<label className="relative xl:w-64">
-					<span className="sr-only">Cari prospek</span>
+					<span className="sr-only">Search prospects</span>
 					<Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-faint" />
 					<input
 						type="search"
 						value={keyword}
 						onChange={(event) => setKeyword(event.target.value)}
-						placeholder="Cari nama atau perusahaan"
+						placeholder="Search by name or company"
 						className={`${inputClassName} pl-9`}
 					/>
 				</label>
@@ -105,7 +105,7 @@ function ProspectDirectory({ onCreate }: { onCreate: () => void }) {
 
 			{visibleProspects.length === 0 ? (
 				<p className="rounded-[20px] border border-dashed border-line-strong px-6 py-10 text-center text-sm text-muted">
-					Tidak ada prospek yang cocok dengan filter ini.
+					No prospects match this filter.
 				</p>
 			) : (
 				<ProspectTable prospects={visibleProspects} />
@@ -117,7 +117,7 @@ function ProspectDirectory({ onCreate }: { onCreate: () => void }) {
 function ProspectListSkeleton() {
 	return (
 		<div aria-busy="true" className="flex flex-col gap-4">
-			<span className="sr-only">Memuat daftar prospek…</span>
+			<span className="sr-only">Loading prospects…</span>
 			<div className="h-8 w-2/3 animate-pulse rounded-full bg-sidebar" />
 			<div className="h-80 animate-pulse rounded-[20px] border border-line bg-white" />
 		</div>
@@ -130,10 +130,10 @@ function EmptyPipeline({ onCreate }: { onCreate: () => void }) {
 			<IconBox tone="lavender" size="xl">
 				<Users className="size-6" />
 			</IconBox>
-			<p className="mt-4 text-base font-bold text-ink">Belum ada prospek</p>
+			<p className="mt-4 text-base font-bold text-ink">No prospects yet</p>
 			<p className="mt-1 max-w-sm text-sm text-muted">
-				Mulai dari satu orang yang sudah lama ingin Anda hubungi. Tiga puluh
-				detik, bukan ritual input data.
+				Start with one person you've been meaning to reach out to. Thirty
+				seconds, not a data-entry ritual.
 			</p>
 			<button
 				type="button"
@@ -141,7 +141,7 @@ function EmptyPipeline({ onCreate }: { onCreate: () => void }) {
 				className={`${primaryButtonClassName} mt-6`}
 			>
 				<Plus className="size-4" />
-				Tambah prospek pertama
+				Add your first prospect
 			</button>
 		</div>
 	);

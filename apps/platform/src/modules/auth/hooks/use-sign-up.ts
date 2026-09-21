@@ -15,7 +15,10 @@ export const useSignUp = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal mendaftar — coba email lain"),
+					await extractErrorMessage(
+						res,
+						"Sign-up failed — try a different email",
+					),
 				);
 
 			return await res.json();

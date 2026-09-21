@@ -52,7 +52,7 @@ export const ActivityFields = ({
 				</div>
 				<div>
 					<label htmlFor={`${idPrefix}-outcome`} className={labelClassName}>
-						Hasil
+						Outcome
 					</label>
 					<select
 						id={`${idPrefix}-outcome`}
@@ -75,7 +75,7 @@ export const ActivityFields = ({
 
 			<div>
 				<label htmlFor={`${idPrefix}-date`} className={labelClassName}>
-					Tanggal
+					Date
 				</label>
 				<input
 					id={`${idPrefix}-date`}
@@ -89,14 +89,14 @@ export const ActivityFields = ({
 
 			<div>
 				<label htmlFor={`${idPrefix}-message`} className={labelClassName}>
-					Catatan pesan
+					Message notes
 				</label>
 				<textarea
 					id={`${idPrefix}-message`}
 					value={values.messageText}
 					onChange={(event) => update({ messageText: event.target.value })}
 					rows={3}
-					placeholder="Ringkasan singkat pesan yang dikirim..."
+					placeholder="A short summary of the message you sent..."
 					className={`${inputClassName} resize-none`}
 				/>
 			</div>

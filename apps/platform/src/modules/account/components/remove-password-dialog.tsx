@@ -41,16 +41,16 @@ function RemovePasswordForm({ onClose }: { onClose: () => void }) {
 	return (
 		<form onSubmit={handleSubmit} className="flex flex-col gap-4">
 			<div className="pr-8">
-				<p className="text-base font-bold text-ink">Hapus password?</p>
+				<p className="text-base font-bold text-ink">Remove password?</p>
 				<p className="mt-1 text-sm text-muted">
-					Setelah ini Anda hanya bisa masuk lewat Google. Masukkan password saat
-					ini untuk konfirmasi.
+					After this you can only sign in with Google. Enter your current
+					password to confirm.
 				</p>
 			</div>
 
 			<div>
 				<label htmlFor="remove-current-password" className={labelClassName}>
-					Password saat ini
+					Current password
 				</label>
 				<input
 					id="remove-current-password"
@@ -69,7 +69,7 @@ function RemovePasswordForm({ onClose }: { onClose: () => void }) {
 					onClick={onClose}
 					className="rounded-xl bg-sidebar px-4 py-2 text-sm font-semibold text-ink-soft transition-colors hover:bg-line"
 				>
-					Batal
+					Cancel
 				</button>
 				<button
 					type="submit"
@@ -77,7 +77,7 @@ function RemovePasswordForm({ onClose }: { onClose: () => void }) {
 					className="inline-flex items-center gap-2 rounded-xl bg-blush-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blush-700/90 disabled:opacity-50"
 				>
 					{removePassword.isPending ? <Loader /> : null}
-					Hapus password
+					Remove password
 				</button>
 			</div>
 		</form>

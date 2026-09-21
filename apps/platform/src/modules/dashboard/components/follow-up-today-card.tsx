@@ -18,7 +18,7 @@ export const FollowUpTodayCard = ({ followUps }: { followUps: Prospect[] }) => {
 	return (
 		<Card className="flex flex-col gap-4">
 			<SectionHeader
-				title="Follow-up hari ini"
+				title="Follow-ups today"
 				icon={
 					<IconBox tone="peach">
 						<CalendarClock className="size-[15px]" />
@@ -30,7 +30,7 @@ export const FollowUpTodayCard = ({ followUps }: { followUps: Prospect[] }) => {
 							to="/prospect"
 							className="text-[13px] font-semibold text-lavender-700 transition-colors hover:text-ink"
 						>
-							Lihat semua
+							View all
 						</Link>
 					) : null
 				}
@@ -42,11 +42,10 @@ export const FollowUpTodayCard = ({ followUps }: { followUps: Prospect[] }) => {
 						<Inbox className="size-[18px]" />
 					</IconBox>
 					<p className="mt-3 text-sm font-semibold text-ink">
-						Tidak ada follow-up yang jatuh tempo
+						No follow-ups due
 					</p>
 					<p className="max-w-xs text-[13px] text-muted">
-						Prospek yang jadwal follow-up-nya hari ini atau sudah lewat akan
-						muncul di sini.
+						Prospects whose follow-up is due today or overdue will show up here.
 					</p>
 				</div>
 			) : (

@@ -18,7 +18,7 @@ export const QueryError = ({ title, message, onRetry }: QueryErrorProps) => (
 			className="inline-flex items-center gap-1.5 rounded-[10px] bg-white px-3 py-1.5 text-[13px] font-semibold text-blush-700 transition-colors hover:bg-blush-100"
 		>
 			<RotateCw className="size-3.5" />
-			Coba lagi
+			Try again
 		</button>
 	</div>
 );

@@ -31,7 +31,7 @@ function DashboardPage() {
 			<PageHeader
 				eyebrow={formatLongDate(now)}
 				title={greetingFor(now)}
-				description="Ini kondisi pipeline Anda hari ini."
+				description="Here's where your pipeline stands today."
 				action={
 					<button
 						type="button"
@@ -39,7 +39,7 @@ function DashboardPage() {
 						className={primaryButtonClassName}
 					>
 						<Plus className="size-4" />
-						Tambah prospek
+						Add prospect
 					</button>
 				}
 			/>

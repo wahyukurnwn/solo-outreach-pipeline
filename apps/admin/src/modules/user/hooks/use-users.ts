@@ -11,7 +11,7 @@ export const useUsers = () => {
 			const res = await apiClient.api.admin.users.$get();
 
 			if (!res.ok)
-				throw new Error(await extractErrorMessage(res, "Gagal memuat users"));
+				throw new Error(await extractErrorMessage(res, "Failed to load users"));
 
 			const { data } = await res.json();
 			return data;

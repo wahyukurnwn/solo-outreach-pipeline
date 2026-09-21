@@ -15,7 +15,7 @@ export async function getUserFromRequest(c: Context): Promise<AuthUser | null> {
 		return verifyToken(token);
 	} catch {
 		throw new UnauthorizedError(
-			"Token tidak valid atau kedaluwarsa",
+			"The token is invalid or has expired",
 			"INVALID_TOKEN",
 		);
 	}
@@ -26,7 +26,7 @@ export const requireAuth = createMiddleware<AppEnv>(async (c, next) => {
 
 	if (!user)
 		throw new UnauthorizedError(
-			"Header `Authorization: Bearer <token>` atau session login dibutuhkan",
+			"An `Authorization: Bearer <token>` header or a signed-in session is required",
 			"MISSING_TOKEN",
 		);
 
@@ -38,7 +38,8 @@ export const requireAuth = createMiddleware<AppEnv>(async (c, next) => {
 export const requireAdmin = createMiddleware<AppEnv>(async (c, next) => {
 	const user = c.get("user");
 
-	if (user.role !== "ADMIN") throw new ForbiddenError("Akses admin dibutuhkan");
+	if (user.role !== "ADMIN")
+		throw new ForbiddenError("Admin access is required");
 
 	await next();
 });

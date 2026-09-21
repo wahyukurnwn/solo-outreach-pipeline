@@ -12,7 +12,7 @@ export const useDemoAnalytics = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal memuat analitik demo"),
+					await extractErrorMessage(res, "Failed to load demo analytics"),
 				);
 
 			return res.json();

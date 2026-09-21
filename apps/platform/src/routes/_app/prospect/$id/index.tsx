@@ -47,7 +47,7 @@ function ProspectDetailContent({ id }: { id: string }) {
 			<>
 				<Breadcrumb />
 				<QueryError
-					title="Prospek tidak bisa dimuat"
+					title="Prospect couldn't be loaded"
 					message={prospectQuery.error.message}
 					onRetry={() => prospectQuery.refetch()}
 				/>
@@ -63,7 +63,7 @@ function ProspectDetailContent({ id }: { id: string }) {
 
 		deleteProspect.mutate(prospect.id, {
 			onSuccess: () => {
-				toast.success("Prospek dihapus");
+				toast.success("Prospect deleted");
 				navigate({ to: "/prospect" });
 			},
 			onError: (err) => {
@@ -92,7 +92,7 @@ function ProspectDetailContent({ id }: { id: string }) {
 						className={dangerSoftButtonClassName}
 					>
 						<Trash className="size-3.5" />
-						Hapus
+						Delete
 					</button>
 				</div>
 			</div>
@@ -122,9 +122,9 @@ function ProspectDetailContent({ id }: { id: string }) {
 			/>
 			<AlertDialog
 				open={isDeleteOpen}
-				title="Hapus prospek ini?"
-				description={`${prospect.name} beserta seluruh riwayat aktivitasnya akan dihapus permanen.`}
-				confirmLabel={deleteProspect.isPending ? "Menghapus..." : "Hapus"}
+				title="Delete this prospect?"
+				description={`${prospect.name} and all of their activity history will be permanently deleted.`}
+				confirmLabel={deleteProspect.isPending ? "Deleting..." : "Delete"}
 				onConfirm={handleDelete}
 				onCancel={() => setIsDeleteOpen(false)}
 			/>
@@ -139,7 +139,7 @@ function Breadcrumb({ name }: { name?: string }) {
 			className="flex min-w-0 items-center gap-2 text-[13px] text-muted"
 		>
 			<Link to="/prospect" className="transition-colors hover:text-ink">
-				Prospek
+				Prospects
 			</Link>
 			{name ? (
 				<>
@@ -154,7 +154,7 @@ function Breadcrumb({ name }: { name?: string }) {
 function ProspectDetailSkeleton() {
 	return (
 		<div aria-busy="true" className="flex flex-col gap-6">
-			<span className="sr-only">Memuat prospek…</span>
+			<span className="sr-only">Loading prospect…</span>
 			<div className="h-5 w-40 animate-pulse rounded-full bg-sidebar" />
 			<div className="size-[72px] animate-pulse rounded-[22px] bg-sidebar" />
 			<div className="h-9 w-72 max-w-full animate-pulse rounded-xl bg-sidebar" />

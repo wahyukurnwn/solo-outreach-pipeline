@@ -6,5 +6,5 @@ const url = process.env.DATABASE_URL;
 
 if (!url || !databaseName(url).endsWith("_test"))
 	throw new Error(
-		`Menolak menjalankan test ke database "${url ? databaseName(url) : "(kosong)"}" — nama database test harus berakhiran "_test". Jalankan lewat \`pnpm test\`.`,
+		`Refusing to run tests against database "${url ? databaseName(url) : "(empty)"}" — the test database name must end in "_test". Run tests via \`pnpm test\`.`,
 	);

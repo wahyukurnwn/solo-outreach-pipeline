@@ -7,7 +7,7 @@ const statSkeletonTones = [
 
 export const DashboardSkeleton = () => (
 	<div aria-busy="true" className="flex flex-col gap-7">
-		<span className="sr-only">Memuat dashboard…</span>
+		<span className="sr-only">Loading dashboard…</span>
 		<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
 			{statSkeletonTones.map((tone) => (
 				<div

@@ -14,7 +14,7 @@ export const useDeleteProspect = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal menghapus prospek"),
+					await extractErrorMessage(res, "Failed to delete prospect"),
 				);
 		},
 		onSuccess: () => {

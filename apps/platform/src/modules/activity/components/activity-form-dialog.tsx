@@ -53,7 +53,7 @@ function EditActivityForm({
 			},
 			{
 				onSuccess: () => {
-					toast.success("Aktivitas diperbarui");
+					toast.success("Activity updated");
 					onClose();
 				},
 				onError: (err) => toast.error(err.message),
@@ -64,9 +64,9 @@ function EditActivityForm({
 	return (
 		<form onSubmit={handleSubmit} className="flex flex-col gap-4">
 			<div className="pr-8">
-				<p className="text-base font-bold text-ink">Edit aktivitas</p>
+				<p className="text-base font-bold text-ink">Edit activity</p>
 				<p className="mt-1 text-sm text-muted">
-					Perbaiki detail outreach yang sudah tercatat.
+					Fix the details of an outreach you already logged.
 				</p>
 			</div>
 
@@ -82,7 +82,7 @@ function EditActivityForm({
 					onClick={onClose}
 					className="rounded-xl bg-sidebar px-4 py-2 text-sm font-semibold text-ink-soft transition-colors hover:bg-line"
 				>
-					Batal
+					Cancel
 				</button>
 				<button
 					type="submit"
@@ -90,7 +90,7 @@ function EditActivityForm({
 					className={primaryButtonClassName}
 				>
 					{updateActivity.isPending ? <Loader /> : null}
-					Simpan perubahan
+					Save changes
 				</button>
 			</div>
 		</form>

@@ -1,9 +1,9 @@
 import type { Activity } from "./types";
 
 export const outcomeLabel: Record<Activity["outcome"], string> = {
-	sent: "Terkirim",
-	replied: "Dibalas",
-	no_response: "Tidak ada respons",
+	sent: "Sent",
+	replied: "Replied",
+	no_response: "No response",
 };
 
 export const outcomeOptions = Object.keys(

@@ -18,11 +18,11 @@ function SignInPage() {
 
 	return (
 		<AuthCard
-			title={mode === "signup" ? "Buat Akun Baru" : "Selamat Datang Kembali"}
+			title={mode === "signup" ? "Create your account" : "Welcome back"}
 			description={
 				mode === "signup"
-					? "Daftar untuk mulai melacak prospek Anda"
-					: "Masuk untuk mengakses akun dan semua fitur Anda"
+					? "Sign up to start tracking your prospects"
+					: "Sign in to access your account and all your features"
 			}
 		>
 			<div className="flex flex-col gap-5">

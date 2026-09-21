@@ -26,7 +26,7 @@ export const useUpdateActivity = (prospectId: string) => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal memperbarui aktivitas"),
+					await extractErrorMessage(res, "Failed to update activity"),
 				);
 
 			return res.json();

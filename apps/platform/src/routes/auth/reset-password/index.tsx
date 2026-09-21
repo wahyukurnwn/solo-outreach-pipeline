@@ -17,12 +17,12 @@ export const Route = createFileRoute("/auth/reset-password/")({
 
 const requestNewLinkFooter = (
 	<span className="text-muted">
-		Link kedaluwarsa?{" "}
+		Link expired?{" "}
 		<Link
 			to="/auth/forgot-password"
 			className="font-semibold text-ink transition-colors hover:text-lavender-700"
 		>
-			Minta link baru
+			Request a new link
 		</Link>
 	</span>
 );
@@ -33,8 +33,8 @@ function ResetPasswordPage() {
 	if (!token)
 		return (
 			<AuthCard
-				title="Link tidak valid"
-				description="Link reset password ini tidak lengkap atau sudah terpotong."
+				title="Invalid link"
+				description="This password reset link is incomplete or was cut off."
 			>
 				<div className="flex flex-col items-center gap-5">
 					<IconBox tone="blush" size="lg">
@@ -44,7 +44,7 @@ function ResetPasswordPage() {
 						to="/auth/forgot-password"
 						className={authSubmitButtonClassName}
 					>
-						Minta link baru
+						Request a new link
 					</Link>
 				</div>
 			</AuthCard>
@@ -52,8 +52,8 @@ function ResetPasswordPage() {
 
 	return (
 		<AuthCard
-			title="Buat password baru"
-			description="Password baru langsung menggantikan password lama Anda."
+			title="Set a new password"
+			description="Your new password replaces the old one right away."
 			footer={requestNewLinkFooter}
 		>
 			<ResetPasswordForm token={token} />

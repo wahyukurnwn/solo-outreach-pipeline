@@ -8,16 +8,16 @@ export const Route = createFileRoute("/auth/forgot-password/")({
 function ForgotPasswordPage() {
 	return (
 		<AuthCard
-			title="Lupa password?"
-			description="Masukkan email akun Anda. Kami kirim link untuk membuat password baru."
+			title="Forgot your password?"
+			description="Enter your account email and we'll send you a link to set a new password."
 			footer={
 				<span className="text-muted">
-					Ingat password Anda?{" "}
+					Remember your password?{" "}
 					<Link
 						to="/auth/signin"
 						className="font-semibold text-ink transition-colors hover:text-lavender-700"
 					>
-						Masuk
+						Sign in
 					</Link>
 				</span>
 			}

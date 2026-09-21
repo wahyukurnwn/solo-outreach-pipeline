@@ -15,7 +15,7 @@ export const useDemoLogs = (userId: string) => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal memuat riwayat demo"),
+					await extractErrorMessage(res, "Failed to load demo history"),
 				);
 
 			const { data } = await res.json();

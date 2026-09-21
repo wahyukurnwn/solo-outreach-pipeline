@@ -12,7 +12,7 @@ export const useRemovePassword = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal menghapus password"),
+					await extractErrorMessage(res, "Failed to remove password"),
 				);
 
 			return res.json();

@@ -4,10 +4,10 @@ import type { Prospect } from "#/modules/prospect/types";
 // ketiga kalinya di prospect-form.tsx (mode edit), jadi diduplikasi manual
 // sudah tidak masuk akal (Rule of Three).
 export const stageLabel: Record<Prospect["stage"], string> = {
-	NEW: "Baru",
-	CONTACTED: "Dihubungi",
-	REPLIED: "Dibalas",
-	CALL_SCHEDULED: "Jadwal Call",
+	NEW: "New",
+	CONTACTED: "Contacted",
+	REPLIED: "Replied",
+	CALL_SCHEDULED: "Call scheduled",
 	CLOSED_WON: "Closed Won",
 	CLOSED_LOST: "Closed Lost",
 };
@@ -15,8 +15,8 @@ export const stageLabel: Record<Prospect["stage"], string> = {
 export const channelLabel: Record<NonNullable<Prospect["channel"]>, string> = {
 	EMAIL: "Email",
 	LINKEDIN: "LinkedIn",
-	PHONE: "Telepon",
-	OTHER: "Lainnya",
+	PHONE: "Phone",
+	OTHER: "Other",
 };
 
 // Warna penanda per stage — dipakai bareng (dot + percentage bar) di

@@ -24,7 +24,7 @@ export const StageFilter = ({ prospects, activeStage }: StageFilterProps) => (
 			search={{}}
 			className={`${chipClassName} ${chipStateClassName(!activeStage)}`}
 		>
-			Semua
+			All
 			<span className="tabular-nums opacity-60">{prospects.length}</span>
 		</Link>
 		{stageOptions.map((stage) => (

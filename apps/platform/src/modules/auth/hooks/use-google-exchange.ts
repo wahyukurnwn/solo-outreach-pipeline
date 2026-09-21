@@ -12,7 +12,7 @@ export const useGoogleExchange = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal masuk dengan Google"),
+					await extractErrorMessage(res, "Failed to sign in with Google"),
 				);
 
 			const data = await res.json();

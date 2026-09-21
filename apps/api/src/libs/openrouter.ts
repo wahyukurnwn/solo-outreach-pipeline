@@ -43,13 +43,13 @@ function toUserFacingError(err: OpenRouterError) {
 
 	if (status === 429)
 		return new ServiceUnavailableError(
-			"Kuota AI sedang penuh, coba lagi nanti",
+			"AI quota is currently full, please try again later",
 			"AI_DRAFTING_QUOTA_EXCEEDED",
 		);
 
 	if (status === 401 || status === 402 || status === 403 || status >= 500)
 		return new ServiceUnavailableError(
-			"Layanan AI sedang tidak tersedia, coba lagi nanti",
+			"The AI service is currently unavailable, please try again later",
 			"AI_DRAFTING_UNAVAILABLE",
 		);
 
@@ -69,7 +69,7 @@ function isTimeout(err: unknown) {
 export async function generateDraftMessage(prompt: string): Promise<string> {
 	if (!env.openRouterApiKey)
 		throw new ServiceUnavailableError(
-			"Fitur draft AI belum dikonfigurasi",
+			"AI drafting is not configured",
 			"AI_DRAFTING_NOT_CONFIGURED",
 		);
 
@@ -94,7 +94,7 @@ export async function generateDraftMessage(prompt: string): Promise<string> {
 		.catch((err: unknown) => {
 			if (isTimeout(err))
 				throw new ServiceUnavailableError(
-					"Pembuatan draft terlalu lama, coba lagi sebentar lagi",
+					"Drafting took too long, please try again in a moment",
 					"AI_DRAFTING_TIMEOUT",
 				);
 			if (err instanceof OpenRouterError) throw toUserFacingError(err);

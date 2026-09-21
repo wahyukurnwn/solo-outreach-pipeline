@@ -15,7 +15,7 @@ export const useActivities = (prospectId: string) => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal memuat riwayat aktivitas"),
+					await extractErrorMessage(res, "Failed to load activity history"),
 				);
 
 			const { data } = await res.json();

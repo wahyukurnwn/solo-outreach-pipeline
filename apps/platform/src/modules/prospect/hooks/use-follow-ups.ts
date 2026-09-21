@@ -23,7 +23,7 @@ export const useFollowUps = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal memuat follow-up"),
+					await extractErrorMessage(res, "Failed to load follow-ups"),
 				);
 
 			const { data } = await res.json();

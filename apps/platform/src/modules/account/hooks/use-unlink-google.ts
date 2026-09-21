@@ -12,7 +12,7 @@ export const useUnlinkGoogle = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal melepas akun Google"),
+					await extractErrorMessage(res, "Failed to unlink Google account"),
 				);
 
 			return res.json();

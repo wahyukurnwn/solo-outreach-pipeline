@@ -23,5 +23,5 @@ export function daysOverdue(followUpDate: string, today = new Date()) {
 }
 
 export function followUpDueLabel(days: number) {
-	return days > 0 ? `Telat ${days} hari` : "Hari ini";
+	return days > 0 ? `${days} ${days === 1 ? "day" : "days"} overdue` : "Today";
 }

@@ -58,7 +58,7 @@ export const SignInForm = () => {
 						to="/forgot-password"
 						className="text-[13px] font-medium text-ink-soft no-underline transition-colors hover:text-lavender-700"
 					>
-						Lupa password?
+						Forgot password?
 					</Link>
 				</div>
 				<input
@@ -79,7 +79,7 @@ export const SignInForm = () => {
 				className={`${primaryButtonClassName} mt-1 h-11 w-full`}
 			>
 				{signIn.isPending ? <Loader /> : <Mail className="size-4" />}
-				{signIn.isPending ? "Masuk..." : "Masuk"}
+				{signIn.isPending ? "Signing in..." : "Sign in"}
 			</button>
 		</form>
 	);

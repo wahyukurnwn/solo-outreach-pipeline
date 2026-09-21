@@ -22,7 +22,11 @@ export const StageDistributionCard = ({
 					<Layers className="size-[15px]" />
 				</IconBox>
 			}
-			action={<span className="text-[13px] text-muted">{total} prospek</span>}
+			action={
+				<span className="text-[13px] text-muted">
+					{total} {total === 1 ? "prospect" : "prospects"}
+				</span>
+			}
 		/>
 
 		<ul className="flex flex-col gap-3.5">

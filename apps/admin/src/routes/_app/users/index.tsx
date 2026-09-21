@@ -16,7 +16,7 @@ function UsersPage() {
 		<div className="flex flex-col gap-7">
 			<PageHeader
 				title="Users"
-				description="Kelola akun dan role akses ke aplikasi."
+				description="Manage accounts and access roles for the app."
 			/>
 			<UserDirectory />
 		</div>
@@ -52,20 +52,20 @@ function UserDirectory() {
 	return (
 		<div className="flex flex-col gap-4">
 			<label className="relative sm:w-72">
-				<span className="sr-only">Cari email</span>
+				<span className="sr-only">Search email</span>
 				<Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-faint" />
 				<input
 					type="search"
 					value={keyword}
 					onChange={(event) => setKeyword(event.target.value)}
-					placeholder="Cari email"
+					placeholder="Search email"
 					className={`${inputClassName} pl-9`}
 				/>
 			</label>
 
 			{visibleUsers.length === 0 ? (
 				<p className="rounded-[20px] border border-dashed border-line-strong px-6 py-10 text-center text-sm text-muted">
-					Tidak ada user yang cocok dengan pencarian ini.
+					No users match this search.
 				</p>
 			) : (
 				<UserTable users={visibleUsers} />
@@ -77,7 +77,7 @@ function UserDirectory() {
 function UserListSkeleton() {
 	return (
 		<div aria-busy="true" className="flex flex-col gap-4">
-			<span className="sr-only">Memuat daftar user…</span>
+			<span className="sr-only">Loading users…</span>
 			<div className="h-9 w-72 animate-pulse rounded-xl bg-sidebar" />
 			<div className="h-80 animate-pulse rounded-[20px] border border-line bg-white" />
 		</div>
@@ -90,9 +90,9 @@ function EmptyUsers() {
 			<IconBox tone="lavender" size="xl">
 				<UsersIcon className="size-6" />
 			</IconBox>
-			<p className="mt-4 text-base font-bold text-ink">Belum ada user</p>
+			<p className="mt-4 text-base font-bold text-ink">No users yet</p>
 			<p className="mt-1 max-w-sm text-sm text-muted">
-				User akan muncul di sini setelah mendaftar di aplikasi utama.
+				Users will show up here once they sign up in the main app.
 			</p>
 		</div>
 	);

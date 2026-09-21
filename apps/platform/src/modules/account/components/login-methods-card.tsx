@@ -54,7 +54,7 @@ export const LoginMethodsCard = ({ me }: { me: Me }) => {
 
 		unlinkGoogle.mutate(undefined, {
 			onSuccess: () => {
-				toast.success("Akun Google dilepas");
+				toast.success("Google account unlinked");
 				setIsUnlinkGoogleOpen(false);
 			},
 			onError: (err) => {
@@ -67,7 +67,7 @@ export const LoginMethodsCard = ({ me }: { me: Me }) => {
 	return (
 		<Card className="flex flex-col gap-4">
 			<SectionHeader
-				title="Metode login"
+				title="Sign-in methods"
 				icon={
 					<IconBox tone="mint">
 						<ShieldCheck className="size-[15px]" />
@@ -83,7 +83,7 @@ export const LoginMethodsCard = ({ me }: { me: Me }) => {
 						</IconBox>
 					}
 					title="Email & password"
-					status={me.hasPassword ? "Aktif" : "Belum dibuat"}
+					status={me.hasPassword ? "Active" : "Not set"}
 					isActive={me.hasPassword}
 					action={
 						me.hasPassword ? (
@@ -93,11 +93,11 @@ export const LoginMethodsCard = ({ me }: { me: Me }) => {
 								onClick={() => setIsRemovePasswordOpen(true)}
 								className={dangerSoftButtonClassName}
 							>
-								Hapus password
+								Remove password
 							</button>
 						) : (
 							<Link to="/auth/forgot-password" className={softButtonClassName}>
-								Buat password
+								Set a password
 							</Link>
 						)
 					}
@@ -109,7 +109,7 @@ export const LoginMethodsCard = ({ me }: { me: Me }) => {
 						</span>
 					}
 					title="Google"
-					status={me.hasGoogle ? "Terhubung" : "Belum terhubung"}
+					status={me.hasGoogle ? "Connected" : "Not connected"}
 					isActive={me.hasGoogle}
 					action={
 						me.hasGoogle ? (
@@ -119,7 +119,7 @@ export const LoginMethodsCard = ({ me }: { me: Me }) => {
 								onClick={() => setIsUnlinkGoogleOpen(true)}
 								className={dangerSoftButtonClassName}
 							>
-								Lepas Google
+								Unlink Google
 							</button>
 						) : (
 							<button
@@ -131,7 +131,7 @@ export const LoginMethodsCard = ({ me }: { me: Me }) => {
 								}}
 								className={softButtonClassName}
 							>
-								Hubungkan
+								Connect
 							</button>
 						)
 					}
@@ -141,23 +141,23 @@ export const LoginMethodsCard = ({ me }: { me: Me }) => {
 			<div className="flex flex-col gap-1.5 text-xs leading-relaxed text-muted">
 				{hasBothMethods ? null : (
 					<p>
-						Akun harus selalu punya minimal satu cara masuk — tambahkan metode
-						lain dulu sebelum menghapus yang sekarang.
+						An account must always keep at least one way to sign in — add
+						another method before removing the current one.
 					</p>
 				)}
 				{me.hasGoogle ? null : (
 					<p>
-						Akun Google baru tertaut kalau email-nya sama dengan{" "}
+						A Google account only links if its email matches{" "}
 						<span className="font-semibold text-ink-soft">
 							{maskEmail(me.email)}
 						</span>
-						. Email Google yang berbeda akan membuat akun terpisah.
+						. A different Google email creates a separate account.
 					</p>
 				)}
 				{me.hasPassword ? null : (
 					<p>
-						"Buat password" mengirim link ke email Anda, sama seperti alur lupa
-						password.
+						"Set a password" emails you a link, the same as the forgot-password
+						flow.
 					</p>
 				)}
 			</div>
@@ -168,9 +168,9 @@ export const LoginMethodsCard = ({ me }: { me: Me }) => {
 			/>
 			<AlertDialog
 				open={isUnlinkGoogleOpen}
-				title="Lepas akun Google?"
-				description={`Setelah dilepas, Anda hanya bisa masuk dengan email ${maskEmail(me.email)} dan password.`}
-				confirmLabel={unlinkGoogle.isPending ? "Melepas..." : "Lepas Google"}
+				title="Unlink Google account?"
+				description={`After unlinking, you can only sign in with ${maskEmail(me.email)} and your password.`}
+				confirmLabel={unlinkGoogle.isPending ? "Unlinking..." : "Unlink Google"}
 				onConfirm={handleUnlinkGoogle}
 				onCancel={() => setIsUnlinkGoogleOpen(false)}
 			/>

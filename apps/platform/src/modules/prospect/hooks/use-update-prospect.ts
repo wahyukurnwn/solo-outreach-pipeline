@@ -26,7 +26,7 @@ export const useUpdateProspect = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal memperbarui prospek"),
+					await extractErrorMessage(res, "Failed to update prospect"),
 				);
 
 			return res.json();

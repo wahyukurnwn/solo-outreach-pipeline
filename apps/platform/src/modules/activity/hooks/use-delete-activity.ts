@@ -14,7 +14,7 @@ export const useDeleteActivity = (prospectId: string) => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal menghapus aktivitas"),
+					await extractErrorMessage(res, "Failed to delete activity"),
 				);
 		},
 		onSuccess: () => {

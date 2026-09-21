@@ -30,7 +30,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
 							className="flex items-center gap-1.5 rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-muted transition-colors hover:bg-white hover:text-ink"
 						>
 							<LogOut className="size-3.5" />
-							Keluar
+							Sign out
 						</button>
 					</div>
 				</div>

@@ -50,7 +50,7 @@ app.onError((err, c) => {
 		{
 			error: {
 				code: "INTERNAL_SERVER_ERROR",
-				message: "Terjadi kesalahan pada server",
+				message: "Something went wrong on the server",
 			},
 		},
 		500,

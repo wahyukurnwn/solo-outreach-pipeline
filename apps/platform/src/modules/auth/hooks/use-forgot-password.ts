@@ -11,7 +11,7 @@ export const useForgotPassword = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal mengirim link reset password"),
+					await extractErrorMessage(res, "Failed to send the reset link"),
 				);
 
 			return res.json();

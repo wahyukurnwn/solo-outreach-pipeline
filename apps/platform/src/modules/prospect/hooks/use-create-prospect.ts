@@ -17,7 +17,7 @@ export const useCreateProspect = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal menambah prospek"),
+					await extractErrorMessage(res, "Failed to add prospect"),
 				);
 
 			return res.json();

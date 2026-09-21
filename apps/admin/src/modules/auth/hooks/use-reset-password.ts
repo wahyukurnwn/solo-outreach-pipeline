@@ -11,7 +11,7 @@ export const useResetPassword = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal mengatur ulang password"),
+					await extractErrorMessage(res, "Failed to reset password"),
 				);
 
 			return res.json();

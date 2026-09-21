@@ -19,7 +19,7 @@ export const LandingNav = () => (
 		<div
 			className={`${containerClassName} flex h-16 items-center justify-between gap-6`}
 		>
-			<Link to="/" aria-label="Pipeline, kembali ke beranda">
+			<Link to="/" aria-label="Pipeline, back to home">
 				<BrandMark withWordmark />
 			</Link>
 

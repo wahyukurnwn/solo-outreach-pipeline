@@ -1,4 +1,4 @@
-const percentFormatter = new Intl.NumberFormat("id-ID", {
+const percentFormatter = new Intl.NumberFormat("en-US", {
 	style: "percent",
 	maximumFractionDigits: 1,
 });

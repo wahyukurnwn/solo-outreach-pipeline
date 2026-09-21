@@ -21,7 +21,9 @@ export const useUpdateUserRole = (id: string) => {
 			});
 
 			if (!res.ok)
-				throw new Error(await extractErrorMessage(res, "Gagal ubah role"));
+				throw new Error(
+					await extractErrorMessage(res, "Failed to change role"),
+				);
 
 			return res.json();
 		},

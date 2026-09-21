@@ -70,7 +70,7 @@ function ProspectForm({
 			notes: notes.trim() || null,
 		};
 		const onSuccess = () => {
-			toast.success(isEditing ? "Prospek diperbarui" : "Prospek ditambahkan");
+			toast.success(isEditing ? "Prospect updated" : "Prospect added");
 			onClose();
 		};
 		const onError = (err: Error) => toast.error(err.message);
@@ -87,18 +87,18 @@ function ProspectForm({
 		<form onSubmit={handleSubmit} className="flex flex-col gap-4">
 			<div className="pr-8">
 				<p className="text-base font-bold text-ink">
-					{isEditing ? "Edit prospek" : "Tambah prospek"}
+					{isEditing ? "Edit prospect" : "Add prospect"}
 				</p>
 				<p className="mt-1 text-sm text-muted">
 					{isEditing
-						? "Perbarui detail prospek ini."
-						: "Nama, perusahaan, channel, dan catatan — itu saja cukup."}
+						? "Update this prospect's details."
+						: "Name, company, channel, and notes — that's all you need."}
 				</p>
 			</div>
 
 			<div>
 				<label htmlFor="prospect-name" className={labelClassName}>
-					Nama
+					Name
 				</label>
 				<input
 					id="prospect-name"
@@ -112,7 +112,7 @@ function ProspectForm({
 
 			<div>
 				<label htmlFor="prospect-company" className={labelClassName}>
-					Perusahaan
+					Company
 				</label>
 				<input
 					id="prospect-company"
@@ -134,7 +134,7 @@ function ProspectForm({
 						onChange={(event) => setChannel(event.target.value as ChannelValue)}
 						className={inputClassName}
 					>
-						<option value="">Belum ditentukan</option>
+						<option value="">Not set</option>
 						{channelOptions.map((option) => (
 							<option key={option} value={option}>
 								{channelLabel[option]}
@@ -165,7 +165,7 @@ function ProspectForm({
 
 			<div>
 				<label htmlFor="prospect-follow-up" className={labelClassName}>
-					Tanggal follow-up
+					Follow-up date
 				</label>
 				<input
 					id="prospect-follow-up"
@@ -175,20 +175,20 @@ function ProspectForm({
 					className={inputClassName}
 				/>
 				<p className={helperClassName}>
-					Kosongkan kalau belum ada jadwal follow-up.
+					Leave empty if there's no follow-up scheduled.
 				</p>
 			</div>
 
 			<div>
 				<label htmlFor="prospect-notes" className={labelClassName}>
-					Catatan
+					Notes
 				</label>
 				<textarea
 					id="prospect-notes"
 					value={notes}
 					onChange={(event) => setNotes(event.target.value)}
 					rows={3}
-					placeholder="Dari mana kenal, apa kebutuhan mereka, konteks lain yang penting."
+					placeholder="How you know them, what they need, and any other useful context."
 					className={`${inputClassName} resize-none`}
 				/>
 			</div>
@@ -199,7 +199,7 @@ function ProspectForm({
 					onClick={onClose}
 					className="rounded-xl bg-sidebar px-4 py-2 text-sm font-semibold text-ink-soft transition-colors hover:bg-line"
 				>
-					Batal
+					Cancel
 				</button>
 				<button
 					type="submit"
@@ -207,7 +207,7 @@ function ProspectForm({
 					className={primaryButtonClassName}
 				>
 					{isPending ? <Loader /> : null}
-					{isEditing ? "Simpan perubahan" : "Tambah prospek"}
+					{isEditing ? "Save changes" : "Add prospect"}
 				</button>
 			</div>
 		</form>

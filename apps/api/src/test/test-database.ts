@@ -6,7 +6,7 @@ export function resolveTestDatabaseUrl(
 	override = process.env.TEST_DATABASE_URL,
 ) {
 	if (override) return override;
-	if (!databaseUrl) throw new Error("DATABASE_URL belum di-set");
+	if (!databaseUrl) throw new Error("DATABASE_URL is not set");
 
 	const url = new URL(databaseUrl.trim());
 	const name = url.pathname.replace(/^\//, "");

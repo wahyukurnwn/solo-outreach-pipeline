@@ -2,19 +2,19 @@ import { generateDraftMessage } from "../../libs/openrouter";
 import { prospectService } from "../prospect/prospect.service";
 
 const stageLabel: Record<string, string> = {
-	NEW: "belum dihubungi",
-	CONTACTED: "sudah dihubungi, belum ada balasan",
-	REPLIED: "sudah membalas",
-	CALL_SCHEDULED: "sudah jadwalkan panggilan",
-	CLOSED_WON: "deal / menjadi klien",
-	CLOSED_LOST: "tidak lanjut",
+	NEW: "not contacted yet",
+	CONTACTED: "contacted, no reply yet",
+	REPLIED: "has replied",
+	CALL_SCHEDULED: "call scheduled",
+	CLOSED_WON: "deal closed / became a client",
+	CLOSED_LOST: "did not move forward",
 };
 
 const channelLabel: Record<string, string> = {
 	EMAIL: "email",
 	LINKEDIN: "LinkedIn",
-	PHONE: "telepon",
-	OTHER: "channel lain",
+	PHONE: "phone",
+	OTHER: "another channel",
 };
 
 // Prompt dibangun dari data prospek yang tersimpan di server (bukan input
@@ -28,20 +28,20 @@ function buildPrompt(prospect: {
 	notes: string | null;
 }) {
 	const lines = [
-		`Nama: ${prospect.name}`,
-		prospect.company ? `Perusahaan: ${prospect.company}` : null,
+		`Name: ${prospect.name}`,
+		prospect.company ? `Company: ${prospect.company}` : null,
 		prospect.channel
-			? `Channel komunikasi: ${channelLabel[prospect.channel] ?? prospect.channel}`
+			? `Contact channel: ${channelLabel[prospect.channel] ?? prospect.channel}`
 			: null,
-		`Status pipeline: ${stageLabel[prospect.stage] ?? prospect.stage}`,
-		prospect.notes ? `Catatan: ${prospect.notes}` : "Catatan: (belum ada)",
+		`Pipeline stage: ${stageLabel[prospect.stage] ?? prospect.stage}`,
+		prospect.notes ? `Notes: ${prospect.notes}` : "Notes: (none yet)",
 	].filter(Boolean);
 
-	return `Kamu membantu seorang solo-preneur menulis pesan outreach singkat untuk prospek berikut:
+	return `You are helping a solo freelancer write a short outreach message to the following prospect:
 
 ${lines.join("\n")}
 
-Tulis SATU draft pesan outreach dalam Bahasa Indonesia yang natural, singkat (maksimal 5 kalimat), sopan, dan relevan dengan status & catatan di atas. Jangan pakai salam pembuka formal berlebihan atau tanda tangan. Balas HANYA dengan teks pesannya saja, tanpa penjelasan tambahan.`;
+Write ONE outreach message draft in natural, friendly English (or in the language the notes are written in, if it is not English). Keep it short (at most 5 sentences), polite, and relevant to the stage and notes above. Skip overly formal greetings and signatures. Reply with ONLY the message text, no extra explanation.`;
 }
 
 export const draftService = {

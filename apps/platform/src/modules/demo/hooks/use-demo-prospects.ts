@@ -12,7 +12,7 @@ export const useDemoProspects = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal memuat data demo"),
+					await extractErrorMessage(res, "Failed to load demo data"),
 				);
 
 			const { data } = await res.json();

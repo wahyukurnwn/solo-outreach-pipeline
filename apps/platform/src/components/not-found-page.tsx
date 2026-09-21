@@ -19,21 +19,20 @@ export const NotFoundPage = () => (
 				404
 			</p>
 			<h1 className="mt-4 text-2xl font-bold tracking-tight text-ink sm:text-[28px]">
-				Halaman tidak ditemukan
+				Page not found
 			</h1>
 			<p className="mt-3 text-[15px] leading-relaxed text-pretty text-muted">
-				Link-nya mungkin salah ketik, sudah dipindah, atau memang tidak pernah
-				ada.
+				The link may be mistyped, moved, or may never have existed.
 			</p>
 
 			<div className="mt-8 flex flex-wrap items-center justify-center gap-3">
 				<Link to="/" className={primaryCtaClassName}>
 					<ArrowLeft className="size-4" />
-					Kembali ke beranda
+					Back to home
 				</Link>
 				<Link to="/dashboard" className={secondaryCtaClassName}>
 					<LayoutDashboard className="size-4" />
-					Buka dashboard
+					Open dashboard
 				</Link>
 			</div>
 		</div>

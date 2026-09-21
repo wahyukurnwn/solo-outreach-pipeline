@@ -13,7 +13,9 @@ export const useProspect = (id: string) => {
 			const res = await apiClient.api.prospects[":id"].$get({ param: { id } });
 
 			if (!res.ok)
-				throw new Error(await extractErrorMessage(res, "Gagal memuat prospek"));
+				throw new Error(
+					await extractErrorMessage(res, "Failed to load prospect"),
+				);
 
 			return res.json();
 		},

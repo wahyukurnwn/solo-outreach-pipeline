@@ -4,7 +4,7 @@ import { QueryError } from "#/components/query-error";
 import { useDemoLogs } from "../hooks/use-demo-logs";
 
 function formatDateTime(iso: string) {
-	return new Date(iso).toLocaleString("id-ID", {
+	return new Date(iso).toLocaleString("en-US", {
 		day: "numeric",
 		month: "short",
 		year: "numeric",
@@ -16,7 +16,7 @@ function formatDateTime(iso: string) {
 function DemoStatusBadge({ isDemo }: { isDemo: boolean }) {
 	return (
 		<Badge variant={isDemo ? "warning" : "neutral"}>
-			{isDemo ? "Demo" : "Bukan demo"}
+			{isDemo ? "Demo" : "Not demo"}
 		</Badge>
 	);
 }
@@ -30,13 +30,13 @@ export const DemoLogTimeline = ({ userId }: { userId: string }) => {
 	return (
 		<Card className="p-6">
 			<p className="text-[13px] font-semibold text-ink-soft">
-				Riwayat status demo
+				Demo status history
 			</p>
 
 			{logsQuery.error ? (
 				<div className="mt-3">
 					<QueryError
-						title="Riwayat gagal dimuat"
+						title="History failed to load"
 						message={logsQuery.error.message}
 						onRetry={() => logsQuery.refetch()}
 					/>
@@ -48,7 +48,7 @@ export const DemoLogTimeline = ({ userId }: { userId: string }) => {
 				/>
 			) : logsQuery.data.length === 0 ? (
 				<p className="mt-3 text-[13px] text-muted">
-					Belum ada perubahan status demo yang tercatat untuk user ini.
+					No demo status changes recorded for this user yet.
 				</p>
 			) : (
 				<ul className="mt-4 flex flex-col gap-4">
@@ -62,8 +62,9 @@ export const DemoLogTimeline = ({ userId }: { userId: string }) => {
 									<span className="font-semibold text-ink">
 										{log.actor.email}
 									</span>{" "}
-									mengubah status dari <DemoStatusBadge isDemo={log.fromDemo} />{" "}
-									ke <DemoStatusBadge isDemo={log.toDemo} />
+									changed the demo status from{" "}
+									<DemoStatusBadge isDemo={log.fromDemo} /> to{" "}
+									<DemoStatusBadge isDemo={log.toDemo} />
 								</p>
 								<p className="mt-1 text-xs text-faint">
 									{formatDateTime(log.createdAt)}

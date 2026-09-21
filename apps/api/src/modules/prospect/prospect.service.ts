@@ -28,7 +28,7 @@ export const prospectService = {
 	async findById(userId: string, id: string) {
 		const prospect = await prospectRepository.findByIdAndUserId(id, userId);
 
-		if (!prospect) throw new NotFoundError("Prospect tidak ditemukan");
+		if (!prospect) throw new NotFoundError("Prospect not found");
 
 		return prospect;
 	},

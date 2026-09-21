@@ -15,7 +15,7 @@ export const useSignIn = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Email atau password salah"),
+					await extractErrorMessage(res, "Incorrect email or password"),
 				);
 
 			const data = await res.json();

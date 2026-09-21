@@ -21,7 +21,7 @@ export const useUpdateUserDemo = (id: string) => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal ubah status demo"),
+					await extractErrorMessage(res, "Failed to change demo status"),
 				);
 
 			return res.json();

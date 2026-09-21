@@ -12,7 +12,7 @@ export const useProspects = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal memuat daftar prospek"),
+					await extractErrorMessage(res, "Failed to load prospects"),
 				);
 
 			const { data } = await res.json();

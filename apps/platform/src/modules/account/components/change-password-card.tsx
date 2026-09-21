@@ -53,7 +53,7 @@ export const ChangePasswordCard = () => {
 			>
 				<div>
 					<label htmlFor="change-current-password" className={labelClassName}>
-						Password saat ini
+						Current password
 					</label>
 					<input
 						id="change-current-password"
@@ -68,7 +68,7 @@ export const ChangePasswordCard = () => {
 
 				<div>
 					<label htmlFor="change-new-password" className={labelClassName}>
-						Password baru
+						New password
 					</label>
 					<input
 						id="change-new-password"
@@ -80,7 +80,7 @@ export const ChangePasswordCard = () => {
 						minLength={8}
 						className={inputClassName}
 					/>
-					<p className={helperClassName}>Minimal 8 karakter.</p>
+					<p className={helperClassName}>At least 8 characters.</p>
 				</div>
 
 				<div>
@@ -88,7 +88,7 @@ export const ChangePasswordCard = () => {
 						htmlFor="change-password-confirmation"
 						className={labelClassName}
 					>
-						Ulangi password baru
+						Confirm new password
 					</label>
 					<input
 						id="change-password-confirmation"
@@ -109,7 +109,7 @@ export const ChangePasswordCard = () => {
 							id="change-password-mismatch"
 							className="mt-1.5 text-xs font-medium text-blush-700"
 						>
-							Password tidak sama.
+							Passwords don't match.
 						</p>
 					) : null}
 				</div>
@@ -121,7 +121,7 @@ export const ChangePasswordCard = () => {
 						className={primaryButtonClassName}
 					>
 						{changePassword.isPending ? <Loader /> : null}
-						Simpan password baru
+						Save new password
 					</button>
 				</div>
 			</form>

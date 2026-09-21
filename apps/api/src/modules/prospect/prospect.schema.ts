@@ -5,7 +5,7 @@ import { ContactChannel, PipelineStage } from "../../generated/prisma/enums";
 // adalah satu-satunya cara mengosongkan kolom yang sudah terisi, mis. menghapus
 // tanggal follow-up setelah follow-up-nya selesai.
 export const createProspectSchema = z.object({
-	name: z.string().min(1, "Nama wajib diisi"),
+	name: z.string().min(1, "Name is required"),
 	company: z.string().nullish(),
 	channel: z.enum(ContactChannel).nullish(),
 	stage: z.enum(PipelineStage).optional(),

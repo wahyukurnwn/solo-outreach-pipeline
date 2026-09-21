@@ -37,7 +37,7 @@ export const ResetPasswordForm = ({ token }: { token: string }) => {
 		<form onSubmit={handleSubmit} className="flex flex-col gap-4">
 			<section>
 				<label htmlFor="reset-password" className={labelClassName}>
-					Password baru
+					New password
 				</label>
 				<input
 					id="reset-password"
@@ -50,12 +50,12 @@ export const ResetPasswordForm = ({ token }: { token: string }) => {
 					minLength={8}
 					className={inputClassName}
 				/>
-				<p className={helperClassName}>Minimal 8 karakter.</p>
+				<p className={helperClassName}>At least 8 characters.</p>
 			</section>
 
 			<section>
 				<label htmlFor="reset-password-confirmation" className={labelClassName}>
-					Ulangi password baru
+					Confirm new password
 				</label>
 				<input
 					id="reset-password-confirmation"
@@ -75,7 +75,7 @@ export const ResetPasswordForm = ({ token }: { token: string }) => {
 						id="reset-password-mismatch"
 						className="mt-1.5 text-xs font-medium text-blush-700"
 					>
-						Password tidak sama.
+						Passwords don't match.
 					</p>
 				) : null}
 			</section>
@@ -86,7 +86,7 @@ export const ResetPasswordForm = ({ token }: { token: string }) => {
 				className={`${authSubmitButtonClassName} mt-1`}
 			>
 				{resetPassword.isPending ? <Loader /> : null}
-				{resetPassword.isPending ? "Menyimpan..." : "Simpan password baru"}
+				{resetPassword.isPending ? "Saving..." : "Save new password"}
 			</button>
 		</form>
 	);

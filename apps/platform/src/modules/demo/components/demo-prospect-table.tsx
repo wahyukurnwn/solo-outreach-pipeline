@@ -18,7 +18,7 @@ export const DemoProspectTable = ({ prospects }: { prospects: Prospect[] }) => (
 		<div
 			className={`hidden gap-4 border-b border-line bg-subtle px-5 py-2.5 text-[11px] font-bold tracking-[0.08em] text-faint uppercase md:grid ${columnsClassName}`}
 		>
-			<span>Prospek</span>
+			<span>Prospect</span>
 			<span>Stage</span>
 			<span>Channel</span>
 			<span>Follow-up</span>

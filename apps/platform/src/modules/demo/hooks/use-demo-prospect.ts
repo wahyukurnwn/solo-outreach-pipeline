@@ -16,7 +16,7 @@ export const useDemoProspect = (id: string) => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Prospek demo tidak ditemukan"),
+					await extractErrorMessage(res, "Demo prospect not found"),
 				);
 
 			return res.json();

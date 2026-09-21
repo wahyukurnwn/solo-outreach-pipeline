@@ -31,14 +31,14 @@ function DemoPage() {
 			<div className="mx-auto flex max-w-6xl flex-col gap-7 px-4 py-8 sm:px-8 sm:py-10">
 				<PageHeader
 					title="Contoh pipeline"
-					description="Data di bawah ini contoh, bukan akun Anda — jelajahi bebas, tidak ada yang bisa berubah."
+					description="The data below is sample data, not your account — explore freely, nothing can change."
 					action={
 						<Link
 							to="/"
 							className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted transition-colors hover:text-ink"
 						>
 							<ArrowLeft className="size-3.5" />
-							Kembali ke beranda
+							Back to home
 						</Link>
 					}
 				/>
@@ -58,7 +58,7 @@ function DemoContent() {
 	if (error)
 		return (
 			<QueryError
-				title="Demo belum tersedia"
+				title="Demo unavailable"
 				message={error.message}
 				onRetry={() => {
 					prospectsQuery.refetch();
@@ -92,7 +92,7 @@ function DemoContent() {
 function DemoSkeleton() {
 	return (
 		<div aria-busy="true" className="flex flex-col gap-7">
-			<span className="sr-only">Memuat demo…</span>
+			<span className="sr-only">Loading demo…</span>
 			<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
 				<div className="h-[148px] animate-pulse rounded-[20px] bg-lavender-50" />
 				<div className="h-[148px] animate-pulse rounded-[20px] bg-peach-50" />

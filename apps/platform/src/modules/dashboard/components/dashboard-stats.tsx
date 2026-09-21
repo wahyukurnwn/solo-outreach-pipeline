@@ -35,34 +35,30 @@ export const DashboardStats = ({
 	return (
 		<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
 			<StatCard
-				label="Total prospek"
+				label="Total prospects"
 				value={prospects.length}
-				subtitle={`${activeCount} masih berjalan`}
+				subtitle={`${activeCount} in progress`}
 				tone="lavender"
 				icon={<Users className="size-4" />}
 			/>
 			<StatCard
-				label="Follow-up jatuh tempo"
+				label="Follow-ups due"
 				value={followUps.length}
-				subtitle={
-					overdueCount > 0
-						? `${overdueCount} terlambat`
-						: "Tidak ada yang telat"
-				}
+				subtitle={overdueCount > 0 ? `${overdueCount} overdue` : "None overdue"}
 				tone="peach"
 				icon={<CalendarClock className="size-4" />}
 			/>
 			<StatCard
-				label="Dibalas"
+				label="Replied"
 				value={repliedCount}
-				subtitle="Menunggu langkah berikutnya"
+				subtitle="Waiting on your next step"
 				tone="mint"
 				icon={<MessageSquare className="size-4" />}
 			/>
 			<StatCard
 				label="Closed Won"
 				value={wonCount}
-				subtitle={`dari ${closedCount} prospek yang ditutup`}
+				subtitle={`of ${closedCount} closed prospects`}
 				tone="cloud"
 				icon={<Trophy className="size-4" />}
 			/>

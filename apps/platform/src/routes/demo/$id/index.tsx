@@ -60,13 +60,13 @@ function DemoProspectContent() {
 
 			{prospectQuery.error ? (
 				<QueryError
-					title="Prospek demo tidak ditemukan"
+					title="Demo prospect not found"
 					message={prospectQuery.error.message}
 					onRetry={() => prospectQuery.refetch()}
 				/>
 			) : !prospectQuery.data ? (
 				<div aria-busy="true" className="flex flex-col gap-4">
-					<span className="sr-only">Memuat prospek…</span>
+					<span className="sr-only">Loading prospect…</span>
 					<div className="size-[72px] animate-pulse rounded-[22px] bg-sidebar" />
 					<div className="h-9 w-72 max-w-full animate-pulse rounded-xl bg-sidebar" />
 				</div>

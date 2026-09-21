@@ -19,7 +19,7 @@ export const useCreateActivity = (prospectId: string) => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal menyimpan aktivitas"),
+					await extractErrorMessage(res, "Failed to save activity"),
 				);
 
 			return res.json();

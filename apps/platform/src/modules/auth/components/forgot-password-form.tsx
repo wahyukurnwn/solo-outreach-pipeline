@@ -20,16 +20,16 @@ export const ForgotPasswordForm = () => {
 				<IconBox tone="mint" size="lg">
 					<Check className="size-5" />
 				</IconBox>
-				<p className="mt-2 text-sm font-semibold text-ink">Cek email Anda</p>
+				<p className="mt-2 text-sm font-semibold text-ink">Check your email</p>
 				<p className="text-[13px] leading-relaxed text-ink-soft">
-					{forgotPassword.data.message} Belum masuk? Periksa folder spam.
+					{forgotPassword.data.message} Nothing yet? Check your spam folder.
 				</p>
 				<button
 					type="button"
 					onClick={() => forgotPassword.reset()}
 					className="mt-2 text-[13px] font-semibold text-mint-700 transition-colors hover:text-ink"
 				>
-					Kirim ulang ke email lain
+					Send to a different email
 				</button>
 			</div>
 		);
@@ -67,7 +67,7 @@ export const ForgotPasswordForm = () => {
 				className={`${authSubmitButtonClassName} mt-1`}
 			>
 				{forgotPassword.isPending ? <Loader /> : <Send className="size-4" />}
-				{forgotPassword.isPending ? "Mengirim..." : "Kirim link reset"}
+				{forgotPassword.isPending ? "Sending..." : "Send reset link"}
 			</button>
 		</form>
 	);

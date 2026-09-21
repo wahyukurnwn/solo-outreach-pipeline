@@ -7,7 +7,7 @@ const columnsClassName =
 	"md:grid-cols-[minmax(0,2fr)_minmax(0,0.6fr)_minmax(0,0.6fr)_minmax(0,0.8fr)]";
 
 function formatDate(iso: string) {
-	return new Date(iso).toLocaleDateString("id-ID", {
+	return new Date(iso).toLocaleDateString("en-US", {
 		day: "numeric",
 		month: "short",
 		year: "numeric",
@@ -22,7 +22,7 @@ export const UserTable = ({ users }: { users: UserSummary[] }) => (
 			<span>Email</span>
 			<span>Role</span>
 			<span>Demo</span>
-			<span>Terdaftar</span>
+			<span>Joined</span>
 		</div>
 
 		<ul className="divide-y divide-line">

@@ -35,7 +35,7 @@ export const adminService = {
 	async getUserById(id: string) {
 		const user = await userRepository.findById(id);
 
-		if (!user) throw new NotFoundError("User tidak ditemukan");
+		if (!user) throw new NotFoundError("User not found");
 
 		return toUserSummary(user);
 	},
@@ -47,7 +47,7 @@ export const adminService = {
 	) {
 		const existingUser = await userRepository.findById(id);
 
-		if (!existingUser) throw new NotFoundError("User tidak ditemukan");
+		if (!existingUser) throw new NotFoundError("User not found");
 
 		// Set ke role yang sama bukan perubahan sungguhan — tidak perlu bikin
 		// entry log baru untuk no-op.
@@ -66,7 +66,7 @@ export const adminService = {
 	async getRoleLogs(id: string) {
 		const existingUser = await userRepository.findById(id);
 
-		if (!existingUser) throw new NotFoundError("User tidak ditemukan");
+		if (!existingUser) throw new NotFoundError("User not found");
 
 		const logs = await roleChangeLogRepository.findByTargetId(id);
 
@@ -86,7 +86,7 @@ export const adminService = {
 	) {
 		const existingUser = await userRepository.findById(id);
 
-		if (!existingUser) throw new NotFoundError("User tidak ditemukan");
+		if (!existingUser) throw new NotFoundError("User not found");
 
 		// Set ke status yang sama bukan perubahan sungguhan — tidak perlu bikin
 		// entry log baru untuk no-op.
@@ -102,7 +102,7 @@ export const adminService = {
 	async getDemoLogs(id: string) {
 		const existingUser = await userRepository.findById(id);
 
-		if (!existingUser) throw new NotFoundError("User tidak ditemukan");
+		if (!existingUser) throw new NotFoundError("User not found");
 
 		const logs = await demoChangeLogRepository.findByTargetId(id);
 

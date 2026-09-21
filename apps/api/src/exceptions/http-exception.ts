@@ -56,20 +56,20 @@ export class InvalidMinimumLengthPassword extends AppError {
  */
 export class InvalidCredentialsError extends AppError {
 	constructor() {
-		super(401, "INVALID_CREDENTIALS", "Email atau password salah");
+		super(401, "INVALID_CREDENTIALS", "Incorrect email or password");
 	}
 }
 
 /** Sudah login, tapi role-nya tidak cukup — beda dari 401. */
 export class ForbiddenError extends AppError {
-	constructor(message = "Akses ditolak") {
+	constructor(message = "Access denied") {
 		super(403, "FORBIDDEN", message);
 	}
 }
 
 /** Token tidak ada/kedaluwarsa/tidak sah — client harus login ulang. */
 export class UnauthorizedError extends AppError {
-	constructor(message = "Autentikasi dibutuhkan", code = "UNAUTHORIZED") {
+	constructor(message = "Authentication required", code = "UNAUTHORIZED") {
 		super(401, code, message);
 	}
 }
@@ -87,7 +87,7 @@ export class InvalidResetTokenError extends AppError {
 		super(
 			400,
 			"INVALID_RESET_TOKEN",
-			"Token reset password tidak valid atau sudah kedaluwarsa",
+			"The password reset token is invalid or has expired",
 		);
 	}
 }
@@ -98,14 +98,14 @@ export class InvalidRefreshTokenError extends AppError {
 		super(
 			401,
 			"INVALID_REFRESH_TOKEN",
-			"Sesi sudah berakhir, silakan login kembali",
+			"Your session has ended, please sign in again",
 		);
 	}
 }
 
 /** Resource tidak ditemukan, atau ditemukan tapi bukan milik user yang login — sengaja disamakan jadi 404 supaya tidak bocor keberadaan data milik user lain. */
 export class NotFoundError extends AppError {
-	constructor(message = "Data tidak ditemukan") {
+	constructor(message = "Not found") {
 		super(404, "NOT_FOUND", message);
 	}
 }
@@ -113,7 +113,7 @@ export class NotFoundError extends AppError {
 /** Body/param/query request tidak lolos validasi Zod — disamakan formatnya dengan error lain lewat AppError. */
 export class ValidationError extends AppError {
 	constructor(details: unknown) {
-		super(422, "VALIDATION_ERROR", "Data yang dikirim tidak valid", details);
+		super(422, "VALIDATION_ERROR", "The submitted data is invalid", details);
 	}
 }
 
@@ -123,7 +123,7 @@ export class InvalidExchangeCodeError extends AppError {
 		super(
 			400,
 			"INVALID_EXCHANGE_CODE",
-			"Kode OAuth tidak valid atau sudah kedaluwarsa",
+			"The OAuth code is invalid or has expired",
 		);
 	}
 }
@@ -131,7 +131,7 @@ export class InvalidExchangeCodeError extends AppError {
 /** Password saat ini yang dikirim ke endpoint ganti password tidak cocok. */
 export class InvalidCurrentPasswordError extends AppError {
 	constructor() {
-		super(401, "INVALID_CURRENT_PASSWORD", "Password saat ini salah");
+		super(401, "INVALID_CURRENT_PASSWORD", "The current password is incorrect");
 	}
 }
 
@@ -141,7 +141,7 @@ export class PasswordNotSetError extends AppError {
 		super(
 			409,
 			"PASSWORD_NOT_SET",
-			"Akun ini belum punya password. Gunakan fitur lupa password untuk membuat password baru.",
+			"This account has no password yet. Use forgot password to create one.",
 		);
 	}
 }
@@ -149,7 +149,7 @@ export class PasswordNotSetError extends AppError {
 /** Akun belum terhubung dengan Google — tidak ada apa-apa buat di-unlink. */
 export class GoogleNotLinkedError extends AppError {
 	constructor() {
-		super(409, "GOOGLE_NOT_LINKED", "Akun ini belum terhubung dengan Google");
+		super(409, "GOOGLE_NOT_LINKED", "This account is not linked to Google");
 	}
 }
 
@@ -163,7 +163,7 @@ export class LastAuthMethodError extends AppError {
 		super(
 			409,
 			"LAST_AUTH_METHOD",
-			"Tidak bisa menghapus metode login terakhir. Pastikan akun masih punya cara login lain sebelum ini dihapus.",
+			"You can't remove your last sign-in method. Make sure the account has another way to sign in first.",
 		);
 	}
 }
@@ -171,7 +171,7 @@ export class LastAuthMethodError extends AppError {
 /** Belum ada user dengan is_demo=true — endpoint /api/demo/* belum bisa dipakai sampai satu akun ditandai sebagai demo. */
 export class DemoUnavailableError extends AppError {
 	constructor() {
-		super(503, "DEMO_UNAVAILABLE", "Data demo belum tersedia");
+		super(503, "DEMO_UNAVAILABLE", "Demo data is not available yet");
 	}
 }
 
@@ -181,7 +181,7 @@ export class TooManyRequestsError extends AppError {
 		super(
 			429,
 			"TOO_MANY_REQUESTS",
-			"Terlalu banyak percobaan. Coba lagi nanti.",
+			"Too many attempts. Please try again later.",
 			{
 				retryAfterSeconds,
 			},

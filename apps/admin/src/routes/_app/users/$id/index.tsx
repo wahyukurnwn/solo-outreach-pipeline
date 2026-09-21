@@ -23,12 +23,12 @@ function UserDetailPage() {
 				className="flex w-fit items-center gap-1.5 text-[13px] font-medium text-muted transition-colors hover:text-ink"
 			>
 				<ArrowLeft className="size-3.5" />
-				Kembali ke daftar user
+				Back to users
 			</Link>
 
 			{userQuery.error ? (
 				<QueryError
-					title="User tidak bisa dimuat"
+					title="User couldn't be loaded"
 					message={userQuery.error.message}
 					onRetry={() => userQuery.refetch()}
 				/>

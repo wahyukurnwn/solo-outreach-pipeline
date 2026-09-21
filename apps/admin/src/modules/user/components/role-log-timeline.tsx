@@ -5,7 +5,7 @@ import { useRoleLogs } from "../hooks/use-role-logs";
 import { RoleBadge } from "./role-badge";
 
 function formatDateTime(iso: string) {
-	return new Date(iso).toLocaleString("id-ID", {
+	return new Date(iso).toLocaleString("en-US", {
 		day: "numeric",
 		month: "short",
 		year: "numeric",
@@ -23,13 +23,13 @@ export const RoleLogTimeline = ({ userId }: { userId: string }) => {
 	return (
 		<Card className="p-6">
 			<p className="text-[13px] font-semibold text-ink-soft">
-				Riwayat perubahan role
+				Role change history
 			</p>
 
 			{logsQuery.error ? (
 				<div className="mt-3">
 					<QueryError
-						title="Riwayat gagal dimuat"
+						title="History failed to load"
 						message={logsQuery.error.message}
 						onRetry={() => logsQuery.refetch()}
 					/>
@@ -41,7 +41,7 @@ export const RoleLogTimeline = ({ userId }: { userId: string }) => {
 				/>
 			) : logsQuery.data.length === 0 ? (
 				<p className="mt-3 text-[13px] text-muted">
-					Belum ada perubahan role yang tercatat untuk user ini.
+					No role changes recorded for this user yet.
 				</p>
 			) : (
 				<ul className="mt-4 flex flex-col gap-4">
@@ -55,7 +55,7 @@ export const RoleLogTimeline = ({ userId }: { userId: string }) => {
 									<span className="font-semibold text-ink">
 										{log.actor.email}
 									</span>{" "}
-									mengubah role dari <RoleBadge role={log.fromRole} /> ke{" "}
+									changed the role from <RoleBadge role={log.fromRole} /> to{" "}
 									<RoleBadge role={log.toRole} />
 								</p>
 								<p className="mt-1 text-xs text-faint">

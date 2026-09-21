@@ -18,7 +18,7 @@ export const useMe = () => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal memuat data user"),
+					await extractErrorMessage(res, "Failed to load user data"),
 				);
 
 			return res.json();

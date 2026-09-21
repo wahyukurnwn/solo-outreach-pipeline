@@ -23,7 +23,7 @@ export const ActivityTimeline = ({ prospectId }: { prospectId: string }) => {
 
 		deleteActivity.mutate(deletingActivity.id, {
 			onSuccess: () => {
-				toast.success("Aktivitas dihapus");
+				toast.success("Activity deleted");
 				setDeletingActivity(null);
 			},
 			onError: (err) => {
@@ -36,7 +36,7 @@ export const ActivityTimeline = ({ prospectId }: { prospectId: string }) => {
 	return (
 		<section className="flex flex-col gap-3.5">
 			<SectionHeader
-				title="Riwayat aktivitas"
+				title="Activity history"
 				icon={
 					<IconBox tone="lavender">
 						<Clock className="size-[15px]" />
@@ -45,7 +45,8 @@ export const ActivityTimeline = ({ prospectId }: { prospectId: string }) => {
 				action={
 					activitiesQuery.data ? (
 						<span className="text-[13px] text-muted">
-							{activitiesQuery.data.length} catatan
+							{activitiesQuery.data.length}{" "}
+							{activitiesQuery.data.length === 1 ? "entry" : "entries"}
 						</span>
 					) : null
 				}
@@ -66,9 +67,9 @@ export const ActivityTimeline = ({ prospectId }: { prospectId: string }) => {
 			) : null}
 			<AlertDialog
 				open={deletingActivity !== null}
-				title="Hapus aktivitas ini?"
-				description="Catatan outreach ini akan dihapus permanen dan tidak lagi dihitung di analitik."
-				confirmLabel={deleteActivity.isPending ? "Menghapus..." : "Hapus"}
+				title="Delete this activity?"
+				description="This outreach entry will be permanently deleted and no longer counted in analytics."
+				confirmLabel={deleteActivity.isPending ? "Deleting..." : "Delete"}
 				onConfirm={handleDelete}
 				onCancel={() => setDeletingActivity(null)}
 			/>
@@ -110,10 +111,10 @@ function TimelineBody({
 	if (activities.length === 0)
 		return (
 			<div className="rounded-2xl border border-dashed border-line-strong px-5 py-8 text-center">
-				<p className="text-sm font-semibold text-ink">Belum ada aktivitas</p>
+				<p className="text-sm font-semibold text-ink">No activity yet</p>
 				<p className="mx-auto mt-1 max-w-xs text-[13px] text-muted">
-					Catat outreach pertama Anda — riwayatnya akan tersusun kronologis di
-					sini.
+					Log your first outreach — the history will appear here in
+					chronological order.
 				</p>
 			</div>
 		);
@@ -149,7 +150,7 @@ function TimelineBody({
 									</span>
 									<button
 										type="button"
-										aria-label="Edit aktivitas"
+										aria-label="Edit activity"
 										onClick={() => onEdit(activity)}
 										className={`${iconButtonClassName} hover:bg-sidebar hover:text-ink`}
 									>
@@ -157,7 +158,7 @@ function TimelineBody({
 									</button>
 									<button
 										type="button"
-										aria-label="Hapus aktivitas"
+										aria-label="Delete activity"
 										onClick={() => onDelete(activity)}
 										className={`${iconButtonClassName} hover:bg-blush-50 hover:text-blush-700`}
 									>

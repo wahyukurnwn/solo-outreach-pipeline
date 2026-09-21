@@ -12,11 +12,11 @@ export const ProfileCard = ({ me }: { me: Me }) => (
 				{maskEmail(me.email)}
 			</p>
 			<p className="text-[13px] text-muted">
-				Dipakai untuk masuk dan menerima link reset password.
+				Used to sign in and to receive password reset links.
 			</p>
 		</div>
 		<Badge variant={me.role === "ADMIN" ? "info" : "neutral"}>
-			{me.role === "ADMIN" ? "Admin" : "Pengguna"}
+			{me.role === "ADMIN" ? "Admin" : "User"}
 		</Badge>
 	</Card>
 );

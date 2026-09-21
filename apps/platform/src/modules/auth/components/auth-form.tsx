@@ -82,7 +82,7 @@ export const AuthForm = ({ mode, onSignedUp }: AuthFormProps) => {
 							to="/auth/forgot-password"
 							className="text-[13px] font-medium text-ink-soft no-underline transition-colors hover:text-lavender-700"
 						>
-							Lupa password?
+							Forgot password?
 						</Link>
 					) : null}
 				</div>
@@ -107,10 +107,10 @@ export const AuthForm = ({ mode, onSignedUp }: AuthFormProps) => {
 				{mode === "signup"
 					? isPending
 						? "Mendaftar..."
-						: "Daftar dengan Email"
+						: "Sign up with email"
 					: isPending
-						? "Masuk..."
-						: "Masuk dengan Email"}
+						? "Signing in..."
+						: "Sign in with email"}
 			</button>
 		</form>
 	);

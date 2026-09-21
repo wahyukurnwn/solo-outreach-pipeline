@@ -21,8 +21,8 @@ const navItems = [
 		icon: LayoutDashboard,
 		tone: "lavender",
 	},
-	{ to: "/prospect", label: "Prospek", icon: Users, tone: "mint" },
-	{ to: "/analytic", label: "Analitik", icon: ChartColumn, tone: "peach" },
+	{ to: "/prospect", label: "Prospects", icon: Users, tone: "mint" },
+	{ to: "/analytic", label: "Analytics", icon: ChartColumn, tone: "peach" },
 ] as const;
 
 const navRowClassName =
@@ -85,7 +85,7 @@ function AccountFooter({ onNavigate }: { onNavigate?: () => void }) {
 				<IconBox size="sm">
 					<Settings className="size-3.5" />
 				</IconBox>
-				Pengaturan
+				Settings
 			</Link>
 			<button
 				type="button"
@@ -95,7 +95,7 @@ function AccountFooter({ onNavigate }: { onNavigate?: () => void }) {
 				<IconBox size="sm">
 					<LogOut className="size-3.5" />
 				</IconBox>
-				Keluar
+				Sign out
 			</button>
 		</div>
 	);
@@ -110,7 +110,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
 			<aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col justify-between bg-sidebar px-3.5 py-5 md:flex">
 				<div className="flex flex-col gap-7">
 					<Link to="/" className="rounded-xl px-1.5">
-						<BrandMark withWordmark tagline="Ruang kerja pribadi" />
+						<BrandMark withWordmark tagline="Your personal workspace" />
 					</Link>
 					<SidebarNav />
 				</div>
@@ -124,7 +124,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
 					</Link>
 					<button
 						type="button"
-						aria-label={isMenuOpen ? "Tutup menu" : "Buka menu"}
+						aria-label={isMenuOpen ? "Close menu" : "Open menu"}
 						aria-expanded={isMenuOpen}
 						onClick={() => setIsMenuOpen((open) => !open)}
 						className="flex size-9 items-center justify-center rounded-xl text-ink-soft transition-colors hover:bg-white"

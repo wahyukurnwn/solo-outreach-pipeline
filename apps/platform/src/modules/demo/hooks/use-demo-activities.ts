@@ -15,7 +15,10 @@ export const useDemoActivities = (prospectId: string) => {
 
 			if (!res.ok)
 				throw new Error(
-					await extractErrorMessage(res, "Gagal memuat riwayat aktivitas demo"),
+					await extractErrorMessage(
+						res,
+						"Failed to load demo activity history",
+					),
 				);
 
 			const { data } = await res.json();
