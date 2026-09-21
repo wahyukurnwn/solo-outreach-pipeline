@@ -1,6 +1,6 @@
 # Pipeline — a solo outreach tracker
 
-[![CI](https://github.com/TODO-owner/TODO-repo/actions/workflows/ci.yml/badge.svg)](https://github.com/TODO-owner/TODO-repo/actions/workflows/ci.yml)
+[![CI](https://github.com/wahyukurnwn/solo-outreach-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/wahyukurnwn/solo-outreach-pipeline/actions/workflows/ci.yml)
 ![License: ISC](https://img.shields.io/badge/license-ISC-blue)
 
 A lightweight pipeline for people doing outreach alone: track prospects through stages, never miss a follow-up, and read **honest** conversion numbers. It also drafts a first message from what you already know about each prospect.
@@ -106,8 +106,8 @@ These are the parts I would want to talk through in a review.
 **Prerequisites:** Node.js 24 (developed on 24.14), pnpm 10, Docker.
 
 ```bash
-git clone https://github.com/TODO-owner/TODO-repo.git
-cd TODO-repo
+git clone https://github.com/wahyukurnwn/solo-outreach-pipeline.git
+cd solo-outreach-pipeline
 pnpm install
 
 # PostgreSQL on localhost:5449
