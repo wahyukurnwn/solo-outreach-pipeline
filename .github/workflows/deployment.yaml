@@ -171,20 +171,41 @@ jobs:
           path: apps/${{ matrix.app }}/dist/client
           retention-days: 7
 
+  # `secrets` can't be referenced directly in a job-level `if:` — GitHub
+  # rejects the workflow file entirely with "Unrecognized named-value:
+  # 'secrets'" (found out the hard way). `env:` can read secrets, though,
+  # so this job relays VPS_HOST through a step output that `deploy`'s
+  # `if:` is allowed to check instead.
+  check-vps-secret:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      has_vps: ${{ steps.check.outputs.has_vps }}
+    steps:
+      - id: check
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          if [ -n "$VPS_HOST" ]; then
+            echo "has_vps=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_vps=false" >> "$GITHUB_OUTPUT"
+          fi
+
   # Only on push to main: pull the new api image on the VPS, migrate,
   # restart, verify /health, then rsync the static frontends into place.
   #
-  # Skipped (not failed) until the VPS secrets below are actually set —
-  # there's no VPS provisioned yet (PRD.md bagian 16, still an Open
-  # Question), so appleboy/ssh-action would otherwise fail with a bare
-  # "missing server host" on every run. Once VPS_HOST, VPS_USER,
-  # VPS_SSH_KEY, VPS_DEPLOY_PATH, VPS_PLATFORM_PATH and VPS_ADMIN_PATH are
-  # all set (Settings → Secrets and variables → Actions → Secrets, ideally
-  # scoped to a "production" environment), this condition is true and the
-  # job runs normally.
+  # Skipped (not failed) until the VPS secrets are actually set — there's
+  # no VPS provisioned yet (PRD.md bagian 16, still an Open Question), so
+  # appleboy/ssh-action would otherwise fail with a bare "missing server
+  # host" on every run. Once VPS_HOST, VPS_USER, VPS_SSH_KEY,
+  # VPS_DEPLOY_PATH, VPS_PLATFORM_PATH and VPS_ADMIN_PATH are all set
+  # (Settings → Secrets and variables → Actions → Secrets, ideally scoped
+  # to a "production" environment), this condition is true and the job
+  # runs normally.
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.VPS_HOST != ''
-    needs: [build-api-image, build-frontends]
+    if: needs.check-vps-secret.outputs.has_vps == 'true'
+    needs: [check-vps-secret, build-api-image, build-frontends]
     runs-on: ubuntu-latest
     environment: production
     steps:
