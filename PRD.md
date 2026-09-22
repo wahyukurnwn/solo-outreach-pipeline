@@ -1,0 +1,518 @@
+## 1. Product Overview
+
+**Apa:** Pipeline tracker ringan + drafting pesan outreach berbantuan AI + analitik konversi sederhana, dibuat khusus untuk satu orang yang melakukan outbound sendirian — bukan tim sales.
+
+**Untuk siapa:** Freelancer, konsultan solo, atau independent professional yang mencari klien atau pekerjaan sendiri. Primary user MVP adalah pembuatnya sendiri.
+
+**Masalah yang diselesaikan:** Orang yang outbound sendirian biasanya terjebak di dua ekstrem: spreadsheet manual (tanpa bantuan drafting, tanpa analitik) atau CRM tim yang terlalu berat untuk satu orang.
+
+**Value proposition:** Satu tempat untuk melacak prospek, menulis pesan personal dibantu AI, dan membaca angka konversi yang jujur.
+
+**Pitch 5–10 detik:** "Pipeline sederhana untuk satu orang — lacak prospek, draft pesan personal dengan AI, lihat apa yang benar-benar berhasil."
+
+**Status dokumen (22 September 2026):** PRD ini disinkronkan dengan kondisi repository. Fitur MVP sudah dibangun dan diuji; yang belum ada adalah endpoint `/health`, image Docker, `docker-compose.yaml` production, workflow GitHub Actions, dan deployment. Setiap komponen di bagian teknis diberi status **Sudah ada**, **Direncanakan**, atau **Belum ada**, supaya dokumen ini tidak menyatakan sesuatu yang belum benar.
+
+**Cara memakai dokumen ini.** *Who:* satu orang yang memegang tiga peran (product, design, engineering) dengan tanggung jawab yang tetap dibedakan. *When:* dibaca sebelum menambah fitur, dan diperbarui saat requirement berubah signifikan. *Output:* source of truth untuk scope, requirement, prioritas, dan hasil yang diharapkan. *Mencegah:* scope creep, requirement yang ambigu, dan usaha engineering yang terbuang.
+
+---
+
+## 2. Problem Statement
+
+**Kondisi saat ini.** Orang yang outbound sendirian melacak prospek dengan spreadsheet + email manual sebagai pipeline ad hoc, menulis pesan dari nol tiap kali, dan mengingat follow-up di kepala.
+
+**Pain point utama dan statusnya**
+
+| Pain point | Status |
+|---|---|
+| Follow-up mudah terlupakan | **Validated** — dialami langsung oleh pembuatnya saat mencari pekerjaan/klien (N=1) |
+| Menulis pesan outreach berulang dari nol memakan waktu | **Validated** — N=1 |
+| Tidak ada visibilitas data soal efektivitas outreach | **Validated** — N=1 |
+| Freelancer lain mengalami pola yang sama dan mau memakai tool ini | **Assumption** — belum diuji |
+| Model channel Email/LinkedIn/Telepon cocok untuk cara freelancer lain mendapat klien | **Open Question** — di banyak pasar lokal, calon klien lebih sering datang lewat WhatsApp, DM Instagram, dan rekomendasi |
+
+**Inefisiensi yang terjadi:** waktu terbuang menulis ulang pesan yang mirip, follow-up hilang begitu saja, dan iterasi pesan tidak berbasis data.
+
+**Mengapa layak diselesaikan.** Outbound adalah salah satu channel dengan biaya per lead terendah untuk operator solo, tetapi tooling yang buruk membuat eksekusinya tidak konsisten. Ini penalaran, bukan data.
+
+**Penting — jangan disamakan:** yang tervalidasi adalah **problem validation pada diri sendiri (N=1)**, bukan **product-market validation pada user lain**. Validasi user lain adalah tahap berikutnya (bagian 13), bukan syarat untuk membangun MVP.
+
+---
+
+## 3. Target Users
+
+- **Primary user:** pembuatnya sendiri, sebagai freelancer/independent professional. **Validated** (N=1).
+- **Secondary user:** freelancer solo lain dengan pola kerja serupa, dan kelompok penguji kecil (kurang lebih 30 orang, termasuk teman dan kenalan). **Assumption**.
+- **Audience tambahan:** rekruter dan pemberi kerja yang menilai repository ini sebagai portofolio. Ini memengaruhi keputusan seperti antarmuka berbahasa Inggris, akun demo publik, dan dokumentasi.
+- **User context:** bekerja sendiri, tidak ada tim, mengelola puluhan (bukan ribuan) prospek pada satu waktu, memakai laptop.
+- **Jobs-to-be-done:** "Saat saya menemukan calon klien baru, saya ingin mencatatnya dan tahu langkah berikutnya, tanpa harus mengingat semuanya di kepala atau mencari-cari di spreadsheet."
+- **Primary use cases:** tambah prospek → catat interaksi outreach → dapatkan draft pesan follow-up → lihat prospek yang butuh tindakan hari ini → sesekali tinjau angka konversi.
+
+---
+
+## 4. Goals & Objectives
+
+- **Tujuan utama (Decision):** menyelesaikan loop ide → MVP → deploy → dipakai nyata → evaluasi → iterasi, tanpa macet. Menyelesaikan loop ini lebih penting daripada kelengkapan fitur.
+- **Tujuan kedua:** menghasilkan artifact portofolio yang kredibel untuk kombinasi SWE + Systems/Ops + Sales: keputusan teknis yang terdokumentasi dan keterbatasan yang diakui secara jujur.
+- **Tujuan ketiga (bonus, bukan syarat):** benar-benar dipakai untuk outreach nyata.
+- **Decision:** antarmuka produk berbahasa Inggris, karena audience portofolio mencakup rekruter dan pemberi kerja internasional.
+- **Posisi saat ini:** tahap "membangun MVP" sudah selesai. Sisa pekerjaan ada di deploy, dokumentasi, dan evaluasi pemakaian.
+
+---
+
+## 5. Value Proposition
+
+**Dibanding spreadsheet:** drafting pesan kontekstual, daftar follow-up terstruktur, dan angka konversi otomatis.
+**Dibanding CRM tim (HubSpot dkk.):** tidak ada kompleksitas permission, tim, dan billing yang tidak relevan untuk satu orang.
+**Diferensiator kecil tapi nyata:** angka dihitung dari riwayat aktivitas dengan definisi eksplisit dan peringatan sampel kecil, bukan angka yang terlihat pasti padahal datanya sedikit.
+
+**Rantai Problem → Desired Outcome → Solution → Feature**
+
+| Problem | Desired outcome | Solution | Feature |
+|---|---|---|---|
+| Follow-up terlupa | Tidak ada prospek yang terlewat | Daftar "perlu tindakan hari ini" | Tanggal follow-up + kartu follow-up di dashboard |
+| Pesan ditulis dari nol | Titik awal yang personal dalam hitungan detik | Draft dari data prospek yang tersimpan | Draft AI dari nama, perusahaan, channel, stage, catatan |
+| Tidak tahu apa yang berhasil | Keputusan berbasis angka yang jujur | Metrik dihitung dari riwayat aktivitas | Analitik response rate dan conversion rate |
+| Kehilangan jejak siapa yang sudah dihubungi | Satu sumber kebenaran | Prospek + stage + riwayat aktivitas | Prospect CRUD, pipeline stage, activity log |
+
+---
+
+## 6. User Stories
+
+Format: **As a [ROLE], I want to [ACTION], so that [GOAL].**
+
+**1. As a freelancer, I want to add a new prospect with basic context, so that I don't lose track of who I've contacted.**
+- *Preconditions:* user sudah login.
+- *Acceptance criteria:* form menyimpan nama, perusahaan, channel, stage, tanggal follow-up, dan catatan bebas; prospek baru default ke stage "New".
+- *Edge case:* nama kosong ditolak dengan pesan error yang jelas (validasi Zod, response 422).
+
+**2. As a freelancer, I want to log an outreach activity for a prospect, so that I have a history of what I've done.**
+- *Acceptance criteria:* aktivitas tersimpan dengan tanggal, channel, hasil (sent / replied / no response), dan opsional teks pesan; riwayat tampil kronologis; aktivitas dapat diedit dan dihapus.
+- *Edge case:* tanggal di masa depan seharusnya ditolak. **Status:** belum ditegakkan; skema saat ini menerima tanggal apa pun.
+
+**3. As a freelancer, I want to see which prospects are due for follow-up today, so that nothing falls through the cracks.**
+- *Acceptance criteria:* kartu "follow-ups today" menampilkan prospek dengan follow-up date ≤ hari ini, diurutkan dari yang paling lama tertunda.
+- *Expected behavior:* "hari ini" ditentukan dari **tanggal lokal user** yang dikirim client, bukan jam server. Ini memperbaiki bug: follow-up yang jatuh tempo hari ini tidak muncul selama beberapa jam pertama di zona UTC+.
+
+**4. As a freelancer, I want an AI-drafted message based on a prospect's context, so that I don't write from scratch every time.**
+- *Acceptance criteria:* draft dibuat dari data yang tersimpan di prospek; **selalu** tampil sebagai teks yang bisa diedit; **tidak pernah** terkirim otomatis; tidak ada yang disimpan kecuali user menyimpan aktivitasnya.
+- *Error case:* provider AI lambat, penuh, atau tidak tersedia menghasilkan pesan yang jelas dan bisa dicoba ulang, bukan error server generik.
+- *Gap yang diketahui:* (a) prompt belum berisi instruksi eksplisit "jangan mengarang fakta di luar data"; (b) riwayat aktivitas terakhir belum ikut menjadi konteks; (c) UI belum memperingatkan "tambahkan catatan untuk draft yang lebih personal" saat catatan kosong.
+
+**5. As a freelancer, I want to see my response rate and conversion rate, so that I know if my approach is working.**
+- *Acceptance criteria:* angka dihitung live dari riwayat aktivitas, bukan tabel agregat; bila belum ada prospek yang dihubungi tampil "—", bukan "0%"; ada catatan bila sampel di bawah 30.
+
+**6. As a user, I want to sign up and sign in with email + password or Google, and recover a forgotten password by email, so that my data stays private to me.**
+- *Acceptance criteria:* sesi memakai access token berumur pendek + refresh token yang dirotasi; sign-out mencabut sesi di server; respons lupa-password identik untuk email terdaftar maupun tidak.
+- *Edge case:* percobaan berulang dibatasi per IP (sign-up, sign-in, lupa-password).
+
+**7. As a user, I want to manage how I sign in (change/remove password, link/unlink Google), so that I stay in control of my account.**
+- *Acceptance criteria:* akun tidak boleh kehilangan semua cara masuk; menghapus metode terakhir ditolak.
+
+**8. As a visitor, I want to explore the product with sample data without signing up, so that I can judge it first.**
+- *Acceptance criteria:* halaman `/demo` bersifat read-only dan memakai satu akun demo yang dipilih server; client tidak pernah mengirim user id.
+
+**9. As an admin, I want to manage roles and choose the public demo account, so that access is controlled and changes are traceable.**
+- *Acceptance criteria:* setiap perubahan role dan status demo tercatat (siapa mengubah akun siapa, dari apa ke apa, kapan); perubahan yang tidak mengubah nilai tidak dicatat.
+
+---
+
+## 7. Functional Requirements
+
+- **Prospect management:** create, read, update, delete prospek (nama, perusahaan, channel, stage, catatan, tanggal follow-up). Menghapus prospek ikut menghapus riwayat aktivitasnya dalam satu transaksi.
+- **Pipeline stages:** New → Contacted → Replied → Call Scheduled → Closed Won / Closed Lost. **Decision:** perpindahan bebas antar-stage, tanpa state machine, karena aturan kaku di sini overengineering untuk keputusan yang dibuat manual oleh satu orang.
+- **Outreach tracking:** log per aktivitas (tanggal, channel, hasil, opsional teks pesan); dapat diedit dan dihapus.
+- **Follow-up scheduling:** field tanggal follow-up dan daftar due/overdue yang dihitung dari tanggal lokal user. Bukan notifikasi push.
+- **Activity history:** daftar kronologis aktivitas per prospek.
+- **Search & filtering:** cari berdasarkan nama/perusahaan, filter berdasarkan stage.
+- **Notes:** catatan bebas per prospek. Ini input penting untuk drafting AI, bukan pelengkap.
+- **Basic analytics:** total per stage, response rate, conversion rate, dan breakdown per channel, dihitung on-the-fly. *Response rate* = prospek dengan minimal satu aktivitas "replied" ÷ prospek dengan minimal satu aktivitas. *Conversion rate* = prospek Closed Won yang pernah dihubungi ÷ prospek dengan minimal satu aktivitas, sehingga tidak bisa melebihi 100%.
+- **AI-assisted drafting:** `POST /api/prospects/:id/draft`; stateless; rate limit per user; tidak ada pengiriman otomatis.
+- **Authentication & account:** sign-up/sign-in email + password, Google OAuth (opsional), lupa/reset password lewat email, ganti/hapus password, lepas Google, `GET /api/auth/me`.
+- **Public demo:** `/api/demo/*` (prospek, aktivitas, follow-up, analitik) read-only tanpa autentikasi.
+- **Admin console (`apps/admin`):** daftar dan pencarian user, ubah role, tandai akun demo, riwayat audit perubahan role dan status demo.
+- **Health endpoint:** `GET /health` untuk Docker `HEALTHCHECK` dan verifikasi deploy. **Status:** belum ada di kode; dibutuhkan sebelum deploy.
+
+---
+
+## 8. Non-Functional Requirements
+
+Untuk MVP, hanya requirement yang benar-benar relevan dipenuhi. Sisanya sengaja tidak dikejar.
+
+- **Security.** Password di-hash dengan bcrypt. Access token JWT berumur 15 menit; refresh token acak (disimpan hanya sebagai hash SHA-256) berumur 30 hari, dirotasi tiap dipakai, dan dicabut saat sign-out; dikirim lewat cookie `httpOnly`, `SameSite=Lax`, `Secure` di production, dengan path `/api/auth`. Data di-scope per `user_id`, dan mengakses data orang lain menghasilkan 404, bukan 403, supaya keberadaan data tidak terkonfirmasi. Endpoint auth dibatasi per IP. Kode tukar Google sekali pakai berumur 60 detik, sehingga token tidak pernah ada di URL. Link reset password dibangun server dari peta origin tepercaya, bukan dari header `Origin`. HTTPS menjadi tanggung jawab reverse proxy.
+- **Performance.** **Decision:** bukan prioritas MVP. Skala data puluhan sampai ratusan prospek tidak butuh optimasi.
+- **Reliability.** **Decision:** best-effort. Error dari provider eksternal (AI, email) diubah menjadi pesan yang jelas, dan penyebab aslinya dicatat ke log.
+- **Availability.** **Decision:** tidak ada target SLA. Satu VM tanpa failover otomatis atau deploy tanpa downtime adalah trade-off yang diterima sadar untuk MVP.
+- **Scalability.** **Decision:** bukan requirement MVP. Konsekuensi teknis yang dicatat: rate limiter dan kode tukar OAuth disimpan di memori proses, jadi cukup untuk satu instance API dan perlu Redis atau sejenisnya bila lebih dari satu.
+- **Maintainability.** Prioritas tinggi: pemisahan route → service → repository, tipe kontrak API dibagi lewat Hono RPC, test integrasi terhadap PostgreSQL sungguhan, Biome + Husky, README, dan keputusan arsitektur terdokumentasi.
+- **Observability.** Log stdout container dan endpoint health cukup untuk MVP. Error tracking direkomendasikan, tidak wajib.
+- **Data privacy.** Akun demo hanya berisi data contoh. Email disamarkan di UI (sidebar menampilkan bagian lokal saja; pengaturan akun menampilkan format tersamarkan). UI memperingatkan bahwa draft AI diproses pihak ketiga dan catatan tidak boleh berisi data sensitif.
+- **Backup / recovery.** Backup database mengikuti provider PostgreSQL terkelola (BaaS). Server aplikasi bersifat stateless: "pemulihan"-nya adalah redeploy dari git + secrets.
+- **Testability.** Test berjalan terhadap database terpisah (`<nama>_test`) yang dibuat dan dimigrasi otomatis, dengan pengaman yang menolak berjalan ke database yang namanya tidak berakhiran `_test`.
+
+---
+
+## 9. Feature Prioritization
+
+Prinsip: fitur tidak masuk MVP hanya karena menarik secara teknis.
+
+### Key Features — MVP
+
+| Fitur | Problem | User | Expected value | Complexity | Dependency | Wajib MVP | Status |
+|---|---|---|---|---|---|---|---|
+| Prospect CRUD | Kehilangan jejak siapa yang sudah dihubungi | Freelancer | Tinggi | Rendah | Auth | Ya | Sudah ada |
+| Pipeline stage (bebas pindah) | Tidak tahu status tiap prospek | Freelancer | Tinggi | Rendah | Prospect CRUD | Ya | Sudah ada |
+| Activity logging | Tidak ada riwayat interaksi | Freelancer | Tinggi | Rendah | Prospect CRUD | Ya | Sudah ada |
+| Follow-up due list | Follow-up terlupa | Freelancer | Tinggi | Rendah | Prospect CRUD | Ya | Sudah ada |
+| Notes per prospek | Konteks hilang; input AI | Freelancer | Tinggi | Rendah | Prospect CRUD | Ya | Sudah ada |
+| AI-assisted drafting | Menulis dari nol | Freelancer | Tinggi | Sedang | Notes, layanan AI | Ya (diferensiator) | Sudah ada; ada gap prompt (bagian 6) |
+| Basic analytics | Tidak tahu apa yang berhasil | Freelancer | Sedang-tinggi | Rendah | Activity logging | Ya | Sudah ada |
+| Auth email + password + reset password | Data harus privat per user | Semua | Tinggi | Sedang | Layanan email (Resend) | Ya | Sudah ada |
+| Health endpoint | Verifikasi container dan deploy | Operator | Sedang | Rendah | — | Ya (untuk deploy) | Belum ada |
+
+### Nice-to-Have
+
+| Fitur | Problem | User | Expected value | Complexity | Dependency | Wajib MVP | Status |
+|---|---|---|---|---|---|---|---|
+| Search & filter | Nyaman di skala lebih besar | Freelancer | Rendah-sedang | Rendah | Prospect CRUD | Tidak | Sudah ada |
+| Google sign-in | Masuk tanpa mengingat password | User | Sedang | Sedang | Kredensial Google | Tidak | Sudah ada (opsional) |
+| Pengaturan akun (ganti/hapus password, lepas Google) | Kontrol atas cara masuk | User | Sedang | Sedang | Auth | Tidak | Sudah ada |
+| Akun demo publik read-only | Mencoba produk tanpa daftar; portofolio | Pengunjung | Sedang | Rendah | Akun demo | Tidak | Sudah ada |
+| Admin console + audit log | Kontrol role dan jejak perubahan | Admin | Sedang | Sedang | Auth, role | Tidak | Sudah ada |
+| Tag prospek | Pengelompokan tambahan | Freelancer | Rendah | Rendah | Prospect CRUD | Tidak | Skema database ada; API/UI belum |
+| Import CSV | Mempercepat migrasi data lama | Freelancer | Sedang | Sedang | Prospect CRUD | Tidak | Belum ada |
+
+### Planned / Future Features
+
+| Fitur | Alasan ditunda | Syarat sebelum dibangun |
+|---|---|---|
+| Channel WhatsApp + tombol "kirim via WhatsApp" dengan draft AI terisi | Relevan bila validasi user lain menunjukkan WhatsApp channel utama | Hasil Tahap 3 (bagian 13) |
+| Pengingat di luar aplikasi (email/push) | Follow-up saat ini hanya terlihat saat aplikasi dibuka | Terbukti sering terlewat walau ada daftar in-app |
+| UI daftar sesi dan pencabutan sesi perangkat lain | Sign-out sudah mencabut sesi yang dipakai | Setelah MVP |
+| Multi-user/team, kirim email/LinkedIn otomatis, dashboard chart, i18n | Tidak relevan untuk satu user dan kompleksitas tinggi | Traksi nyata |
+
+---
+
+## 10. MVP Scope
+
+**Definisi (Decision):** prospect CRUD, pipeline stage, activity logging, follow-up due list, notes, AI-assisted drafting (draft-only), analitik numerik dasar, auth self-managed, dan health endpoint. Dibangun sebagai monorepo dengan frontend dan backend terpisah.
+
+**Status implementasi:** semuanya sudah dibangun dan diuji (100+ test integrasi), kecuali health endpoint.
+
+**Melampaui scope awal (jujur).** Akun demo publik, admin console, audit log, rate limiting, dan rotasi refresh token tidak dibutuhkan oleh tool untuk satu pengguna. Semuanya ditambahkan karena mendukung tujuan portofolio dan karena auth self-managed membutuhkan kontrol sesi yang layak. Ini persis pola yang PRD ini coba cegah (bagian 18): scope bertambah sebelum loop inti terbukti. Tidak ada tambahan lagi sebelum deploy dan evaluasi selesai.
+
+**Realistis untuk solo developer:** sisa pekerjaan MVP (health endpoint, Dockerfile, compose, workflow CI, deploy) kecil dan terdefinisi.
+
+---
+
+## 11. Out of Scope
+
+Sengaja tidak dibangun pada MVP, untuk mencegah scope creep, optimasi prematur, dan overengineering:
+
+- Pengiriman email/LinkedIn otomatis (kompleksitas OAuth dan deliverability tidak sepadan dengan nilainya sekarang).
+- Multi-user/team, permission, dan billing.
+- Notifikasi push/email untuk pengingat.
+- Import/export CRM.
+- Aplikasi mobile.
+- Dashboard visual/chart: angka mentah cukup untuk menguji apakah metriknya berguna.
+- Vector database dan RAG: konteks prospek yang tersimpan di kolom terstruktur sudah cukup sebagai input prompt.
+- Job queue/worker: tidak ada proses asinkron yang cukup berat.
+- Kubernetes, service mesh, distributed tracing, multi-VM/redundansi, log aggregation terpusat, staging environment terpisah, automated rollback.
+- Internasionalisasi dua bahasa: UI hanya berbahasa Inggris.
+
+---
+
+## 12. Success Metrics
+
+Metrik dipakai hanya bila benar-benar relevan.
+
+| Metrik | Yang diukur | Bisa diukur sekarang? |
+|---|---|---|
+| Jumlah prospek yang ditambahkan | Tool dipakai konsisten, bukan dicoba sekali | Ya, dari database |
+| Jumlah aktivitas outreach yang dicatat | Idem | Ya |
+| Follow-up completion rate | Uji langsung hipotesis "tool ini mencegah follow-up terlupa" | **Open Question:** belum ada pencatatan follow-up yang "selesai"; perlu didefinisikan (misalnya follow-up date dikosongkan atau digeser setelah aktivitas dicatat) |
+| Response rate dan conversion rate | Sinyal arah | Ya, sudah tampil di aplikasi. Di skala puluhan prospek angkanya sangat noisy; aplikasi menampilkan peringatan di bawah 30 prospek yang dihubungi. Jangan menyimpulkan terlalu jauh dari perubahan kecil |
+| Draft AI yang benar-benar dipakai (disimpan menjadi aktivitas) dibanding jumlah draft | Apakah drafting berguna | Belum; butuh pencatatan tambahan |
+| Time saved | Penghematan waktu | **Decision:** tidak dilacak sebagai angka presisi (tidak ada baseline terkontrol); dinilai kualitatif saja |
+
+---
+
+## 13. Validation Plan
+
+**Decision:** tahap "eksperimen manual sebelum membangun" tidak diulang, karena problem sudah **Validated** untuk primary user (N=1). Validasi langsung dimulai dari tahap setelah MVP jadi dan di-deploy.
+
+**Tahap 1 — Personal validation.** Selesai secara kualitatif lewat refleksi pengalaman sendiri (bagian 2).
+
+**Tahap 2 — Pemakaian nyata oleh pembuatnya (2–4 minggu setelah deploy).** Eksperimen termurah: pakai untuk outreach sungguhan dan catat titik friksi. Sinyal paling jujur: apakah tetap dipakai secara sukarela setelah minggu pertama, atau diam-diam kembali ke kebiasaan lama.
+
+**Tahap 3 — Product-market validation dengan kelompok penguji (kurang lebih 30 orang).** Pertanyaan yang harus dijawab:
+
+| Pertanyaan validasi | Cara paling murah menjawabnya |
+|---|---|
+| Apakah problem benar-benar terjadi pada orang lain? | Tanya: "Di mana Anda mencatat calon klien sekarang, dan channel apa yang paling sering dipakai (WhatsApp, DM, email)?" |
+| Apakah user mau memakainya? | Berapa yang membuat akun, menambah minimal 3 prospek, dan mencatat minimal 1 aktivitas |
+| Apakah user kembali? | Berapa yang aktif lagi setelah 7 hari |
+| Apakah produk meningkatkan workflow outreach? | Wawancara singkat: apa yang membuat mereka kembali ke spreadsheet, dan apakah draft AI dipakai, diedit, atau dibuang |
+
+Hasilnya menentukan apakah channel WhatsApp dan pengingat di luar aplikasi menjadi prioritas berikutnya (bagian 19).
+
+---
+
+## 14. System Architecture
+
+**Decision:** frontend dan backend terpisah, dalam satu monorepo. Alasannya belajar pemisahan tanggung jawab secara nyata, bukan sekadar menekan jumlah deployment. **Status:** sudah diterapkan.
+
+```plain text
+Presentation   (apps/platform, apps/admin — TanStack Start + React + TypeScript)
+    ↓  HTTP REST, dipanggil lewat Hono RPC (tipe di-infer dari route)
+Application / Business Logic   (apps/api — Hono: route → service)
+    ↓  pemanggilan fungsi
+Data Access   (repository per modul — Prisma ORM)
+    ↓  SQL
+Database   (PostgreSQL)
+
+Layanan eksternal (hanya dipanggil dari apps/api):
+Resend (email) · OpenRouter (draft AI) · Google OAuth
+```
+
+### Presentation layer
+- **Di mana:** `apps/platform` (landing, produk, demo publik) dan `apps/admin` (konsol admin dengan origin dan sesi terpisah). Keduanya memakai `packages/ui` (design system bersama).
+- **Tanggung jawab:** menampilkan UI, menangkap input, validasi ringan untuk kenyamanan, memanggil API, menampilkan data dan error. Route yang butuh login dirender di client (token di `sessionStorage`); landing dirender di server.
+- **Tidak boleh:** menyimpan business rule, bicara langsung ke database, atau menyusun prompt AI. Contoh: definisi response rate dihitung di server, bukan di komponen React.
+- **Kontrak tipe:** frontend mengimpor `AppType` dari `apps/api` dan memakai klien Hono RPC, sehingga tipe request dan response selalu sama dengan definisi route, tanpa klien tulisan tangan dan tanpa langkah code generation.
+- **Sesi:** klien membungkus `fetch` dengan `credentials: "include"`. Saat menerima 401 pada request yang membawa token, klien memperbarui access token satu kali lalu mengulang request. Beberapa 401 bersamaan berbagi satu proses refresh, karena rotasi refresh token akan membuat dua refresh paralel saling membatalkan.
+
+### Business logic layer
+- **Di mana:** `apps/api/src/modules/<domain>/` untuk `auth`, `prospect`, `activity`, `analytics`, `admin`, `demo`, `draft`, `user`. Tiap modul dipisah menjadi `*.route.ts` (HTTP + validasi Zod), `*.service.ts` (business rule), dan `*.repository.ts` (akses data).
+- **Yang termasuk business rule:** definisi response/conversion rate; aturan "akun wajib punya minimal satu cara masuk"; "paling banyak satu akun demo"; pemilihan hanya prospek milik user; penyusunan prompt AI; dan aturan bahwa draft AI tidak pernah terkirim otomatis.
+- **Lintas modul:** `middleware/auth.ts` (`requireAuth`, `requireAdmin`), `libs/` (JWT, hashing, rate limiter, mailer, klien OpenRouter, Google OAuth), dan model error tunggal `AppError` yang selalu menghasilkan `{ error: { code, message, details? } }`.
+- **Mengapa dipisah dari UI dan operasi database:** (1) bisa diuji tanpa browser, karena test API memanggil `app.request()` langsung; (2) aturan yang sama dipakai oleh semua client (platform, admin, demo) tanpa ditulis ulang; (3) mengubah tampilan atau ORM tidak memaksa menulis ulang aturan bisnis.
+
+### Data / database operation layer
+- **Di mana:** `*.repository.ts` per modul; service tidak pernah memanggil Prisma secara langsung. Transaksi ditulis di repository.
+- **Menghindari coupling:** service hanya tahu fungsi repository (misalnya `findByIdAndUserId`), bukan bentuk query-nya. **Batasan yang diakui:** repository mengembalikan tipe model Prisma, jadi mengganti ORM tetap menyentuh sebagian tipe di service. **Decision:** ini diterima. Membungkusnya dengan interface sendiri adalah abstraksi tanpa manfaat nyata pada skala ini.
+- **Invarian yang ditegakkan di transaksi:** perubahan role + entri audit log; flag akun demo + audit log (termasuk efek samping mematikan akun demo lama); penghapusan prospek + aktivitasnya.
+- **Model utama:** `User`, `Prospect`, `Activity`, `RefreshToken`, `PasswordResetToken`, `RoleChangeLog`, `DemoChangeLog`. Tabel `Tag` dan `ProspectTag` ada di skema tetapi belum dipakai. Detail ERD ada di `ERD.md`.
+
+**Bila arsitektur ini tidak ideal:** jika ada beberapa client dengan aturan yang berbeda, atau kebutuhan mengganti database, layer akan diperketat dengan interface eksplisit (gaya Clean Architecture). Untuk satu produk dengan satu database, itu ceremony yang tidak sepadan. **Alternatif yang ditolak:** framework full-stack tunggal, karena bertentangan dengan tujuan belajar pemisahan layer (Decision di atas).
+
+**Catatan:** database hanya diakses dari `apps/api`. Frontend tidak pernah memakai API REST/GraphQL bawaan provider database.
+
+---
+
+## 15. Technical Requirements
+
+Bagian ini menjelaskan pilihan dan alasannya, bukan hanya daftar teknologi.
+
+### System design (high-level)
+
+| Komponen | Pilihan | Alasan singkat |
+|---|---|---|
+| Client | TanStack Start (Router + Query), React 19, Tailwind CSS v4 | Routing berbasis file dan cache data terkelola; halaman di-prerender jadi HTML statis saat build (bukan SSR live di production — lihat bagian 16) untuk tampil cepat dan mudah dibaca mesin pencari |
+| Backend/API | Hono 4 + Zod 4, REST, Node.js 24 | Ringan, berbasis standar web, dan menghasilkan tipe RPC yang dipakai frontend |
+| Database | PostgreSQL 16 lewat Prisma 7 (driver adapter `pg`) | Relasional cocok untuk data prospek → aktivitas; Prisma memberi tipe dan migrasi berversi |
+| Authentication | Self-managed: bcrypt + JWT access token + refresh token dirotasi; Google OAuth opsional | Kontrol penuh atas sesi dan invarian, tanpa ketergantungan pada penyedia auth |
+| Background jobs | Tidak ada | Due/overdue dihitung saat request memakai tanggal lokal dari client |
+| Layanan eksternal | Resend (email), OpenRouter (AI), Google OAuth | Masing-masing dipanggil dari satu modul terisolasi di API; semuanya opsional untuk menjalankan aplikasi |
+| Testing | Vitest terhadap PostgreSQL sungguhan | Menguji perilaku nyata (transaksi, kendala database); provider eksternal di-stub di level `fetch` |
+| Kualitas | Biome (lint + format), Husky (pre-commit `biome check`) | Satu tool menggantikan ESLint + Prettier; pemeriksaan sebelum kode masuk git |
+
+**Decision — stack infrastruktur baseline (dari keputusan yang sudah ditetapkan):** monorepo, GitHub Actions, Biome, Husky, Docker, BaaS untuk PostgreSQL, Prisma, Hono, dan VM IDCloudHost. Penilaian tiap komponen ada di bagian 16.
+
+**Konsep-konsep yang dipraktikkan (untuk dipelajari):**
+- **Validasi di batas sistem:** Zod memvalidasi input di route; kode di dalam boleh mempercayai data yang sudah lolos.
+- **Otorisasi berbasis kepemilikan:** setiap query menyertakan `user_id`; 404 bagi data milik orang lain.
+- **Sesi tanpa penyimpanan sesi tetapi dengan pencabutan:** access token pendek + refresh token yang dirotasi. Token curian yang dipakai ulang setelah pemilik memperbarui akan ditolak.
+- **Transaksi untuk invarian:** beberapa perubahan yang harus konsisten ditulis atomik.
+- **Fail-soft untuk dependensi opsional:** tanpa kunci Resend/OpenRouter/Google, hanya fitur terkait yang menjawab 503; sisanya tetap jalan.
+- **Idempotensi:** logout tanpa sesi tetap berhasil; perubahan yang tidak mengubah nilai tidak menghasilkan entri audit.
+
+### Struktur monorepo
+
+```plain text
+apps/
+  api/        Hono + Prisma + Zod (modul per domain)
+  platform/   Produk: landing, auth, dashboard, prospek, analitik, pengaturan, demo publik
+  admin/      Konsol admin (origin dan sesi terpisah)
+packages/
+  ui/         Design system bersama
+```
+
+- **Mengapa `packages/ui` ada:** dipakai dua aplikasi (platform dan admin), jadi menjaga tampilan konsisten. Paket shared hanya dibuat bila ada lebih dari satu pemakai.
+- **Mengapa tidak ada `packages/types`:** kontrak tipe API sudah dibagi lewat Hono RPC (`AppType`), jadi paket tipe tambahan akan menduplikasi.
+- **Mengapa `apps/admin` terpisah dari `apps/platform`:** origin dan sesi yang berbeda membatasi dampak bila satu sisi bermasalah, dan admin tidak perlu ikut dimuat oleh pengguna biasa.
+
+### Konfigurasi
+Satu file `.env` di root yang dibaca semua aplikasi; `.env.example` mendokumentasikan tiap variabel dan apa yang terjadi bila variabel opsional dikosongkan.
+
+### MVP architecture vs Future architecture
+- **MVP:** tiga aplikasi + PostgreSQL + tiga layanan eksternal opsional, satu instance API, tanpa queue atau worker.
+- **Future (hanya bila ada alasan nyata):** Redis untuk state bersama (rate limiter, kode OAuth) bila API lebih dari satu instance; job queue untuk pengingat terjadwal; integrasi pengiriman pesan.
+
+---
+
+## 16. Infrastructure
+
+### Status dan kebutuhan
+
+| Kebutuhan | Kategori | Status |
+|---|---|---|
+| Monorepo (pnpm workspaces) | Required | Sudah ada |
+| Biome (lint + format) | Required | Sudah ada |
+| Test suite + database `_test` terpisah | Required | Sudah ada |
+| Prisma + migrasi berversi | Required | Sudah ada |
+| `.env.example`, README, LICENSE | Required | Sudah ada |
+| Husky (pre-commit `biome check`) | Recommended | Sudah ada |
+| Docker Compose untuk development (PostgreSQL) | Recommended | Sudah ada (`docker-compose.dev.yaml`) |
+| Endpoint `GET /health` + Docker `HEALTHCHECK` | Required untuk deploy | Belum ada |
+| Dockerfile multi-stage (api, platform, admin) | Required | Direncanakan |
+| `docker-compose.yaml` production | Required | Direncanakan |
+| GitHub Actions (CI: Biome, type check, test) | Required | Direncanakan |
+| CD ke VM (build image → registry → SSH → compose up) | Required | Direncanakan |
+| PostgreSQL terkelola (BaaS) | Required | Direncanakan. **Open Question:** provider mana |
+| VM IDCloudHost | Required (target deployment) | Direncanakan. **Open Question:** konfirmasi paket dan region |
+| Reverse proxy dengan HTTPS otomatis (mis. Caddy) | Recommended untuk VM mandiri | Direncanakan. **Open Question:** pilihan tool |
+| Container registry (GitHub Container Registry) | Recommended | Direncanakan |
+| Error tracking (mis. Sentry free tier) | Recommended | Belum ada |
+| Logging terpusat, monitoring/alerting, staging environment | Future / Optional | Belum ada |
+| Turborepo/Nx, Kubernetes, service mesh, multi-VM | Overengineering | Tidak dipakai |
+
+### Penilaian pragmatis per keputusan (sebelumnya → sekarang → dampak)
+
+| Keputusan | Pendekatan sebelumnya | Sekarang | Dampak utama | Trade-off | Penilaian |
+|---|---|---|---|---|---|
+| Monorepo | Repo terpisah per aplikasi | Satu repo, pnpm workspaces | Tipe API dan design system dibagi tanpa publish paket; satu perubahan lintas app dalam satu commit | Build dan CI mencakup lebih banyak; butuh disiplin struktur | **Required** |
+| Frontend dan backend terpisah | Framework full-stack tunggal | Aplikasi dan API terpisah | Batas layer jelas dan API dipakai banyak client | Dua sampai empat unit deploy, CORS, dan cookie lintas origin | **Required** (sesuai tujuan belajar) |
+| Frontend TanStack Start — prerender + SPA fallback (bukan SSR runtime) | SSR live di production | Build-time prerender (`prerender.enabled` + `spa.enabled`) menghasilkan HTML statis per route dan `_shell.html` sebagai fallback untuk route dinamis | Tidak ada proses Node yang perlu dijaga hidup untuk `platform`/`admin`; disajikan sebagai file statis di belakang reverse proxy | Reverse proxy wajib merutekan path yang tidak cocok file statis ke `_shell.html`; `dist/server/server.js` tetap dihasilkan build tapi sengaja tidak dijalankan | **Recommended**; diverifikasi lewat build produksi nyata (lihat catatan di bawah) |
+| Docker | Menjalankan proses langsung di VM | Image multi-stage per aplikasi | Lingkungan produksi sama dengan build CI; deploy berupa `pull` dan `up` | Waktu setup dan pemeliharaan Dockerfile | **Required** |
+| Docker Compose production | Perintah `docker run` manual | Satu file mendeskripsikan semua service | Deploy dan rollback dengan satu perintah | Cukup untuk satu VM; tidak untuk banyak host | **Recommended** |
+| GitHub Actions | Pemeriksaan manual | CI otomatis + CD ke VM | Regresi tertangkap sebelum masuk `main`; deploy dapat diulang | Butuh secrets dan pemeliharaan workflow | **Required** |
+| Biome | ESLint + Prettier | Satu tool | Konfigurasi lebih sedikit dan lebih cepat | Ekosistem plugin lebih kecil | **Recommended** |
+| Husky | Tanpa git hook | Pre-commit `biome check` | Umpan balik sebelum CI | Bisa terasa mengganggu; dapat dilewati | **Optional** (sudah dipakai) |
+| PostgreSQL BaaS | Postgres di VM sendiri | Database terkelola | VM stateless; backup dan pembaruan ditangani penyedia | Ketergantungan pada penyedia dan latensi ke database | **Required**; VM stateless membuat redeploy mudah |
+| Prisma | Query SQL manual | ORM + migrasi berversi | Tipe otomatis dan migrasi terlacak | Lapisan abstraksi; kadang query kompleks lebih sulit | **Required** |
+| Hono | Express/Fastify | Hono | Ringan, tipe RPC, berbasis standar web | Ekosistem lebih kecil daripada Express | **Recommended** |
+| VM IDCloudHost | PaaS | VM mandiri | Kontrol penuh dan bukti kemampuan Systems/Ops | Patching OS, firewall, TLS, dan single point of failure ada di tangan sendiri | **Optional** dari sisi produk, **Required** dari sisi tujuan portofolio |
+
+### Docker dan deployment
+
+**MVP requirement (agar aplikasi jalan dengan aman):**
+- **Dockerfile:** satu image multi-stage per aplikasi: stage build (install dependency, compile, generate Prisma client) lalu stage runtime ramping dengan dependency produksi dan hasil build saja.
+- **Docker Compose:** service `api` (Node) dan `proxy` (nginx/Caddy yang menyajikan `dist/client` dari `platform` dan `admin` sekaligus melakukan reverse proxy ke `api`). `platform` dan `admin` **tidak** menjadi service Node terpisah — lihat Decision di bawah. Tidak ada service PostgreSQL bila database terkelola dipakai.
+- **Development vs production container:** Docker **tidak wajib** untuk development harian. `pnpm dev` menjalankan ketiga aplikasi secara native, dengan PostgreSQL dari `docker-compose.dev.yaml`. Docker dipakai untuk memverifikasi build produksi dan untuk deploy.
+- **Runtime frontend (Decision, diverifikasi lewat build nyata pada 22 September 2026):** `apps/platform` dan `apps/admin` diberi opsi `prerender: { enabled: true, crawlLinks: true }` dan `spa: { enabled: true }` di `tanstackStart()`. Build menghasilkan HTML statis untuk tiap route yang bisa di-crawl (contoh `platform`: `/`, `/dashboard/`, `/settings/`, `/auth/signin/`, dst.; `admin`: `/`, `/signin/`, `/users/`, dst.) ditambah `_shell.html` sebagai fallback SPA-shell untuk route dinamis yang tidak bisa di-prerender (mis. `/prospect/:id`). Diverifikasi: `dist/client` bisa disajikan murni sebagai file statis (dites dengan static file server biasa, tanpa proses Node) — halaman statis 200 OK. Codebase juga dikonfirmasi tidak memakai TanStack Start server function (`createServerFn`) sama sekali; seluruh panggilan API lewat Hono RPC langsung ke `apps/api`, jadi server SSR memang tidak dibutuhkan untuk logic apa pun. Konsekuensi: `dist/server/server.js` tetap dihasilkan build (bisa dijalankan lewat `srvx`, sudah diverifikasi jalan) tapi **sengaja tidak dijalankan** di production. Reverse proxy harus dikonfigurasi agar path yang tidak cocok file statis (khususnya di bawah `/prospect/*`) di-*rewrite* ke `_shell.html`.
+- **Environment variables:** satu `.env` di server (tidak masuk git). Wajib di production: `NODE_ENV=production`, `DATABASE_URL`, `JWT_SECRET` (nilai acak baru), `CORS_ORIGIN` (semua origin frontend; origin pertama dipakai untuk link reset dan redirect Google, yang kedua untuk admin), `VITE_API_URL`, dan `RESEND_API_KEY` (tanpa ini reset password menghasilkan 503). Daftarkan URI redirect Google untuk domain API bila Google dipakai.
+- **Secrets:** file `.env` di server, atau secrets terenkripsi di GitHub untuk workflow (kunci SSH, host VM). Tidak pernah di kode. Kredensial yang pernah tampil di log, chat, atau transkrip harus dianggap bocor dan dirotasi.
+- **PostgreSQL responsibility:** sepenuhnya milik penyedia BaaS. VM tidak menyimpan data.
+- **Reverse proxy:** dibutuhkan agar VM mandiri punya HTTPS dan bisa mengarahkan tiap host ke service-nya. Proxy juga menambahkan `X-Forwarded-For`, yang dipakai rate limiter API untuk mengenali IP klien.
+- **Domain dan cookie (wajib):** cookie refresh token bersifat `Secure` di production dan hanya terkirim bila frontend dan API berada pada **site yang sama**. Pakai subdomain dari satu domain induk, misalnya `app.<domain>`, `admin.<domain>`, `api.<domain>`. API di domain yang sama sekali berbeda membuat refresh token gagal tanpa pesan yang jelas.
+- **Migrasi database:** deploy menjalankan `prisma migrate deploy` (bukan `migrate dev`) sebelum API menerima trafik.
+- **Health check:** endpoint `GET /health` + `HEALTHCHECK` pada image api.
+- **Logging dasar:** stdout container via `docker compose logs`. Kegagalan provider eksternal dicatat bersama penyebab aslinya.
+- **Backup strategy:** ikut penyedia BaaS; VM stateless, sehingga "backup"-nya adalah kemampuan redeploy dari git + secrets.
+- **Batas single instance:** rate limiter dan kode OAuth ada di memori proses; satu instance API adalah kondisi yang dianggap benar untuk MVP.
+
+**Production improvement (setelah MVP berjalan dan ada user):** log aggregation terpusat, staging environment, automated rollback, monitoring dan alerting, Redis untuk state bersama, dan migrasi dari VM tunggal ke platform dengan redundansi bila uptime menjadi masalah nyata.
+
+### Evaluasi CI/CD
+
+Alur yang diusulkan: *push/PR → install → Biome → type check → test → Docker build → deploy.* Untuk MVP alur ini sudah hampir cukup, dengan penyesuaian berikut:
+
+```plain text
+Pull Request → main:
+  install → Biome → type check (api, platform, admin)
+    → test (PostgreSQL sebagai service container) → Docker build (validasi saja, tidak push)
+
+Push / merge → main:
+  install → Biome → type check → test
+    → Docker build → push image ke registry
+    → SSH ke VM → pull image → prisma migrate deploy → docker compose up -d
+    → cek /health
+```
+
+- **Yang kurang dari alur awal:** (1) langkah push image ke registry, supaya build tidak terjadi di VM yang sumber dayanya terbatas; (2) langkah migrasi database; (3) cek `/health` setelah deploy.
+- **Pembeda PR dan merge:** PR hanya divalidasi. Deploy hanya berjalan saat push atau merge ke `main`.
+- **Tidak perlu untuk MVP:** staging environment dan automated rollback.
+- **Catatan CI:** `pnpm --filter api test` menjalankan `db:test:setup`, yang membuat database `<nama>_test` bila belum ada. `DATABASE_URL` di CI harus menunjuk ke server PostgreSQL dengan hak `CREATE DATABASE` (service container dengan user superuser cukup).
+
+---
+
+## 17. AI Integration
+
+**Masalah yang cocok memakai AI:** hanya satu, yaitu drafting teks pesan outreach dari konteks prospek yang tersimpan. Ini pekerjaan bahasa yang generatif.
+
+**Yang lebih baik memakai deterministic logic (dan tidak memakai AI):** perpindahan stage, penentuan due/overdue, response rate, conversion rate, search dan filter. Semuanya aturan atau aritmatika sederhana; AI di sini lebih lambat, lebih mahal, tidak reproducible, dan menambah risiko tanpa manfaat.
+
+**Apakah AI benar-benar memberi value?** Ya, tetapi hanya untuk satu fitur itu, dan nilainya sedang, bukan besar. Draft mempercepat titik awal penulisan, tetapi hasilnya tetap harus dibaca dan diedit. Untuk analitik dan pipeline, AI tidak dibutuhkan.
+
+**Implementasi (Sudah ada):** `libs/openrouter.ts` memanggil OpenRouter SDK; model dikonfigurasi lewat `OPENROUTER_MODEL` (default model gratis Nemotron). Prompt dibangun di `draft.service.ts` dari data prospek milik user yang login (nama, perusahaan, channel, stage, catatan), bukan dari input bebas client. Bahasa output mengikuti bahasa catatan bila bukan Inggris. **Stateless:** tidak ada tabel draft; teks baru tersimpan bila user menyimpan aktivitasnya.
+
+**Ketahanan terhadap provider yang tidak stabil:**
+- Batas waktu 30 detik, dengan retry bawaan SDK **dimatikan**. Bawaannya adalah backoff eksponensial hingga satu jam, yang membuat batas waktu tak pernah efektif dan menghabiskan kuota gratis pada tiap percobaan ulang.
+- Kegagalan dipetakan ke 503 yang jelas (layanan tidak tersedia, kuota penuh, terlalu lama), termasuk provider gratis yang kewalahan dan dijawab OpenRouter dengan HTTP 200 berisi error di body, serta timeout yang terjadi saat body dibaca. Penyebab aslinya dicatat ke log.
+- Rate limit **per user** (20 per jam), bukan per IP, karena biaya menempel pada akun.
+
+**Risiko hallucination / output keliru:** AI dapat mengarang detail prospek yang tidak pernah dicatat. **Bagaimana output divalidasi:** (1) draft selalu tampil sebagai teks yang harus dibaca dan diedit manusia, tanpa jalur kirim otomatis; (2) prompt seharusnya memerintahkan model hanya memakai field yang tersimpan. **Status:** poin (1) terpenuhi; poin (2) **belum ada** di prompt (bagian 6, story 4).
+
+**Privasi:** model gratis pada provider pihak ketiga dapat menyimpan atau memakai prompt untuk pelatihan. UI memperingatkan user agar tidak menaruh data sensitif di catatan. Beralih ke model berbayar dengan kebijakan tanpa pelatihan cukup dengan mengganti satu variabel environment.
+
+**Latensi dan kuota:** model gratis tidak stabil (terukur kira-kira 5–30 detik) dan punya kuota harian per akun OpenRouter. Cukup untuk MVP dan demo, tidak untuk pemakaian berat.
+
+---
+
+## 18. Risks & Assumptions
+
+**Asumsi**
+- **Assumption:** problem yang tervalidasi untuk pembuatnya (N=1) berlaku juga untuk freelancer lain. Masih hipotesis sampai Tahap 3 (bagian 13) selesai.
+- **Assumption:** kelompok penguji bersedia mencoba dan memberi umpan balik jujur.
+
+**Risiko produk**
+- "Berhasil untuk N=1" tetap bukti lemah untuk keputusan bisnis; cukup kuat untuk cerita portofolio, tidak untuk keputusan bisnis nyata.
+- Ketidaksesuaian pasar: model channel bergaya outbound Barat (tanpa WhatsApp dan tanpa field nomor kontak) bisa membuat produk kurang relevan bagi freelancer di pasar lokal. Dimitigasi lewat pertanyaan di Tahap 3.
+- **Scope creep yang sudah terjadi:** admin console, audit log, rate limiting, dan akun demo melampaui kebutuhan tool untuk satu pengguna (bagian 10). Mitigasi: tidak ada penambahan fitur sebelum deploy dan evaluasi selesai.
+- Fitur pengingat tidak ada di luar aplikasi, sehingga follow-up hanya terlihat saat aplikasi dibuka. Ini dapat melemahkan hipotesis utama ("mencegah follow-up terlupa").
+
+**Risiko teknis dan infrastruktur**
+- Reverse proxy production harus benar mengarahkan route dinamis (mis. `/prospect/*`) ke `_shell.html` (bagian 16); satu baris rewrite yang salah/lupa dikonfigurasi membuat halaman itu 404, meski `dist/server/server.js` sengaja tidak dijalankan sebagai jaring pengaman.
+- Tumpukan infrastruktur (Docker, CI/CD, VM mandiri, reverse proxy) menambah permukaan yang bisa salah. Bentuk lain dari pola overengineering bila tidak disiplin: berpindah dari "fitur berlebihan" ke "infrastruktur berlebihan". Mitigasi: tidak menambah komponen di luar tabel bagian 16 tanpa alasan kuat.
+- VM mandiri berarti tanggung jawab keamanan OS (patching, firewall) ada pada pemilik; satu VM adalah single point of failure. Diterima sadar untuk MVP.
+- Rate limiter dan kode OAuth di memori: tidak aman untuk lebih dari satu instance, dan state hilang saat restart.
+- Layanan AI gratis: latensi tidak stabil, kuota harian, dan kemungkinan penyimpanan prompt oleh penyedia.
+- Resend mode sandbox hanya mengirim ke pemilik akun, sehingga reset password tidak berfungsi untuk pengguna lain sampai domain diverifikasi.
+- Role user disematkan di access token; perubahan role baru berlaku pada refresh atau sign-in berikutnya (maksimal sekitar 15 menit).
+- Kredensial yang pernah tampil di log, chat, atau transkrip harus dianggap bocor dan dirotasi.
+
+**Kritik pragmatis terhadap keputusan.** Teknis valid, tetapi tidak sepadan untuk MVP satu pengguna: rotasi refresh token dan audit log (nilainya lebih ke portofolio daripada ke pengguna), serta admin console. Yang sepadan dan sebaiknya tetap dipertahankan: pemisahan layer, test terhadap database sungguhan, dan pembagian tipe lewat Hono RPC.
+
+---
+
+## 19. Future Roadmap
+
+Urutan ditentukan oleh hasil validasi (bagian 13), bukan oleh daya tarik teknis.
+
+1. **Menutup gap MVP:** endpoint `/health`, penegakan aturan tanggal aktivitas, instruksi anti-karangan dan konteks aktivitas terakhir di prompt AI, dan peringatan catatan kosong.
+2. **Deploy:** Dockerfile, `docker-compose.yaml` production, workflow CI/CD, dan deployment ke VM.
+3. **Setelah umpan balik penguji, bila terbukti relevan:** channel WhatsApp kelas satu dengan field nomor kontak dan tombol "kirim via WhatsApp" yang membawa draft AI; pengingat di luar aplikasi.
+4. **Peningkatan kualitas:** tag prospek, import CSV, UI daftar sesi dan pencabutan sesi perangkat lain, dan tes end-to-end di browser.
+5. **Bila ada traksi nyata:** multi-user/team, integrasi pengiriman email/LinkedIn langsung, dashboard visual, i18n dua bahasa, log aggregation terpusat, staging environment, dan migrasi ke platform dengan redundansi atau pivot menjadi produk kecil dengan billing.
+
+---
+
+## 20. References
+
+Referensi berikut adalah dokumentasi resmi dan sumber primer. **Fakta** merujuk ke perilaku yang terdokumentasi; **rekomendasi** dan **inferensi** di dokumen ini adalah penilaian penulis, bukan kutipan dari sumber tersebut. Dokumentasi vendor (harga, batas, fitur) bisa berubah; cek versi terbaru sebelum memutuskan.
+
+- Hono: [https://hono.dev/docs](https://hono.dev/docs)
+- Prisma: [https://www.prisma.io/docs](https://www.prisma.io/docs)
+- TanStack Start: [https://tanstack.com/start](https://tanstack.com/start)
+- Zod: [https://zod.dev](https://zod.dev)
+- Vitest: [https://vitest.dev](https://vitest.dev)
+- Biome: [https://biomejs.dev/](https://biomejs.dev/)
+- PostgreSQL: [https://www.postgresql.org/docs/](https://www.postgresql.org/docs/)
+- Docker Compose: [https://docs.docker.com/compose/](https://docs.docker.com/compose/)
+- GitHub Actions: [https://docs.github.com/actions](https://docs.github.com/actions)
+- OpenRouter: [https://openrouter.ai/docs](https://openrouter.ai/docs)
+- Resend: [https://resend.com/docs](https://resend.com/docs)
+- Konsep layered architecture dan repository pattern: Martin Fowler, *Patterns of Enterprise Application Architecture* (buku).
+- Konsep dependency rule dan clean architecture: Robert C. Martin, *Clean Architecture* (buku).
+
+**Yang sengaja tidak dirujuk:** spesifikasi paket VM, region, dan firewall IDCloudHost, serta batas model gratis OpenRouter dan mode sandbox Resend. Tidak ada informasi terkini yang dapat dijamin akurat dari dokumen ini; verifikasi langsung di situs penyedia sebelum memutuskan.
