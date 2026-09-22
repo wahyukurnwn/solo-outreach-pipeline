@@ -42,6 +42,14 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
       JWT_SECRET: ci-test-secret-never-used-outside-this-job
+      # google-oauth.test.ts exercises the real redirect/callback flow
+      # (with fetch stubbed — see mockGoogleEndpoints), which needs
+      # googleAuthMiddleware (libs/google-auth.ts) to see *some* client
+      # id/secret so it doesn't short-circuit to 503 before the handler
+      # ever runs. Values only have to be non-empty; nothing calls Google
+      # for real in this job.
+      GOOGLE_CLIENT_ID: ci-test-google-client-id
+      GOOGLE_CLIENT_SECRET: ci-test-google-client-secret
     steps:
       - uses: actions/checkout@v4
 
