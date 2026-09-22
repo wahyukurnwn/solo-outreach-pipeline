@@ -10,7 +10,7 @@
 
 **Pitch 5–10 detik:** "Pipeline sederhana untuk satu orang — lacak prospek, draft pesan personal dengan AI, lihat apa yang benar-benar berhasil."
 
-**Status dokumen (22 September 2026):** PRD ini disinkronkan dengan kondisi repository. Fitur MVP sudah dibangun dan diuji; yang belum ada adalah endpoint `/health`, image Docker, `docker-compose.yaml` production, workflow GitHub Actions, dan deployment. Setiap komponen di bagian teknis diberi status **Sudah ada**, **Direncanakan**, atau **Belum ada**, supaya dokumen ini tidak menyatakan sesuatu yang belum benar.
+**Status dokumen (22 September 2026):** PRD ini disinkronkan dengan kondisi repository. Fitur MVP dan endpoint `/health` sudah dibangun dan diuji; yang belum ada adalah image Docker, `docker-compose.yaml` production, workflow GitHub Actions, dan deployment. Setiap komponen di bagian teknis diberi status **Sudah ada**, **Direncanakan**, atau **Belum ada**, supaya dokumen ini tidak menyatakan sesuatu yang belum benar.
 
 **Cara memakai dokumen ini.** *Who:* satu orang yang memegang tiga peran (product, design, engineering) dengan tanggung jawab yang tetap dibedakan. *When:* dibaca sebelum menambah fitur, dan diperbarui saat requirement berubah signifikan. *Output:* source of truth untuk scope, requirement, prioritas, dan hasil yang diharapkan. *Mencegah:* scope creep, requirement yang ambigu, dan usaha engineering yang terbuang.
 
@@ -130,7 +130,7 @@ Format: **As a [ROLE], I want to [ACTION], so that [GOAL].**
 - **Authentication & account:** sign-up/sign-in email + password, Google OAuth (opsional), lupa/reset password lewat email, ganti/hapus password, lepas Google, `GET /api/auth/me`.
 - **Public demo:** `/api/demo/*` (prospek, aktivitas, follow-up, analitik) read-only tanpa autentikasi.
 - **Admin console (`apps/admin`):** daftar dan pencarian user, ubah role, tandai akun demo, riwayat audit perubahan role dan status demo.
-- **Health endpoint:** `GET /health` untuk Docker `HEALTHCHECK` dan verifikasi deploy. **Status:** belum ada di kode; dibutuhkan sebelum deploy.
+- **Health endpoint:** `GET /health` untuk Docker `HEALTHCHECK` dan verifikasi deploy; mengecek koneksi database (`SELECT 1`) dan menjawab 503 bila database tidak terjangkau, bukan cuma menandakan proses hidup. **Status:** sudah ada (`apps/api/src/app.ts`, diuji di `health.test.ts`), tanpa autentikasi dan tanpa business logic.
 
 ---
 
@@ -363,7 +363,7 @@ Satu file `.env` di root yang dibaca semua aplikasi; `.env.example` mendokumenta
 | `.env.example`, README, LICENSE | Required | Sudah ada |
 | Husky (pre-commit `biome check`) | Recommended | Sudah ada |
 | Docker Compose untuk development (PostgreSQL) | Recommended | Sudah ada (`docker-compose.dev.yaml`) |
-| Endpoint `GET /health` + Docker `HEALTHCHECK` | Required untuk deploy | Belum ada |
+| Endpoint `GET /health` + Docker `HEALTHCHECK` | Required untuk deploy | Sudah ada (endpoint; `HEALTHCHECK` di Dockerfile masih direncanakan) |
 | Dockerfile multi-stage (api, platform, admin) | Required | Direncanakan |
 | `docker-compose.yaml` production | Required | Direncanakan |
 | GitHub Actions (CI: Biome, type check, test) | Required | Direncanakan |
@@ -489,7 +489,7 @@ Push / merge → main:
 
 Urutan ditentukan oleh hasil validasi (bagian 13), bukan oleh daya tarik teknis.
 
-1. **Menutup gap MVP:** endpoint `/health`, penegakan aturan tanggal aktivitas, instruksi anti-karangan dan konteks aktivitas terakhir di prompt AI, dan peringatan catatan kosong.
+1. **Menutup gap MVP:** penegakan aturan tanggal aktivitas, instruksi anti-karangan dan konteks aktivitas terakhir di prompt AI, dan peringatan catatan kosong.
 2. **Deploy:** Dockerfile, `docker-compose.yaml` production, workflow CI/CD, dan deployment ke VM.
 3. **Setelah umpan balik penguji, bila terbukti relevan:** channel WhatsApp kelas satu dengan field nomor kontak dan tombol "kirim via WhatsApp" yang membawa draft AI; pengingat di luar aplikasi.
 4. **Peningkatan kualitas:** tag prospek, import CSV, UI daftar sesi dan pencabutan sesi perangkat lain, dan tes end-to-end di browser.

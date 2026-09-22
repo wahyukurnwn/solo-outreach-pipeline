@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { env } from "./config/env";
 import { AppError } from "./exceptions";
+import { prisma } from "./libs/prisma";
 import activityRoute from "./modules/activity/activity.route";
 import adminRoute from "./modules/admin/admin.route";
 import analyticsRoute from "./modules/analytics/analytics.route";
@@ -27,6 +28,18 @@ export const app = new Hono()
 	)
 	.get("/", async (c) => {
 		return c.json("Hello, hono!");
+	})
+	// Dipakai Docker HEALTHCHECK dan verifikasi deploy — bukan cuma "proses
+	// Node hidup", tapi "API bisa menjawab dan database bisa dijangkau".
+	// Tanpa login, tanpa business logic.
+	.get("/health", async (c) => {
+		try {
+			await prisma.$queryRaw`SELECT 1`;
+			return c.json({ status: "ok", database: "up" });
+		} catch (err) {
+			console.error("Health check failed: database unreachable", err);
+			return c.json({ status: "error", database: "down" }, 503);
+		}
 	})
 	.route("/", authRoute)
 	.route("/", prospectRoute)
