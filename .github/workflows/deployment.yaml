@@ -1,0 +1,219 @@
+name: "CI/CD"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# A new push cancels whatever this workflow was already doing for the same
+# branch — deploying an old commit after a newer one lands would be worse
+# than just not deploying that old commit at all.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE: ghcr.io/${{ github.repository }}/api
+
+jobs:
+  # Lint, type-check and test. Runs on every PR and every push to main —
+  # nothing downstream depends on this build's own artifacts, so it's the
+  # same job either way.
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      JWT_SECRET: ci-test-secret-never-used-outside-this-job
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint (Biome)
+        run: pnpm lint
+
+      - name: Type-check api
+        run: pnpm --filter api run typecheck
+      - name: Type-check platform
+        run: pnpm --filter platform exec tsc --noEmit
+      - name: Type-check admin
+        run: pnpm --filter admin exec tsc --noEmit
+
+      # apps/api/package.json "test" creates the derived `_test` database
+      # itself (db:test:setup) — the postgres service above just needs
+      # CREATE DATABASE rights, which its superuser role already has.
+      - name: Test api (105 integration tests against real Postgres)
+        run: pnpm --filter api test
+
+  # Builds the `api` Docker image. Validates it on every PR (build only,
+  # no push — a broken Dockerfile should fail CI before it ever reaches
+  # main); on push to main it also pushes to GHCR for the deploy job to
+  # pull.
+  build-api-image:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build (and push on main)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/api/Dockerfile
+          push: ${{ github.event_name == 'push' }}
+          tags: |
+            ${{ env.API_IMAGE }}:latest
+            ${{ env.API_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Builds apps/platform and apps/admin as static output (prerender + SPA
+  # fallback — see PRD.md bagian 16). These are never containerized: the
+  # deploy job rsyncs the built files straight to the VPS, where NGINX
+  # serves them from disk (deploy/nginx.conf).
+  build-frontends:
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [platform, admin]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @mycustom/ui build
+
+      - name: Build ${{ matrix.app }}
+        working-directory: apps/${{ matrix.app }}
+        env:
+          # Public API origin, not a secret — set as a repo/environment
+          # variable (Settings → Secrets and variables → Actions → Variables).
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+        run: pnpm exec vite build
+
+      # The prerenderer never writes a file for "/" itself (only for its
+      # sub-routes) — nginx's `try_files $uri $uri/ …` stops at a directory
+      # match before it ever reaches the SPA-fallback arg, so without this
+      # "/" would 403 instead of falling through. Same fix already baked
+      # into apps/platform/Dockerfile and apps/admin/Dockerfile for the
+      # (currently unused) containerized alternative; doing it here too
+      # because this is the path that's actually deployed.
+      - name: Seed root index.html from the SPA shell
+        run: cp apps/${{ matrix.app }}/dist/client/_shell.html apps/${{ matrix.app }}/dist/client/index.html
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push'
+        with:
+          name: ${{ matrix.app }}-dist
+          path: apps/${{ matrix.app }}/dist/client
+          retention-days: 7
+
+  # Only on push to main: pull the new api image on the VPS, migrate,
+  # restart, verify /health, then rsync the static frontends into place.
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [build-api-image, build-frontends]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: platform-dist
+          path: platform-dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: admin-dist
+          path: admin-dist
+
+      - name: Deploy api on the VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            cd ${{ secrets.VPS_DEPLOY_PATH }}
+            export API_IMAGE=${{ env.API_IMAGE }}:${{ github.sha }}
+            echo "API_IMAGE=${API_IMAGE}" > .env.deploy
+            docker compose --env-file .env --env-file .env.deploy pull api
+            # Migrate against the new image BEFORE switching traffic to it
+            # (`run --rm` starts a one-off container from that image, on the
+            # same network as `db`, and exits — it doesn't touch the
+            # currently-running api container). Doing this after `up -d`
+            # instead would leave the new code briefly running against the
+            # old schema. The runtime image keeps prisma/, prisma7.config.ts
+            # and the one env.ts it needs for exactly this reason.
+            docker compose --env-file .env --env-file .env.deploy run --rm api \
+              npx prisma migrate deploy
+            docker compose --env-file .env --env-file .env.deploy up -d
+            # `up -d` returns as soon as the container starts, not once the
+            # app is actually accepting connections — retry instead of
+            # racing it with a single curl.
+            for i in $(seq 1 10); do
+              curl -sf http://127.0.0.1:8000/health && break
+              [ "$i" -eq 10 ] && { echo "api did not become healthy in time"; exit 1; }
+              sleep 2
+            done
+
+      - name: Rsync apps/platform static build
+        uses: burnett01/rsync-deployments@7.0.2
+        with:
+          switches: -avzr --delete
+          path: platform-dist/
+          remote_path: ${{ secrets.VPS_PLATFORM_PATH }}
+          remote_host: ${{ secrets.VPS_HOST }}
+          remote_user: ${{ secrets.VPS_USER }}
+          remote_key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Rsync apps/admin static build
+        uses: burnett01/rsync-deployments@7.0.2
+        with:
+          switches: -avzr --delete
+          path: admin-dist/
+          remote_path: ${{ secrets.VPS_ADMIN_PATH }}
+          remote_host: ${{ secrets.VPS_HOST }}
+          remote_user: ${{ secrets.VPS_USER }}
+          remote_key: ${{ secrets.VPS_SSH_KEY }}

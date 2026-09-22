@@ -22,6 +22,13 @@ services:
     # network as host "db". Not published to the VPS's network interface.
 
   api:
+    # `image:` so the VPS can `docker compose pull` a pre-built image (CI
+    # builds and pushes it — see .github/workflows/deployment.yaml) instead
+    # of building on a resource-limited VM. `build:` is kept for local use
+    # (`docker compose build` / `docker compose up --build`), and
+    # `${API_IMAGE:-...}` lets the VPS's own .env pin a specific tag
+    # (e.g. a commit SHA, for rollback) without editing this file.
+    image: ${API_IMAGE:-ghcr.io/wahyukurnwn/solo-outreach-pipeline/api:latest}
     build:
       context: .
       dockerfile: ./apps/api/Dockerfile

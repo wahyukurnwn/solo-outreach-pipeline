@@ -49,6 +49,14 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=prod-deps /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=build /app/apps/api/dist ./apps/api/dist
 COPY apps/api/package.json ./apps/api/package.json
+# `prisma migrate deploy` (run at deploy time — see docker-compose.yaml and
+# .github/workflows/deployment.yaml) needs the schema/migrations and the
+# config file that points Prisma at DATABASE_URL. None of these are
+# TypeScript compiled into dist/, so they need to be copied explicitly;
+# prisma7.config.ts's one import (env.ts) comes along for the same reason.
+COPY --from=build /app/apps/api/prisma ./apps/api/prisma
+COPY --from=build /app/apps/api/prisma7.config.ts ./apps/api/prisma7.config.ts
+COPY --from=build /app/apps/api/src/config/env.ts ./apps/api/src/config/env.ts
 
 WORKDIR /app/apps/api
 EXPOSE 8000
