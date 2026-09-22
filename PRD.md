@@ -146,7 +146,7 @@ Untuk MVP, hanya requirement yang benar-benar relevan dipenuhi. Sisanya sengaja 
 - **Maintainability.** Prioritas tinggi: pemisahan route → service → repository, tipe kontrak API dibagi lewat Hono RPC, test integrasi terhadap PostgreSQL sungguhan, Biome + Husky, README, dan keputusan arsitektur terdokumentasi.
 - **Observability.** Log stdout container dan endpoint health cukup untuk MVP. Error tracking direkomendasikan, tidak wajib.
 - **Data privacy.** Akun demo hanya berisi data contoh. Email disamarkan di UI (sidebar menampilkan bagian lokal saja; pengaturan akun menampilkan format tersamarkan). UI memperingatkan bahwa draft AI diproses pihak ketiga dan catatan tidak boleh berisi data sensitif.
-- **Backup / recovery.** Backup database mengikuti provider PostgreSQL terkelola (BaaS). Server aplikasi bersifat stateless: "pemulihan"-nya adalah redeploy dari git + secrets.
+- **Backup / recovery.** PostgreSQL berjalan sebagai container di VM (named volume, bukan BaaS — lihat bagian 16, Decision change 23 September 2026), jadi backup **bukan** tanggung jawab penyedia eksternal lagi; perlu `pg_dump` terjadwal sendiri (**belum ada**, dicatat sebagai gap). Server aplikasi (`api`) tetap stateless: "pemulihan"-nya adalah redeploy dari git + secrets, terpisah dari pemulihan data.
 - **Testability.** Test berjalan terhadap database terpisah (`<nama>_test`) yang dibuat dan dimigrasi otomatis, dengan pengaman yang menolak berjalan ke database yang namanya tidak berakhiran `_test`.
 
 ---
@@ -316,7 +316,7 @@ Bagian ini menjelaskan pilihan dan alasannya, bukan hanya daftar teknologi.
 | Testing | Vitest terhadap PostgreSQL sungguhan | Menguji perilaku nyata (transaksi, kendala database); provider eksternal di-stub di level `fetch` |
 | Kualitas | Biome (lint + format), Husky (pre-commit `biome check`) | Satu tool menggantikan ESLint + Prettier; pemeriksaan sebelum kode masuk git |
 
-**Decision — stack infrastruktur baseline (dari keputusan yang sudah ditetapkan):** monorepo, GitHub Actions, Biome, Husky, Docker, BaaS untuk PostgreSQL, Prisma, Hono, dan VM IDCloudHost. Penilaian tiap komponen ada di bagian 16.
+**Decision — stack infrastruktur baseline (dari keputusan yang sudah ditetapkan):** monorepo, GitHub Actions, Biome, Husky, Docker (hanya untuk `api`+`db`), PostgreSQL sebagai container di VM (bukan BaaS), Prisma, Hono, NGINX+Certbot di host, dan VM IDCloudHost. Penilaian tiap komponen ada di bagian 16.
 
 **Konsep-konsep yang dipraktikkan (untuk dipelajari):**
 - **Validasi di batas sistem:** Zod memvalidasi input di route; kode di dalam boleh mempercayai data yang sudah lolos.
@@ -352,6 +352,50 @@ Satu file `.env` di root yang dibaca semua aplikasi; `.env.example` mendokumenta
 
 ## 16. Infrastructure
 
+### Decision change — deployment architecture (23 September 2026)
+
+Rencana awal (SSH → install Node di VM → PM2 → Docker → NGINX → Certbot, semuanya di VM yang sama) diganti setelah ditinjau ulang, karena rencana itu sendiri dicurigai redundant: dua mekanisme proses-manager (PM2 dan Docker) untuk masalah yang sama, dan tiga aplikasi dibungkus container padahal dua di antaranya (`platform`, `admin`) sudah murni file statis sejak keputusan prerender+SPA (lihat entri "Frontend TanStack Start" di tabel bawah).
+
+| | Sebelumnya | Sekarang |
+|---|---|---|
+| Proses aplikasi | Node.js diinstal di VM, dijalankan PM2 (multi-core clustering) | Dihapus total — tidak ada Node di host |
+| Container | `api`, `platform`, `admin` masing-masing punya image | Hanya `api` (+ `db`) yang di-Docker-kan |
+| Frontend (`platform`, `admin`) | Disajikan lewat container nginx sendiri | Disajikan **langsung dari disk** oleh NGINX di host — tanpa container sama sekali |
+| NGINX + Certbot | Di dalam container | Di **host** VM, bukan container |
+| PostgreSQL | BaaS terkelola (keputusan lama, belum dieksekusi) | Container `postgres` di VM yang sama, named volume, dikelola lewat `docker-compose.yaml` |
+
+**Dampak:**
+- **Docker** — tanggung jawabnya jadi murni isolasi proses + restart policy untuk `api` dan `db`, bukan lagi "cara menjalankan semua aplikasi".
+- **VM/host** — hanya menjalankan Docker daemon, NGINX, Certbot, firewall; tidak menjalankan kode aplikasi secara langsung.
+- **NGINX** — satu peran rangkap: reverse proxy + TLS termination untuk `/api/*`, dan web server statis untuk `platform`/`admin` (`try_files ... /_shell.html`, pola yang sama dengan `apps/platform/nginx.conf`/`apps/admin/nginx.conf`, hanya sekarang berjalan di host, bukan di image `nginx:alpine` terpisah).
+- **CI/CD** — deploy jadi lebih sederhana: build **satu** image (`api`), bukan tiga; `platform`/`admin` cukup di-build lalu `rsync`/`scp` folder `dist/client` ke path yang disajikan NGINX di VM.
+
+**Trade-off yang diterima sadar:** kehilangan PM2 cluster mode (menjalankan Node di semua core CPU) — tidak relevan di skala pemakaian yang ditarget (single digit user aktif); satu mekanisme restart (Docker `restart: unless-stopped`) sudah cukup.
+
+**Pragmatic assessment:**
+- Node.js langsung di host **dan** PM2 — **Overengineering**, dua-duanya dihapus. Ini koreksi yang benar atas kecurigaan redundansi di rencana awal.
+- NGINX + Certbot di host (bukan container) — **Recommended**: jauh lebih sedikit moving parts untuk auto-renewal sertifikat TLS dibanding menjalankan Certbot di dalam container (perlu volume sharing, cron di dalam container, restart container saat renewal).
+- `apps/admin/Dockerfile` dan `apps/platform/Dockerfile` yang sempat dibuat (image `nginx:alpine` mandiri per frontend) — **tidak dipakai** di jalur deploy final ini. Dibiarkan ada di repo sebagai referensi/alternatif (misalnya kalau nanti pindah ke platform yang mengharuskan container per service), tapi **`docker-compose.yaml` di root hanya mendefinisikan `api` + `db`.**
+
+### Deployment architecture
+
+```plain text
+Internet
+   │  HTTPS :443
+   ▼
+NGINX (host VPS, TLS via Certbot)
+   ├── /, /assets/*, /demo  ──▶  serve langsung dari disk (dist/client platform & admin, TANPA container)
+   └── /api/*, /api/admin/*, /api/demo/* ──▶ proxy_pass 127.0.0.1:8000
+                                                    │
+                                                    ▼
+                                    Docker container: api (Hono)
+                                                    │  Docker internal network ("db")
+                                                    ▼
+                                    Docker container: postgres (named volume: pgdata)
+```
+
+Beda kunci dari diagram awal: tidak ada "Application Containers" jamak — cuma satu container aplikasi (`api`). `admin` dan `demo` bukan service terpisah, cuma prefix path (`/api/admin/*`, `/api/demo/*`) di dalam `api` yang sama; frontend `admin` sendiri (`apps/admin`) tetap aplikasi terpisah dari sisi kode, tapi hasil build-nya disajikan sebagai file statis oleh NGINX yang sama dengan `platform`, bukan container tersendiri.
+
 ### Status dan kebutuhan
 
 | Kebutuhan | Kategori | Status |
@@ -363,18 +407,19 @@ Satu file `.env` di root yang dibaca semua aplikasi; `.env.example` mendokumenta
 | `.env.example`, README, LICENSE | Required | Sudah ada |
 | Husky (pre-commit `biome check`) | Recommended | Sudah ada |
 | Docker Compose untuk development (PostgreSQL) | Recommended | Sudah ada (`docker-compose.dev.yaml`) |
-| Endpoint `GET /health` + Docker `HEALTHCHECK` | Required untuk deploy | Sudah ada (endpoint; `HEALTHCHECK` di Dockerfile masih direncanakan) |
-| Dockerfile multi-stage (api, platform, admin) | Required | Direncanakan |
-| `docker-compose.yaml` production | Required | Direncanakan |
+| Endpoint `GET /health` + Docker `HEALTHCHECK` | Required untuk deploy | Sudah ada (`apps/api/src/app.ts`, `HEALTHCHECK` di `apps/api/Dockerfile`) |
+| Dockerfile `api` (multi-stage) | Required | Sudah ada, diverifikasi lewat `docker build`+`docker run` nyata |
+| `docker-compose.yaml` production (`api` + `db`) | Required | Sudah ada, tervalidasi `docker compose config` |
+| Referensi NGINX host (reverse proxy + static) | Required | Sudah ada (`deploy/nginx.conf`) |
 | GitHub Actions (CI: Biome, type check, test) | Required | Direncanakan |
-| CD ke VM (build image → registry → SSH → compose up) | Required | Direncanakan |
-| PostgreSQL terkelola (BaaS) | Required | Direncanakan. **Open Question:** provider mana |
+| CD ke VM (build image `api` → registry → SSH → compose up; `rsync` `dist/client` platform+admin) | Required | Direncanakan |
+| PostgreSQL | Required | Container `postgres` di `docker-compose.yaml`, named volume — **bukan lagi BaaS** (lihat Decision change di atas) |
 | VM IDCloudHost | Required (target deployment) | Direncanakan. **Open Question:** konfirmasi paket dan region |
-| Reverse proxy dengan HTTPS otomatis (mis. Caddy) | Recommended untuk VM mandiri | Direncanakan. **Open Question:** pilihan tool |
-| Container registry (GitHub Container Registry) | Recommended | Direncanakan |
+| NGINX + Certbot di host VM | Required | Direncanakan (config referensi sudah ada di `deploy/nginx.conf`, belum dipasang di VM sungguhan) |
+| Container registry (GitHub Container Registry) | Recommended | Direncanakan — untuk satu image (`api`) saja |
 | Error tracking (mis. Sentry free tier) | Recommended | Belum ada |
 | Logging terpusat, monitoring/alerting, staging environment | Future / Optional | Belum ada |
-| Turborepo/Nx, Kubernetes, service mesh, multi-VM | Overengineering | Tidak dipakai |
+| PM2, Node.js langsung di host, container terpisah untuk `platform`/`admin`, Turborepo/Nx, Kubernetes, service mesh, multi-VM | Overengineering | Tidak dipakai — lihat Decision change |
 
 ### Penilaian pragmatis per keputusan (sebelumnya → sekarang → dampak)
 
@@ -382,36 +427,38 @@ Satu file `.env` di root yang dibaca semua aplikasi; `.env.example` mendokumenta
 |---|---|---|---|---|---|
 | Monorepo | Repo terpisah per aplikasi | Satu repo, pnpm workspaces | Tipe API dan design system dibagi tanpa publish paket; satu perubahan lintas app dalam satu commit | Build dan CI mencakup lebih banyak; butuh disiplin struktur | **Required** |
 | Frontend dan backend terpisah | Framework full-stack tunggal | Aplikasi dan API terpisah | Batas layer jelas dan API dipakai banyak client | Dua sampai empat unit deploy, CORS, dan cookie lintas origin | **Required** (sesuai tujuan belajar) |
-| Frontend TanStack Start — prerender + SPA fallback (bukan SSR runtime) | SSR live di production | Build-time prerender (`prerender.enabled` + `spa.enabled`) menghasilkan HTML statis per route dan `_shell.html` sebagai fallback untuk route dinamis | Tidak ada proses Node yang perlu dijaga hidup untuk `platform`/`admin`; disajikan sebagai file statis di belakang reverse proxy | Reverse proxy wajib merutekan path yang tidak cocok file statis ke `_shell.html`; `dist/server/server.js` tetap dihasilkan build tapi sengaja tidak dijalankan | **Recommended**; diverifikasi lewat build produksi nyata (lihat catatan di bawah) |
-| Docker | Menjalankan proses langsung di VM | Image multi-stage per aplikasi | Lingkungan produksi sama dengan build CI; deploy berupa `pull` dan `up` | Waktu setup dan pemeliharaan Dockerfile | **Required** |
-| Docker Compose production | Perintah `docker run` manual | Satu file mendeskripsikan semua service | Deploy dan rollback dengan satu perintah | Cukup untuk satu VM; tidak untuk banyak host | **Recommended** |
+| Frontend TanStack Start — prerender + SPA fallback (bukan SSR runtime) | SSR live di production | Build-time prerender (`prerender.enabled` + `spa.enabled`) menghasilkan HTML statis per route dan `_shell.html` sebagai fallback untuk route dinamis | Tidak ada proses Node yang perlu dijaga hidup untuk `platform`/`admin`; disajikan sebagai file statis langsung dari disk oleh NGINX host | NGINX wajib merutekan path yang tidak cocok file statis ke `_shell.html`; `dist/server/server.js` tetap dihasilkan build tapi sengaja tidak dijalankan | **Recommended**; diverifikasi lewat build produksi nyata |
+| Docker hanya untuk `api`+`db` | Semua aplikasi di-container-kan | `platform`/`admin` disajikan dari disk, bukan container | Satu image untuk di-build/push/deploy, bukan tiga; CI/CD lebih sederhana | Server perlu proses `rsync`/`scp` terpisah untuk file statis, di luar `docker compose up` | **Recommended** |
+| Docker Compose production | Perintah `docker run` manual | Satu file (`api`+`db`) mendeskripsikan servicenya | Deploy dan rollback dengan satu perintah | Cukup untuk satu VM; tidak untuk banyak host | **Recommended** |
+| NGINX + Certbot di host (bukan container) | NGINX di dalam container | NGINX + Certbot langsung di VM | Auto-renewal TLS jauh lebih sederhana (tanpa volume-sharing sertifikat lintas container) | Konfigurasi NGINX jadi bagian dari provisioning VM, bukan `docker-compose.yaml` — perlu didokumentasikan terpisah (`deploy/nginx.conf`) | **Recommended** |
 | GitHub Actions | Pemeriksaan manual | CI otomatis + CD ke VM | Regresi tertangkap sebelum masuk `main`; deploy dapat diulang | Butuh secrets dan pemeliharaan workflow | **Required** |
 | Biome | ESLint + Prettier | Satu tool | Konfigurasi lebih sedikit dan lebih cepat | Ekosistem plugin lebih kecil | **Recommended** |
 | Husky | Tanpa git hook | Pre-commit `biome check` | Umpan balik sebelum CI | Bisa terasa mengganggu; dapat dilewati | **Optional** (sudah dipakai) |
-| PostgreSQL BaaS | Postgres di VM sendiri | Database terkelola | VM stateless; backup dan pembaruan ditangani penyedia | Ketergantungan pada penyedia dan latensi ke database | **Required**; VM stateless membuat redeploy mudah |
+| PostgreSQL di container VM (bukan BaaS) | BaaS terkelola (keputusan lama) | Container `postgres` + named volume di VM yang sama dengan `api` | Tidak ada dependensi/biaya ke penyedia eksternal; backup jadi tanggung jawab sendiri (`pg_dump` terjadwal — belum ada) | VM tidak lagi stateless; kehilangan VM/volume = kehilangan data kalau tidak ada backup | **Required** untuk MVP (biaya nol); **Open Question:** kapan pindah ke BaaS kalau data mulai berharga |
 | Prisma | Query SQL manual | ORM + migrasi berversi | Tipe otomatis dan migrasi terlacak | Lapisan abstraksi; kadang query kompleks lebih sulit | **Required** |
 | Hono | Express/Fastify | Hono | Ringan, tipe RPC, berbasis standar web | Ekosistem lebih kecil daripada Express | **Recommended** |
-| VM IDCloudHost | PaaS | VM mandiri | Kontrol penuh dan bukti kemampuan Systems/Ops | Patching OS, firewall, TLS, dan single point of failure ada di tangan sendiri | **Optional** dari sisi produk, **Required** dari sisi tujuan portofolio |
+| PM2 | Rencana awal (cluster mode multi-core) | Dihapus, Docker `restart: unless-stopped` saja | Satu mekanisme restart, bukan dua tumpang tindih | Kehilangan clustering multi-core — tidak relevan di skala user saat ini | **Overengineering** (dihapus) |
+| VM IDCloudHost | PaaS | VM mandiri | Kontrol penuh dan bukti kemampuan Systems/Ops | Patching OS, firewall, TLS, dan single point of failure ada di tangan sendiri; sekarang juga backup database | **Optional** dari sisi produk, **Required** dari sisi tujuan portofolio |
 
 ### Docker dan deployment
 
 **MVP requirement (agar aplikasi jalan dengan aman):**
-- **Dockerfile:** satu image multi-stage per aplikasi: stage build (install dependency, compile, generate Prisma client) lalu stage runtime ramping dengan dependency produksi dan hasil build saja.
-- **Docker Compose:** service `api` (Node) dan `proxy` (nginx/Caddy yang menyajikan `dist/client` dari `platform` dan `admin` sekaligus melakukan reverse proxy ke `api`). `platform` dan `admin` **tidak** menjadi service Node terpisah — lihat Decision di bawah. Tidak ada service PostgreSQL bila database terkelola dipakai.
-- **Development vs production container:** Docker **tidak wajib** untuk development harian. `pnpm dev` menjalankan ketiga aplikasi secara native, dengan PostgreSQL dari `docker-compose.dev.yaml`. Docker dipakai untuk memverifikasi build produksi dan untuk deploy.
-- **Runtime frontend (Decision, diverifikasi lewat build nyata pada 22 September 2026):** `apps/platform` dan `apps/admin` diberi opsi `prerender: { enabled: true, crawlLinks: true }` dan `spa: { enabled: true }` di `tanstackStart()`. Build menghasilkan HTML statis untuk tiap route yang bisa di-crawl (contoh `platform`: `/`, `/dashboard/`, `/settings/`, `/auth/signin/`, dst.; `admin`: `/`, `/signin/`, `/users/`, dst.) ditambah `_shell.html` sebagai fallback SPA-shell untuk route dinamis yang tidak bisa di-prerender (mis. `/prospect/:id`). Diverifikasi: `dist/client` bisa disajikan murni sebagai file statis (dites dengan static file server biasa, tanpa proses Node) — halaman statis 200 OK. Codebase juga dikonfirmasi tidak memakai TanStack Start server function (`createServerFn`) sama sekali; seluruh panggilan API lewat Hono RPC langsung ke `apps/api`, jadi server SSR memang tidak dibutuhkan untuk logic apa pun. Konsekuensi: `dist/server/server.js` tetap dihasilkan build (bisa dijalankan lewat `srvx`, sudah diverifikasi jalan) tapi **sengaja tidak dijalankan** di production. Reverse proxy harus dikonfigurasi agar path yang tidak cocok file statis (khususnya di bawah `/prospect/*`) di-*rewrite* ke `_shell.html`.
-- **Environment variables:** satu `.env` di server (tidak masuk git). Wajib di production: `NODE_ENV=production`, `DATABASE_URL`, `JWT_SECRET` (nilai acak baru), `CORS_ORIGIN` (semua origin frontend; origin pertama dipakai untuk link reset dan redirect Google, yang kedua untuk admin), `VITE_API_URL`, dan `RESEND_API_KEY` (tanpa ini reset password menghasilkan 503). Daftarkan URI redirect Google untuk domain API bila Google dipakai.
-- **Secrets:** file `.env` di server, atau secrets terenkripsi di GitHub untuk workflow (kunci SSH, host VM). Tidak pernah di kode. Kredensial yang pernah tampil di log, chat, atau transkrip harus dianggap bocor dan dirotasi.
-- **PostgreSQL responsibility:** sepenuhnya milik penyedia BaaS. VM tidak menyimpan data.
-- **Reverse proxy:** dibutuhkan agar VM mandiri punya HTTPS dan bisa mengarahkan tiap host ke service-nya. Proxy juga menambahkan `X-Forwarded-For`, yang dipakai rate limiter API untuk mengenali IP klien.
+- **Dockerfile `api`:** multi-stage — `deps` (install workspace lengkap) → `build` (`prisma generate`, `tsc --noEmit`, bundle `esbuild`) → `prod-deps` (install production-only, `--ignore-scripts`) → `runtime` (`node:24-alpine`, cuma `node_modules` produksi + hasil bundle). Tidak butuh build tools tambahan: `bcrypt` punya prebuild `musl`, dan Prisma 7 dengan `@prisma/adapter-pg` tidak butuh native query engine binary. Diverifikasi: `docker build` sukses, container menjawab `/health` dan `/api/auth/signup` (mengetes `bcrypt`+`jsonwebtoken`+Prisma sekaligus).
+- **`docker-compose.yaml` (root):** cuma dua service — `db` (postgres, named volume `pgdata`, healthcheck `pg_isready`) dan `api` (`depends_on: db: condition: service_healthy`, port dipublish **hanya ke `127.0.0.1:8000`** karena yang boleh diakses publik adalah NGINX host, bukan container langsung). Tervalidasi `docker compose config`.
+- **`platform`/`admin` tidak masuk `docker-compose.yaml` sama sekali** — dibangun (`pnpm build`) lalu hasil `dist/client` disalin ke path yang disajikan NGINX host (lihat Decision change di atas dan `deploy/nginx.conf`).
+- **Development vs production:** Docker **tidak wajib** untuk development harian. `pnpm dev` menjalankan ketiga aplikasi secara native, dengan PostgreSQL dari `docker-compose.dev.yaml`. Docker dipakai untuk memverifikasi build produksi dan untuk deploy.
+- **Environment variables:** satu `.env` di VM (tidak masuk git; **kredensial yang pernah tampil di log/chat/transkrip harus dianggap bocor dan dirotasi** — lihat catatan pada sesi 22 September 2026 soal `docker compose config` yang mencetak `.env` mentah ke output). Wajib di production: `NODE_ENV=production`, `DATABASE_URL` (di-override eksplisit di `docker-compose.yaml` ke `postgresql://…@db:5432/postgres`, terlepas dari isi `.env`), `JWT_SECRET` (nilai acak baru), `CORS_ORIGIN` (semua origin frontend), `VITE_API_URL` (untuk build `platform`/`admin`, **build-time**, bukan runtime — lihat `apps/platform/Dockerfile`/`apps/admin/Dockerfile` untuk pola `ARG`/`ENV` yang sama berlaku di build lokal sebelum `rsync`), dan `RESEND_API_KEY`.
+- **Secrets:** file `.env` di VM, atau secrets terenkripsi di GitHub untuk workflow (kunci SSH, host VM). Tidak pernah di kode.
+- **PostgreSQL:** container `postgres` di VM yang sama, named volume `pgdata` — **bukan BaaS** (Decision change 23 September 2026). Backup jadi tanggung jawab sendiri (`pg_dump` terjadwal — **belum ada**, dicatat sebagai gap di bagian 18).
+- **NGINX (host, bukan container):** reverse proxy + TLS termination (Certbot) untuk `/api/*` → `127.0.0.1:8000`; menyajikan `dist/client` `platform`/`admin` langsung dari disk dengan SPA-fallback ke `_shell.html` (pola sama seperti `apps/platform/nginx.conf`/`apps/admin/nginx.conf`, dipasang sebagai config host — lihat `deploy/nginx.conf`). Menambahkan `X-Forwarded-For`, yang dipakai rate limiter API untuk mengenali IP klien.
 - **Domain dan cookie (wajib):** cookie refresh token bersifat `Secure` di production dan hanya terkirim bila frontend dan API berada pada **site yang sama**. Pakai subdomain dari satu domain induk, misalnya `app.<domain>`, `admin.<domain>`, `api.<domain>`. API di domain yang sama sekali berbeda membuat refresh token gagal tanpa pesan yang jelas.
 - **Migrasi database:** deploy menjalankan `prisma migrate deploy` (bukan `migrate dev`) sebelum API menerima trafik.
-- **Health check:** endpoint `GET /health` + `HEALTHCHECK` pada image api.
+- **Health check:** endpoint `GET /health` + `HEALTHCHECK` pada image `api` (sudah ada, diverifikasi).
 - **Logging dasar:** stdout container via `docker compose logs`. Kegagalan provider eksternal dicatat bersama penyebab aslinya.
-- **Backup strategy:** ikut penyedia BaaS; VM stateless, sehingga "backup"-nya adalah kemampuan redeploy dari git + secrets.
-- **Batas single instance:** rate limiter dan kode OAuth ada di memori proses; satu instance API adalah kondisi yang dianggap benar untuk MVP.
+- **Backup strategy:** **Open Question / gap** — sejak Postgres pindah dari BaaS ke container-di-VM, tidak ada lagi backup otomatis bawaan penyedia; perlu `pg_dump` terjadwal (cron di host, atau container terpisah) sebelum dianggap production-ready.
+- **Batas single instance:** rate limiter dan kode OAuth ada di memori proses; satu instance `api` adalah kondisi yang dianggap benar untuk MVP.
 
-**Production improvement (setelah MVP berjalan dan ada user):** log aggregation terpusat, staging environment, automated rollback, monitoring dan alerting, Redis untuk state bersama, dan migrasi dari VM tunggal ke platform dengan redundansi bila uptime menjadi masalah nyata.
+**Production improvement (setelah MVP berjalan dan ada user):** backup database terjadwal, log aggregation terpusat, staging environment, automated rollback, monitoring dan alerting, Redis untuk state bersama, dan migrasi Postgres ke BaaS terkelola atau platform dengan redundansi bila data mulai berharga / uptime menjadi masalah nyata.
 
 ### Evaluasi CI/CD
 
@@ -420,16 +467,20 @@ Alur yang diusulkan: *push/PR → install → Biome → type check → test → 
 ```plain text
 Pull Request → main:
   install → Biome → type check (api, platform, admin)
-    → test (PostgreSQL sebagai service container) → Docker build (validasi saja, tidak push)
+    → test (PostgreSQL sebagai service container)
+    → Docker build api (validasi saja, tidak push)
+    → build platform, build admin (validasi saja, tidak di-rsync)
 
 Push / merge → main:
   install → Biome → type check → test
-    → Docker build → push image ke registry
-    → SSH ke VM → pull image → prisma migrate deploy → docker compose up -d
-    → cek /health
+    → Docker build api → push image ke registry
+    → build platform, build admin (VITE_API_URL production)
+    → SSH ke VM:
+        - pull image api → prisma migrate deploy → docker compose up -d → cek /health
+        - rsync dist/client platform, admin ke path yang disajikan NGINX
 ```
 
-- **Yang kurang dari alur awal:** (1) langkah push image ke registry, supaya build tidak terjadi di VM yang sumber dayanya terbatas; (2) langkah migrasi database; (3) cek `/health` setelah deploy.
+- **Yang kurang dari alur awal:** (1) langkah push image ke registry, supaya build tidak terjadi di VM yang sumber dayanya terbatas — **tapi sekarang cuma untuk satu image (`api`)**, bukan tiga (Decision change 23 September 2026: `platform`/`admin` tidak di-container-kan, cukup `rsync` hasil build statis); (2) langkah migrasi database; (3) cek `/health` setelah deploy.
 - **Pembeda PR dan merge:** PR hanya divalidasi. Deploy hanya berjalan saat push atau merge ke `main`.
 - **Tidak perlu untuk MVP:** staging environment dan automated rollback.
 - **Catatan CI:** `pnpm --filter api test` menjalankan `db:test:setup`, yang membuat database `<nama>_test` bila belum ada. `DATABASE_URL` di CI harus menunjuk ke server PostgreSQL dengan hak `CREATE DATABASE` (service container dengan user superuser cukup).
