@@ -7,9 +7,14 @@ services:
   db:
     image: postgres:16-alpine # Pakai image dari registry (tidak build)
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+      # `${VAR}` here is resolved from the .env file next to this compose
+      # file at parse time (a separate mechanism from api's `env_file:`,
+      # which injects vars into that container instead). POSTGRES_PASSWORD
+      # has no default on purpose — this used to be hardcoded to the
+      # literal string "postgres" in this file, which is public on GitHub.
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
     volumes:
       - pgdata:/var/lib/postgresql/data # Persistent storage
     healthcheck:
@@ -43,8 +48,10 @@ services:
       - NODE_ENV=production
       # Overrides whatever DATABASE_URL is in .env — inside this compose
       # network Postgres is only reachable at the service name "db", never
-      # at the localhost address a developer's .env normally has.
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
+      # at the localhost address a developer's .env normally has. Built
+      # from the same POSTGRES_* vars as the db service above, so they
+      # can't drift out of sync with each other.
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-postgres}
     depends_on:
       db:
         condition: service_healthy
