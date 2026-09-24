@@ -1,11 +1,11 @@
 # Pipeline — a solo outreach tracker
 
-[![CI](https://github.com/wahyukurnwn/solo-outreach-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/wahyukurnwn/solo-outreach-pipeline/actions/workflows/ci.yml)
+[![CI/CD](https://github.com/wahyukurnwn/solo-outreach-pipeline/actions/workflows/deployment.yaml/badge.svg)](https://github.com/wahyukurnwn/solo-outreach-pipeline/actions/workflows/deployment.yaml)
 ![License: ISC](https://img.shields.io/badge/license-ISC-blue)
 
 A lightweight pipeline for people doing outreach alone: track prospects through stages, never miss a follow-up, and read **honest** conversion numbers. It also drafts a first message from what you already know about each prospect.
 
-**Live demo:** https://TODO-live-demo-url — read-only sample data, no sign-up needed.
+**Live demo:** https://app.wahyukurnwn.com/demo — read-only sample data, no sign-up needed.
 
 <!-- TODO: add 2-3 screenshots or a short GIF here (dashboard, prospect detail with AI draft, analytics). -->
 
@@ -160,7 +160,9 @@ The tests cover auth (sign-up, sign-in, refresh rotation and replay rejection, l
 
 ## Deployment
 
-The repository ships a production `docker-compose.yaml` and GitHub Actions workflows in `.github/workflows/`. CI runs lint, type checks and the API test suite against a Postgres service on every push and pull request; merging to `main` deploys.
+Live at `app.wahyukurnwn.com` / `admin.wahyukurnwn.com` / `api.wahyukurnwn.com`, deployed by `.github/workflows/deployment.yaml` on every push to `main`: lint, type-check and the API's 105 integration tests run first (against a Postgres service container); only then does it build the `api` Docker image (pushed to GHCR) and the `platform`/`admin` static bundles, and deploy both.
+
+Only `api` and `db` (PostgreSQL) run as containers, defined in the repository's `docker-compose.yaml` — `platform` and `admin` are prerendered to static files at build time (see [Engineering decisions](#engineering-decisions)) and rsynced straight into place. NGINX and Certbot run on the host, not in a container: they terminate TLS, reverse-proxy `/api/*` to the `api` container, and serve the two static bundles directly from disk (`deploy/nginx.conf` is the reference config). This was a deliberate simplification over an earlier plan that also containerized the frontends and ran a process manager alongside Docker on the VM — one container to deploy instead of three, no PM2, no dual restart mechanisms.
 
 Things the code requires in production:
 
@@ -168,6 +170,8 @@ Things the code requires in production:
 - **`CORS_ORIGIN`** must list every frontend origin; the first is used as the base for password-reset links and the Google callback redirect, the second as the admin origin.
 - **`RESEND_API_KEY`** must be set: in production a missing key returns a clear 503 rather than silently dropping the reset email. Resend's sandbox sender can only email the account owner, so a verified domain is needed before real users can reset passwords.
 - **Google redirect URI** for the production API domain must be registered.
+
+**Known gap:** PostgreSQL runs as a container with a named volume on the same VM as `api`, not a managed database — there's no scheduled backup yet (see [Limitations](#limitations-and-what-i-would-do-next)).
 
 ## Limitations and what I would do next
 
@@ -177,6 +181,7 @@ Being straightforward about these matters more than a polished feature list:
 - **The channel model is Western-outbound-shaped.** There is no WhatsApp channel and no contact-number field, which is where much freelance work in Southeast Asia actually happens. A "send via WhatsApp" action with the AI draft pre-filled would be the most relevant feature to add.
 - **No reminders outside the app.** Follow-ups are only visible when you open it; email or push reminders are the missing half of a CRM habit.
 - **Single-instance assumptions.** The rate limiter and the OAuth exchange codes are in memory, which is fine for one server and needs Redis (or similar) to scale out.
+- **No scheduled database backup.** PostgreSQL is a container with a named volume on the VM, not a managed database — losing the volume loses the data. A cron `pg_dump` (or moving to a managed provider) is the obvious next step before this holds anything that matters.
 - **The AI uses a free model.** Latency varies a lot (roughly 5–30 s), there is a daily request quota, and free providers may retain prompts — the UI warns users not to put sensitive data in notes.
 - **The role is embedded in the access token**, so a role change applies at the next sign-in or refresh rather than instantly.
 - **Session management UI** (list and revoke other devices) is deferred; sign-out revokes only the current session.
