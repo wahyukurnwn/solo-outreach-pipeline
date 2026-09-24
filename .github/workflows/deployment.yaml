@@ -179,6 +179,11 @@ jobs:
   check-vps-secret:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    # Environment secrets (Settings → Environments → production) are only
+    # visible to jobs that declare this same `environment:` — without it,
+    # secrets.VPS_HOST below would always resolve empty here, even after
+    # it's filled in, and deploy would stay stuck skipping forever.
+    environment: production
     outputs:
       has_vps: ${{ steps.check.outputs.has_vps }}
     steps:
