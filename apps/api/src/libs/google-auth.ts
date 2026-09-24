@@ -10,7 +10,7 @@ import { ServiceUnavailableError } from "../exceptions";
 // the mailer and AI drafting. Building the middleware is cheap (a config
 // object), so it is not cached and always reflects the current env.
 export const googleAuthMiddleware = createMiddleware(async (c, next) => {
-	const { googleClientId, googleClientSecret } = env;
+	const { googleClientId, googleClientSecret, googleRedirectUri } = env;
 
 	if (!googleClientId || !googleClientSecret)
 		throw new ServiceUnavailableError(
@@ -22,5 +22,6 @@ export const googleAuthMiddleware = createMiddleware(async (c, next) => {
 		client_id: googleClientId,
 		client_secret: googleClientSecret,
 		scope: ["openid", "email", "profile"],
+		redirect_uri: googleRedirectUri,
 	})(c, next);
 });

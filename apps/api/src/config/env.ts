@@ -24,6 +24,14 @@ export const env = {
 		.filter(Boolean),
 	googleClientId: process.env.GOOGLE_CLIENT_ID,
 	googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+	// @hono/oauth-providers falls back to `c.req.url` when this isn't set,
+	// which is wrong behind a reverse proxy that talks plain HTTP to this
+	// container (NGINX terminates TLS — see deploy/nginx.conf) — it would
+	// send Google a redirect_uri starting with http://, which Google
+	// rejects because only the https:// one is registered. Undefined in
+	// dev is fine: running directly with no proxy in front, c.req.url is
+	// already correct.
+	googleRedirectUri: process.env.GOOGLE_REDIRECT_URI,
 	passwordResetTtlMinutes: Number(process.env.PASSWORD_RESET_TTL_MINUTES ?? 15),
 	// Kosong = mailer fallback ke console.log (lihat libs/mailer.ts) — dev/test
 	// tetap jalan tanpa API key asli. Wajib diisi di production.
