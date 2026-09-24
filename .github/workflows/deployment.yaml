@@ -131,6 +131,14 @@ jobs:
   build-frontends:
     needs: test
     runs-on: ubuntu-latest
+    # Same reason as check-vps-secret below: if VITE_API_URL is set as an
+    # Environment variable (Settings → Environments → production) rather
+    # than a repo-level Actions variable, a job without this line can't
+    # see it — vars.VITE_API_URL silently resolves empty, platform/admin
+    # get built pointing at nothing, and every API call (Google sign-in,
+    # sign-in/up, etc.) 404s against the frontend's own static server
+    # instead of reaching the API.
+    environment: production
     strategy:
       matrix:
         app: [platform, admin]
