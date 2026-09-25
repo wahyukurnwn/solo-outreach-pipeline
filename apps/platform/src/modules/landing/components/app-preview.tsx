@@ -79,7 +79,7 @@ export const AppPreview = () => (
 					<span className="size-2.5 rounded-full bg-mint-700/50" />
 				</div>
 				<div className="mx-auto hidden w-64 truncate rounded-md bg-sidebar px-3 py-1 text-center text-[11px] text-muted sm:block">
-					app.pipeline.local/dashboard
+					app.wahyukurnwn.com/dashboard
 				</div>
 				<span className="ml-auto text-[11px] font-medium text-faint sm:ml-0">
 					Preview
