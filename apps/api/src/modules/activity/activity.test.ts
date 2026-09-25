@@ -86,6 +86,36 @@ describe("activities", () => {
 		expect(deleteRes.status).toBe(200);
 	});
 
+	it("rejects creating an activity dated far in the future", async () => {
+		const { id, authHeaders } = await createTestUser();
+		createdUserIds.push(id);
+
+		const prospect = await createProspect(authHeaders);
+		const res = await createActivity(authHeaders, prospect.id, {
+			activityDate: "2099-01-01",
+		});
+
+		expect(res.status).toBe(422);
+	});
+
+	it("rejects updating an activity to a date far in the future", async () => {
+		const { id, authHeaders } = await createTestUser();
+		createdUserIds.push(id);
+
+		const prospect = await createProspect(authHeaders);
+		const activity = await (
+			await createActivity(authHeaders, prospect.id)
+		).json();
+
+		const updateRes = await app.request(`/api/activities/${activity.id}`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...authHeaders },
+			body: JSON.stringify({ activityDate: "2099-01-01" }),
+		});
+
+		expect(updateRes.status).toBe(422);
+	});
+
 	it("never lets a user modify another user's activity", async () => {
 		const owner = await createTestUser();
 		const intruder = await createTestUser();
