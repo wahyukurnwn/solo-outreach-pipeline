@@ -4,6 +4,8 @@ import { useState } from "react";
 import { primaryButtonClassName } from "#/components/form-styles";
 import { PageHeader } from "#/components/page-header";
 import { QueryError } from "#/components/query-error";
+import { getEmailUsername } from "#/libs/email-format";
+import { useMe } from "#/modules/auth";
 import {
 	DashboardSkeleton,
 	DashboardStats,
@@ -25,12 +27,14 @@ export const Route = createFileRoute("/_app/dashboard/")({
 function DashboardPage() {
 	const now = new Date();
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
+	const meQuery = useMe();
+	const username = meQuery.data ? getEmailUsername(meQuery.data.email) : null;
 
 	return (
 		<div className="flex flex-col gap-7 px-6 py-8 sm:px-12 sm:py-10">
 			<PageHeader
 				eyebrow={formatLongDate(now)}
-				title={greetingFor(now)}
+				title={username ? `${greetingFor(now)}, ${username}` : greetingFor(now)}
 				description="Here's where your pipeline stands today."
 				action={
 					<button
@@ -60,7 +64,7 @@ function DashboardContent() {
 	if (error)
 		return (
 			<QueryError
-				title="Dashboard gagal dimuat"
+				title="Failed to load dashboard"
 				message={error.message}
 				onRetry={() => {
 					prospectsQuery.refetch();
