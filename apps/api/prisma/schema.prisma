@@ -56,7 +56,6 @@ model User {
   refreshTokens        RefreshToken[]
   prospects            Prospect[]
   activities           Activity[]
-  tags                 Tag[]
   roleChangesPerformed RoleChangeLog[]      @relation("RoleChangeActor")
   roleChangesReceived  RoleChangeLog[]      @relation("RoleChangeTarget")
   demoChangesPerformed DemoChangeLog[]      @relation("DemoChangeActor")
@@ -148,9 +147,8 @@ model Prospect {
   createdAt    DateTime        @default(now()) @map("created_at")
   updatedAt    DateTime        @updatedAt @map("updated_at")
 
-  user       User          @relation(fields: [userId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
   activities Activity[]
-  tags       ProspectTag[]
 
   @@index([userId])
   @@index([userId, stage])
@@ -175,27 +173,4 @@ model Activity {
   @@index([userId])
   @@index([activityDate])
   @@map("activities")
-}
-
-model Tag {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-
-  user      User          @relation(fields: [userId], references: [id])
-  prospects ProspectTag[]
-
-  @@map("tags")
-}
-
-model ProspectTag {
-  prospectId String @map("prospect_id") @db.Uuid
-  tagId      String @map("tag_id") @db.Uuid
-
-  prospect Prospect @relation(fields: [prospectId], references: [id])
-  tag      Tag      @relation(fields: [tagId], references: [id])
-
-  @@id([prospectId, tagId])
-  @@map("prospect_tags")
 }
