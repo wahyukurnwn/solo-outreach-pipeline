@@ -7,7 +7,8 @@ A lightweight pipeline for people doing outreach alone: track prospects through 
 
 **Live demo:** https://app.wahyukurnwn.com/demo — read-only sample data, no sign-up needed.
 
-<!-- TODO: add 2-3 screenshots or a short GIF here (dashboard, prospect detail with AI draft, analytics). -->
+![Landing page](docs/images/landing-hero.png)
+![Dashboard](docs/images/dashboard.png)
 
 > **What this project is.** A full-stack case study built end to end by one person: product idea, data model, API, three frontends, auth, tests, and deployment. It is **not** a validated startup — see [Limitations](#limitations-and-what-i-would-do-next). The interesting part is less the feature list than the decisions behind it, so those are written down [below](#engineering-decisions).
 
@@ -87,6 +88,8 @@ These are the parts I would want to talk through in a review.
 
 **AI drafting is stateless and cost-aware.** No `ai_drafts` table: generate, review, use or discard. The provider call has a 30s timeout with the SDK's default retries **disabled** (its default is exponential backoff for up to an hour, which would defeat the timeout and burn the free quota). Provider failures — including a free provider answering HTTP 200 with an error in the body — map to clear 503s instead of a generic 500, while the real cause is logged. Drafts are rate-limited **per user, not per IP**, because the cost attaches to the account.
 
+**The prompt is told not to make things up.** It's built only from the prospect's stored fields plus its last 3 activities (date, channel, outcome, a trimmed excerpt of the message), and it ends with an explicit instruction not to invent outcomes, prior conversations, numbers or promises that aren't in that data — and to write something short and generic instead of filling gaps with fiction. The UI also warns before generating a draft for a prospect with no notes yet, since that's exactly the case where a model is most tempted to fabricate.
+
 **Tests never touch the dev database.** The suite runs against a derived `<db>_test` database that is created and migrated automatically, and a setup file refuses to run against any database whose name does not end in `_test`. This exists because an earlier version silently cleared the demo flag on the real demo account on every run.
 
 **Privacy in the UI.** The sidebar shows only the local part of the email; account settings shows it masked (`joh*****@example.com`).
@@ -151,7 +154,7 @@ Sign in again (the role is read from the token), open the admin console at http:
 ## Testing and quality
 
 ```bash
-pnpm --filter api test          # 100+ integration tests, real Postgres, separate _test database
+pnpm --filter api test          # 107 integration tests, real Postgres, separate _test database
 pnpm lint                       # Biome
 pnpm --filter platform exec tsc --noEmit   # likewise for admin and api
 ```
@@ -160,28 +163,29 @@ The tests cover auth (sign-up, sign-in, refresh rotation and replay rejection, l
 
 ## Deployment
 
-Live at `app.wahyukurnwn.com` / `admin.wahyukurnwn.com` / `api.wahyukurnwn.com`, deployed by `.github/workflows/deployment.yaml` on every push to `main`: lint, type-check and the API's 105 integration tests run first (against a Postgres service container); only then does it build the `api` Docker image (pushed to GHCR) and the `platform`/`admin` static bundles, and deploy both.
+Live at `app.wahyukurnwn.com` / `admin.wahyukurnwn.com` / `api.wahyukurnwn.com`, deployed by `.github/workflows/deployment.yaml` on every push to `main`: lint, type-check and the API's 107 integration tests run first (against a Postgres service container); only then does it build the `api` Docker image (pushed to GHCR as a **private** package, since the VPS authenticates to it with a `docker login`-scoped PAT) and the `platform`/`admin` static bundles, and deploy both.
 
-Only `api` and `db` (PostgreSQL) run as containers, defined in the repository's `docker-compose.yaml` — `platform` and `admin` are prerendered to static files at build time (see [Engineering decisions](#engineering-decisions)) and rsynced straight into place. NGINX and Certbot run on the host, not in a container: they terminate TLS, reverse-proxy `/api/*` to the `api` container, and serve the two static bundles directly from disk (`deploy/nginx.conf` is the reference config). This was a deliberate simplification over an earlier plan that also containerized the frontends and ran a process manager alongside Docker on the VM — one container to deploy instead of three, no PM2, no dual restart mechanisms.
+Only `api` and `db` (PostgreSQL) run as containers, defined in the repository's `docker-compose.yaml` — `platform` and `admin` are prerendered to static files at build time (see [Engineering decisions](#engineering-decisions)) and rsynced straight into place. NGINX and Certbot run on the host, not in a container: they terminate TLS, reverse-proxy `/api/*` to the `api` container, and serve the two static bundles directly from disk (`deploy/nginx.conf` is the reference config, kept in sync with the live VM config). This was a deliberate simplification over an earlier plan that also containerized the frontends and ran a process manager alongside Docker on the VM — one container to deploy instead of three, no PM2, no dual restart mechanisms.
+
+**Cloudflare sits in front of the VM** (DNS proxied, SSL mode Full-strict): the origin IP is hidden and gets baseline DDoS/WAF protection. NGINX trusts Cloudflare's published IP ranges via `ngx_http_realip_module` + `CF-Connecting-IP`, so `$remote_addr` (and the `X-Forwarded-For` the API sees for per-IP rate limiting) is the real visitor IP, not Cloudflare's edge IP.
+
+**Database backups** run as a cron job on the VM: `deploy/backup-db.sh` does a scheduled `pg_dump` (02:00 local time) — PostgreSQL is a container with a named volume, not a managed database, so this is deliberately its own script rather than relying on a provider.
 
 Things the code requires in production:
 
 - **HTTPS, and one site.** The refresh cookie is `Secure` when `NODE_ENV=production`, and it is only sent when the frontends and the API are *same-site* — e.g. `app.example.com`, `admin.example.com` and `api.example.com`. Hosting the API on an unrelated domain will silently break token refresh.
 - **`CORS_ORIGIN`** must list every frontend origin; the first is used as the base for password-reset links and the Google callback redirect, the second as the admin origin.
-- **`RESEND_API_KEY`** must be set: in production a missing key returns a clear 503 rather than silently dropping the reset email. Resend's sandbox sender can only email the account owner, so a verified domain is needed before real users can reset passwords.
-- **Google redirect URI** for the production API domain must be registered.
-
-**Known gap:** PostgreSQL runs as a container with a named volume on the same VM as `api`, not a managed database — there's no scheduled backup yet (see [Limitations](#limitations-and-what-i-would-do-next)).
+- **`RESEND_API_KEY`** must be set: in production a missing key returns a clear 503 rather than silently dropping the reset email. The sending domain is verified with Resend, so real users (not just the account owner) receive reset and notification emails.
+- **`GOOGLE_REDIRECT_URI`** must be set explicitly and registered in Google Cloud Console: behind a reverse proxy that talks plain HTTP to the container, the OAuth library otherwise derives the redirect URI from the incoming request and gets `http://`, causing a `redirect_uri_mismatch`.
 
 ## Limitations and what I would do next
 
 Being straightforward about these matters more than a polished feature list:
 
-- **Not validated with real users.** The problem statement is an assumption. The obvious next step is interviewing a handful of freelancers about how they track leads today.
+- **Not validated with real users yet.** The problem statement is an assumption for anyone but the author. Interview questions and onboarding messages for a first round of testers are ready; results aren't in yet.
 - **The channel model is Western-outbound-shaped.** There is no WhatsApp channel and no contact-number field, which is where much freelance work in Southeast Asia actually happens. A "send via WhatsApp" action with the AI draft pre-filled would be the most relevant feature to add.
 - **No reminders outside the app.** Follow-ups are only visible when you open it; email or push reminders are the missing half of a CRM habit.
 - **Single-instance assumptions.** The rate limiter and the OAuth exchange codes are in memory, which is fine for one server and needs Redis (or similar) to scale out.
-- **No scheduled database backup.** PostgreSQL is a container with a named volume on the VM, not a managed database — losing the volume loses the data. A cron `pg_dump` (or moving to a managed provider) is the obvious next step before this holds anything that matters.
 - **The AI uses a free model.** Latency varies a lot (roughly 5–30 s), there is a daily request quota, and free providers may retain prompts — the UI warns users not to put sensitive data in notes.
 - **The role is embedded in the access token**, so a role change applies at the next sign-in or refresh rather than instantly.
 - **Session management UI** (list and revoke other devices) is deferred; sign-out revokes only the current session.

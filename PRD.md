@@ -10,7 +10,10 @@
 
 **Pitch 5–10 detik:** "Pipeline sederhana untuk satu orang — lacak prospek, draft pesan personal dengan AI, lihat apa yang benar-benar berhasil."
 
-**Status dokumen (22 September 2026):** PRD ini disinkronkan dengan kondisi repository. Fitur MVP dan endpoint `/health` sudah dibangun dan diuji; yang belum ada adalah image Docker, `docker-compose.yaml` production, workflow GitHub Actions, dan deployment. Setiap komponen di bagian teknis diberi status **Sudah ada**, **Direncanakan**, atau **Belum ada**, supaya dokumen ini tidak menyatakan sesuatu yang belum benar.
+![Landing page produk](docs/images/landing-hero.png)
+![Dashboard produk](docs/images/dashboard.png)
+
+**Status dokumen (26 September 2026):** Project ini **sudah live di production** — `https://app.wahyukurnwn.com` (platform), `https://admin.wahyukurnwn.com` (admin), `https://api.wahyukurnwn.com` (API), domain sungguhan (`wahyukurnwn.com`) dengan DNS+proxy Cloudflare, HTTPS via Let's Encrypt, deploy otomatis lewat GitHub Actions setiap push ke `main`, backup database terjadwal, dan seluruh 5 gap kualitas yang tercatat di draft PRD sebelumnya (anti-fabrikasi prompt AI, konteks aktivitas terakhir, peringatan catatan kosong, validasi tanggal masa depan, pembersihan skema `Tag`/`ProspectTag` yang tidak terpakai) sudah selesai dikerjakan dan diverifikasi. Setiap komponen di bagian teknis tetap diberi status **Sudah ada**, **Direncanakan**, atau **Belum ada**, supaya dokumen ini tidak menyatakan sesuatu yang belum benar — sisa yang belum ada sekarang murni: validasi user eksternal (materi sudah disiapkan, belum dikirim/belum ada hasil), screenshot README, dan item observability/roadmap besar yang memang sengaja ditunda.
 
 **Cara memakai dokumen ini.** *Who:* satu orang yang memegang tiga peran (product, design, engineering) dengan tanggung jawab yang tetap dibedakan. *When:* dibaca sebelum menambah fitur, dan diperbarui saat requirement berubah signifikan. *Output:* source of truth untuk scope, requirement, prioritas, dan hasil yang diharapkan. *Mencegah:* scope creep, requirement yang ambigu, dan usaha engineering yang terbuang.
 
@@ -55,7 +58,7 @@
 - **Tujuan kedua:** menghasilkan artifact portofolio yang kredibel untuk kombinasi SWE + Systems/Ops + Sales: keputusan teknis yang terdokumentasi dan keterbatasan yang diakui secara jujur.
 - **Tujuan ketiga (bonus, bukan syarat):** benar-benar dipakai untuk outreach nyata.
 - **Decision:** antarmuka produk berbahasa Inggris, karena audience portofolio mencakup rekruter dan pemberi kerja internasional.
-- **Posisi saat ini:** tahap "membangun MVP" sudah selesai. Sisa pekerjaan ada di deploy, dokumentasi, dan evaluasi pemakaian.
+- **Posisi saat ini:** tahap "membangun MVP" dan "deploy" sudah selesai — aplikasi live di production. Sisa pekerjaan ada di validasi pemakaian nyata (bagian 13) dan iterasi berdasarkan umpan baliknya.
 
 ---
 
@@ -87,7 +90,7 @@ Format: **As a [ROLE], I want to [ACTION], so that [GOAL].**
 
 **2. As a freelancer, I want to log an outreach activity for a prospect, so that I have a history of what I've done.**
 - *Acceptance criteria:* aktivitas tersimpan dengan tanggal, channel, hasil (sent / replied / no response), dan opsional teks pesan; riwayat tampil kronologis; aktivitas dapat diedit dan dihapus.
-- *Edge case:* tanggal di masa depan seharusnya ditolak. **Status:** belum ditegakkan; skema saat ini menerima tanggal apa pun.
+- *Edge case:* tanggal di masa depan ditolak. **Status:** sudah ditegakkan (`activity.schema.ts`, batas toleransi "besok UTC" agar user di zona WIB/UTC+7 tidak salah tertolak untuk entri hari yang sama), berlaku untuk create maupun update.
 
 **3. As a freelancer, I want to see which prospects are due for follow-up today, so that nothing falls through the cracks.**
 - *Acceptance criteria:* kartu "follow-ups today" menampilkan prospek dengan follow-up date ≤ hari ini, diurutkan dari yang paling lama tertunda.
@@ -96,7 +99,7 @@ Format: **As a [ROLE], I want to [ACTION], so that [GOAL].**
 **4. As a freelancer, I want an AI-drafted message based on a prospect's context, so that I don't write from scratch every time.**
 - *Acceptance criteria:* draft dibuat dari data yang tersimpan di prospek; **selalu** tampil sebagai teks yang bisa diedit; **tidak pernah** terkirim otomatis; tidak ada yang disimpan kecuali user menyimpan aktivitasnya.
 - *Error case:* provider AI lambat, penuh, atau tidak tersedia menghasilkan pesan yang jelas dan bisa dicoba ulang, bukan error server generik.
-- *Gap yang diketahui:* (a) prompt belum berisi instruksi eksplisit "jangan mengarang fakta di luar data"; (b) riwayat aktivitas terakhir belum ikut menjadi konteks; (c) UI belum memperingatkan "tambahkan catatan untuk draft yang lebih personal" saat catatan kosong.
+- **Status:** semua gap yang sebelumnya tercatat sudah ditutup — (a) prompt berisi instruksi eksplisit anti-fabrikasi ("hanya pakai fakta yang diberikan, jangan mengarang detail/angka/janji di luar catatan dan riwayat aktivitas"); (b) hingga 3 aktivitas terakhir (tanggal, channel, hasil, cuplikan pesan) ikut jadi konteks prompt; (c) UI menampilkan peringatan "This prospect has no notes yet" di dekat tombol Draft with AI saat catatan prospek kosong, mengarahkan user ke dialog Edit.
 
 **5. As a freelancer, I want to see my response rate and conversion rate, so that I know if my approach is working.**
 - *Acceptance criteria:* angka dihitung live dari riwayat aktivitas, bukan tabel agregat; bila belum ada prospek yang dihubungi tampil "—", bukan "0%"; ada catatan bila sampel di bawah 30.
@@ -130,6 +133,8 @@ Format: **As a [ROLE], I want to [ACTION], so that [GOAL].**
 - **Authentication & account:** sign-up/sign-in email + password, Google OAuth (opsional), lupa/reset password lewat email, ganti/hapus password, lepas Google, `GET /api/auth/me`.
 - **Public demo:** `/api/demo/*` (prospek, aktivitas, follow-up, analitik) read-only tanpa autentikasi.
 - **Admin console (`apps/admin`):** daftar dan pencarian user, ubah role, tandai akun demo, riwayat audit perubahan role dan status demo.
+
+![Admin console](docs/images/admin-console.png)
 - **Health endpoint:** `GET /health` untuk Docker `HEALTHCHECK` dan verifikasi deploy; mengecek koneksi database (`SELECT 1`) dan menjawab 503 bila database tidak terjangkau, bukan cuma menandakan proses hidup. **Status:** sudah ada (`apps/api/src/app.ts`, diuji di `health.test.ts`), tanpa autentikasi dan tanpa business logic.
 
 ---
@@ -164,10 +169,10 @@ Prinsip: fitur tidak masuk MVP hanya karena menarik secara teknis.
 | Activity logging | Tidak ada riwayat interaksi | Freelancer | Tinggi | Rendah | Prospect CRUD | Ya | Sudah ada |
 | Follow-up due list | Follow-up terlupa | Freelancer | Tinggi | Rendah | Prospect CRUD | Ya | Sudah ada |
 | Notes per prospek | Konteks hilang; input AI | Freelancer | Tinggi | Rendah | Prospect CRUD | Ya | Sudah ada |
-| AI-assisted drafting | Menulis dari nol | Freelancer | Tinggi | Sedang | Notes, layanan AI | Ya (diferensiator) | Sudah ada; ada gap prompt (bagian 6) |
+| AI-assisted drafting | Menulis dari nol | Freelancer | Tinggi | Sedang | Notes, layanan AI | Ya (diferensiator) | Sudah ada; prompt anti-fabrikasi + konteks aktivitas terakhir (bagian 6) |
 | Basic analytics | Tidak tahu apa yang berhasil | Freelancer | Sedang-tinggi | Rendah | Activity logging | Ya | Sudah ada |
-| Auth email + password + reset password | Data harus privat per user | Semua | Tinggi | Sedang | Layanan email (Resend) | Ya | Sudah ada |
-| Health endpoint | Verifikasi container dan deploy | Operator | Sedang | Rendah | — | Ya (untuk deploy) | Belum ada |
+| Auth email + password + reset password | Data harus privat per user | Semua | Tinggi | Sedang | Layanan email (Resend) | Ya | Sudah ada, domain email terverifikasi (bukan sandbox lagi) |
+| Health endpoint | Verifikasi container dan deploy | Operator | Sedang | Rendah | — | Ya (untuk deploy) | Sudah ada, dipakai `HEALTHCHECK` Docker dan CD |
 
 ### Nice-to-Have
 
@@ -178,8 +183,9 @@ Prinsip: fitur tidak masuk MVP hanya karena menarik secara teknis.
 | Pengaturan akun (ganti/hapus password, lepas Google) | Kontrol atas cara masuk | User | Sedang | Sedang | Auth | Tidak | Sudah ada |
 | Akun demo publik read-only | Mencoba produk tanpa daftar; portofolio | Pengunjung | Sedang | Rendah | Akun demo | Tidak | Sudah ada |
 | Admin console + audit log | Kontrol role dan jejak perubahan | Admin | Sedang | Sedang | Auth, role | Tidak | Sudah ada |
-| Tag prospek | Pengelompokan tambahan | Freelancer | Rendah | Rendah | Prospect CRUD | Tidak | Skema database ada; API/UI belum |
 | Import CSV | Mempercepat migrasi data lama | Freelancer | Sedang | Sedang | Prospect CRUD | Tidak | Belum ada |
+
+**Catatan:** tabel `Tag`/`ProspectTag` sempat ada di skema database tapi tidak pernah dipakai API/UI, dan dihapus 25 September 2026 (lihat `ERD.md`) karena tidak ada bukti kebutuhan nyata. Kalau tagging benar-benar dibutuhkan nanti, didesain ulang dari nol berdasarkan kebutuhan yang tervalidasi, bukan restore skema lama.
 
 ### Planned / Future Features
 
@@ -196,11 +202,11 @@ Prinsip: fitur tidak masuk MVP hanya karena menarik secara teknis.
 
 **Definisi (Decision):** prospect CRUD, pipeline stage, activity logging, follow-up due list, notes, AI-assisted drafting (draft-only), analitik numerik dasar, auth self-managed, dan health endpoint. Dibangun sebagai monorepo dengan frontend dan backend terpisah.
 
-**Status implementasi:** semuanya sudah dibangun dan diuji (100+ test integrasi), kecuali health endpoint.
+**Status implementasi:** semuanya sudah dibangun, diuji (107 test integrasi terhadap PostgreSQL sungguhan), dan **live di production** — `https://app.wahyukurnwn.com`, `https://admin.wahyukurnwn.com`, `https://api.wahyukurnwn.com`.
 
-**Melampaui scope awal (jujur).** Akun demo publik, admin console, audit log, rate limiting, dan rotasi refresh token tidak dibutuhkan oleh tool untuk satu pengguna. Semuanya ditambahkan karena mendukung tujuan portofolio dan karena auth self-managed membutuhkan kontrol sesi yang layak. Ini persis pola yang PRD ini coba cegah (bagian 18): scope bertambah sebelum loop inti terbukti. Tidak ada tambahan lagi sebelum deploy dan evaluasi selesai.
+**Melampaui scope awal (jujur).** Akun demo publik, admin console, audit log, rate limiting, dan rotasi refresh token tidak dibutuhkan oleh tool untuk satu pengguna. Semuanya ditambahkan karena mendukung tujuan portofolio dan karena auth self-managed membutuhkan kontrol sesi yang layak. Ini persis pola yang PRD ini coba cegah (bagian 18): scope bertambah sebelum loop inti terbukti. Tidak ada tambahan lagi sebelum evaluasi Tahap 3 (bagian 13) selesai.
 
-**Realistis untuk solo developer:** sisa pekerjaan MVP (health endpoint, Dockerfile, compose, workflow CI, deploy) kecil dan terdefinisi.
+**Realistis untuk solo developer:** seluruh loop ide → MVP → deploy sudah selesai dalam satu putaran solo, termasuk infrastruktur (VM, domain, TLS, CI/CD, backup). Sisa pekerjaan sekarang murni product-market validation, bukan lagi engineering.
 
 ---
 
@@ -255,6 +261,8 @@ Metrik dipakai hanya bila benar-benar relevan.
 
 Hasilnya menentukan apakah channel WhatsApp dan pengingat di luar aplikasi menjadi prioritas berikutnya (bagian 19).
 
+**Status (26 September 2026):** materi pengujian sudah disiapkan di Notion — pesan pemasaran + pertanyaan wawancara generik yang dipetakan ke 6 poin validasi di atas, ditambah 5 set pesan/pertanyaan yang dipersonalisasi untuk kandidat penguji pertama (freelancer, fresh graduate, jurnalis, dan duo fotografer), plus checklist QA manual terpisah yang mencakup seluruh alur inti MVP dan 5 fitur yang baru diperbaiki (bagian 6). Materi ini belum dikirim ke kandidat penguji; hasil Tahap 3 masih **belum ada** pada tanggal dokumen ini.
+
 ---
 
 ## 14. System Architecture
@@ -291,7 +299,9 @@ Resend (email) · OpenRouter (draft AI) · Google OAuth
 - **Di mana:** `*.repository.ts` per modul; service tidak pernah memanggil Prisma secara langsung. Transaksi ditulis di repository.
 - **Menghindari coupling:** service hanya tahu fungsi repository (misalnya `findByIdAndUserId`), bukan bentuk query-nya. **Batasan yang diakui:** repository mengembalikan tipe model Prisma, jadi mengganti ORM tetap menyentuh sebagian tipe di service. **Decision:** ini diterima. Membungkusnya dengan interface sendiri adalah abstraksi tanpa manfaat nyata pada skala ini.
 - **Invarian yang ditegakkan di transaksi:** perubahan role + entri audit log; flag akun demo + audit log (termasuk efek samping mematikan akun demo lama); penghapusan prospek + aktivitasnya.
-- **Model utama:** `User`, `Prospect`, `Activity`, `RefreshToken`, `PasswordResetToken`, `RoleChangeLog`, `DemoChangeLog`. Tabel `Tag` dan `ProspectTag` ada di skema tetapi belum dipakai. Detail ERD ada di `ERD.md`.
+- **Model utama:** `User`, `Prospect`, `Activity`, `RefreshToken`, `PasswordResetToken`, `RoleChangeLog`, `DemoChangeLog`. Detail ERD ada di `ERD.md`.
+
+![Diagram ERD](docs/images/erd-diagram.png)
 
 **Bila arsitektur ini tidak ideal:** jika ada beberapa client dengan aturan yang berbeda, atau kebutuhan mengganti database, layer akan diperketat dengan interface eksplisit (gaya Clean Architecture). Untuk satu produk dengan satu database, itu ceremony yang tidak sepadan. **Alternatif yang ditolak:** framework full-stack tunggal, karena bertentangan dengan tujuan belajar pemisahan layer (Decision di atas).
 
@@ -316,7 +326,7 @@ Bagian ini menjelaskan pilihan dan alasannya, bukan hanya daftar teknologi.
 | Testing | Vitest terhadap PostgreSQL sungguhan | Menguji perilaku nyata (transaksi, kendala database); provider eksternal di-stub di level `fetch` |
 | Kualitas | Biome (lint + format), Husky (pre-commit `biome check`) | Satu tool menggantikan ESLint + Prettier; pemeriksaan sebelum kode masuk git |
 
-**Decision — stack infrastruktur baseline (dari keputusan yang sudah ditetapkan):** monorepo, GitHub Actions, Biome, Husky, Docker (hanya untuk `api`+`db`), PostgreSQL sebagai container di VM (bukan BaaS), Prisma, Hono, NGINX+Certbot di host, dan VM IDCloudHost. Penilaian tiap komponen ada di bagian 16.
+**Decision — stack infrastruktur baseline (sudah dieksekusi penuh):** monorepo, GitHub Actions (CI + CD otomatis), Biome, Husky, Docker (hanya untuk `api`+`db`), PostgreSQL sebagai container di VM (bukan BaaS) dengan backup `pg_dump` terjadwal, Prisma, Hono, NGINX+Certbot di host, VM IDCloudHost (Singapore), domain `wahyukurnwn.com` di belakang Cloudflare (proxied, SSL Full Strict), dan image `api` disimpan privat di GitHub Container Registry. Penilaian tiap komponen ada di bagian 16.
 
 **Konsep-konsep yang dipraktikkan (untuk dipelajari):**
 - **Validasi di batas sistem:** Zod memvalidasi input di route; kode di dalam boleh mempercayai data yang sudah lolos.
@@ -377,13 +387,29 @@ Rencana awal (SSH → install Node di VM → PM2 → Docker → NGINX → Certbo
 - NGINX + Certbot di host (bukan container) — **Recommended**: jauh lebih sedikit moving parts untuk auto-renewal sertifikat TLS dibanding menjalankan Certbot di dalam container (perlu volume sharing, cron di dalam container, restart container saat renewal).
 - `apps/admin/Dockerfile` dan `apps/platform/Dockerfile` yang sempat dibuat (image `nginx:alpine` mandiri per frontend) — **tidak dipakai** di jalur deploy final ini. Dibiarkan ada di repo sebagai referensi/alternatif (misalnya kalau nanti pindah ke platform yang mengharuskan container per service), tapi **`docker-compose.yaml` di root hanya mendefinisikan `api` + `db`.**
 
+### Decision change — Cloudflare proxied + trusted real IP (25 September 2026)
+
+DNS `wahyukurnwn.com` awalnya di-set **DNS only** (tidak lewat proxy Cloudflare). Setelah aplikasi live di production, mode ini ditinjau ulang dan diganti ke **Proxied** (orange cloud), sekaligus SSL mode Cloudflare dinaikkan ke **Full (strict)**.
+
+| | Sebelumnya | Sekarang |
+|---|---|---|
+| Mode DNS Cloudflare | DNS only | Proxied (orange cloud) |
+| SSL mode Cloudflare | — (langsung ke origin) | Full (strict) — Cloudflare memverifikasi sertifikat origin (Let's Encrypt via Certbot), bukan cuma enkripsi tanpa validasi |
+| IP asli visitor di NGINX | `$remote_addr` = IP Cloudflare edge (salah, karena semua traffic lewat proxy) | `ngx_http_realip_module` + `set_real_ip_from` (rentang IP resmi Cloudflare) + `real_ip_header CF-Connecting-IP` mengembalikan `$remote_addr` ke IP visitor asli |
+| Rate limiter per-IP | Berisiko salah membatasi berdasarkan IP Cloudflare, bukan IP user | Benar, karena `$remote_addr` sudah dikoreksi sebelum diteruskan sebagai `X-Forwarded-For` |
+
+**Alasan:** IP origin VM disembunyikan dari publik (mengurangi permukaan serangan langsung ke VM), dan mendapat proteksi DDoS/WAF dasar Cloudflare, dengan biaya nyaris nol untuk trafik skala solo/portofolio saat ini. **Penilaian: Recommended** (bukan Required) — tetap diimplementasikan karena cost/benefit-nya jelas positif meski trafik masih kecil.
+
 ### Deployment architecture
 
 ```plain text
 Internet
-   │  HTTPS :443
+   │  HTTPS
    ▼
-NGINX (host VPS, TLS via Certbot)
+Cloudflare (proxy, SSL Full-strict, DDoS/WAF dasar)
+   │  HTTPS :443, header CF-Connecting-IP
+   ▼
+NGINX (host VPS, TLS via Certbot, ngx_http_realip_module trust Cloudflare IPs)
    ├── /, /assets/*, /demo  ──▶  serve langsung dari disk (dist/client platform & admin, TANPA container)
    └── /api/*, /api/admin/*, /api/demo/* ──▶ proxy_pass 127.0.0.1:8000
                                                     │
@@ -392,6 +418,23 @@ NGINX (host VPS, TLS via Certbot)
                                                     │  Docker internal network ("db")
                                                     ▼
                                     Docker container: postgres (named volume: pgdata)
+```
+
+```mermaid
+flowchart TD
+    U["Internet<br/>(visitor)"] -->|HTTPS| CF["Cloudflare<br/>proxy · SSL Full-strict · DDoS/WAF dasar"]
+    CF -->|"HTTPS :443<br/>header CF-Connecting-IP"| NG["NGINX (host VPS)<br/>TLS via Certbot<br/>ngx_http_realip_module trust Cloudflare IPs"]
+
+    NG -->|"/, /assets/*, /demo"| STATIC["dist/client platform & admin<br/>disajikan langsung dari disk<br/>(TANPA container)"]
+    NG -->|"/api/*, /api/admin/*, /api/demo/*<br/>proxy_pass 127.0.0.1:8000"| API["Docker container: api (Hono)"]
+
+    API -->|"Docker internal network \"db\""| DB["Docker container: postgres<br/>named volume: pgdata"]
+
+    style CF fill:#f5a623,color:#000
+    style NG fill:#4a90d9,color:#fff
+    style API fill:#50b050,color:#fff
+    style DB fill:#336791,color:#fff
+    style STATIC fill:#999,color:#fff
 ```
 
 Beda kunci dari diagram awal: tidak ada "Application Containers" jamak — cuma satu container aplikasi (`api`). `admin` dan `demo` bukan service terpisah, cuma prefix path (`/api/admin/*`, `/api/demo/*`) di dalam `api` yang sama; frontend `admin` sendiri (`apps/admin`) tetap aplikasi terpisah dari sisi kode, tapi hasil build-nya disajikan sebagai file statis oleh NGINX yang sama dengan `platform`, bukan container tersendiri.
@@ -411,12 +454,14 @@ Beda kunci dari diagram awal: tidak ada "Application Containers" jamak — cuma 
 | Dockerfile `api` (multi-stage) | Required | Sudah ada, diverifikasi lewat `docker build`+`docker run` nyata |
 | `docker-compose.yaml` production (`api` + `db`) | Required | Sudah ada, tervalidasi `docker compose config` |
 | Referensi NGINX host (reverse proxy + static) | Required | Sudah ada (`deploy/nginx.conf`) |
-| GitHub Actions (CI: Biome, type check, test) | Required | Direncanakan |
-| CD ke VM (build image `api` → registry → SSH → compose up; `rsync` `dist/client` platform+admin) | Required | Direncanakan |
-| PostgreSQL | Required | Container `postgres` di `docker-compose.yaml`, named volume — **bukan lagi BaaS** (lihat Decision change di atas) |
-| VM IDCloudHost | Required (target deployment) | Direncanakan. **Open Question:** konfirmasi paket dan region |
-| NGINX + Certbot di host VM | Required | Direncanakan (config referensi sudah ada di `deploy/nginx.conf`, belum dipasang di VM sungguhan) |
-| Container registry (GitHub Container Registry) | Recommended | Direncanakan — untuk satu image (`api`) saja |
+| GitHub Actions (CI: Biome, type check, test) | Required | Sudah ada, `.github/workflows/deployment.yaml` |
+| CD ke VM (build image `api` → registry → SSH → compose up; `rsync` `dist/client` platform+admin) | Required | Sudah ada, deploy otomatis pada tiap push/merge ke `main` |
+| PostgreSQL | Required | Container `postgres` di `docker-compose.yaml`, named volume — **bukan BaaS** (lihat Decision change di atas) |
+| VM IDCloudHost | Required (target deployment) | Sudah ada — region Singapore, IP `103.13.206.71` |
+| NGINX + Certbot di host VM | Required | Sudah ada, dipasang dan live (`deploy/nginx.conf` disinkronkan dengan config VM sungguhan) |
+| Cloudflare (DNS, proxy, SSL Full-strict) | Recommended | Sudah ada — lihat Decision change "Cloudflare proxied" di atas |
+| Container registry (GitHub Container Registry) | Recommended | Sudah ada — satu image (`api`), package **privat**, VPS otentikasi lewat `docker login` dengan PAT `read:packages` |
+| Backup database (`pg_dump` terjadwal) | Required untuk production | Sudah ada — `deploy/backup-db.sh`, dijalankan cron di VM (02:00 WIB) |
 | Error tracking (mis. Sentry free tier) | Recommended | Belum ada |
 | Logging terpusat, monitoring/alerting, staging environment | Future / Optional | Belum ada |
 | PM2, Node.js langsung di host, container terpisah untuk `platform`/`admin`, Turborepo/Nx, Kubernetes, service mesh, multi-VM | Overengineering | Tidak dipakai — lihat Decision change |
@@ -431,10 +476,11 @@ Beda kunci dari diagram awal: tidak ada "Application Containers" jamak — cuma 
 | Docker hanya untuk `api`+`db` | Semua aplikasi di-container-kan | `platform`/`admin` disajikan dari disk, bukan container | Satu image untuk di-build/push/deploy, bukan tiga; CI/CD lebih sederhana | Server perlu proses `rsync`/`scp` terpisah untuk file statis, di luar `docker compose up` | **Recommended** |
 | Docker Compose production | Perintah `docker run` manual | Satu file (`api`+`db`) mendeskripsikan servicenya | Deploy dan rollback dengan satu perintah | Cukup untuk satu VM; tidak untuk banyak host | **Recommended** |
 | NGINX + Certbot di host (bukan container) | NGINX di dalam container | NGINX + Certbot langsung di VM | Auto-renewal TLS jauh lebih sederhana (tanpa volume-sharing sertifikat lintas container) | Konfigurasi NGINX jadi bagian dari provisioning VM, bukan `docker-compose.yaml` — perlu didokumentasikan terpisah (`deploy/nginx.conf`) | **Recommended** |
-| GitHub Actions | Pemeriksaan manual | CI otomatis + CD ke VM | Regresi tertangkap sebelum masuk `main`; deploy dapat diulang | Butuh secrets dan pemeliharaan workflow | **Required** |
+| GitHub Actions | Pemeriksaan manual | CI otomatis + CD ke VM, live dan berjalan di tiap push/merge | Regresi tertangkap sebelum masuk `main`; deploy dapat diulang dengan satu klik (re-run workflow) | Butuh secrets dan pemeliharaan workflow; beberapa gotcha nyata ditemukan (variabel `environment`-scoped di job, `secrets` tidak bisa dipakai langsung di job-level `if:`) | **Required** |
+| Cloudflare (proxy + SSL Full-strict) | DNS only, tanpa proxy | Proxied, IP origin VM disembunyikan, proteksi DDoS/WAF dasar | Permukaan serangan langsung ke VM berkurang | Origin harus percaya IP Cloudflare secara eksplisit (`ngx_http_realip_module`), atau rate limiter per-IP dan log salah membaca IP visitor | **Recommended** |
 | Biome | ESLint + Prettier | Satu tool | Konfigurasi lebih sedikit dan lebih cepat | Ekosistem plugin lebih kecil | **Recommended** |
 | Husky | Tanpa git hook | Pre-commit `biome check` | Umpan balik sebelum CI | Bisa terasa mengganggu; dapat dilewati | **Optional** (sudah dipakai) |
-| PostgreSQL di container VM (bukan BaaS) | BaaS terkelola (keputusan lama) | Container `postgres` + named volume di VM yang sama dengan `api` | Tidak ada dependensi/biaya ke penyedia eksternal; backup jadi tanggung jawab sendiri (`pg_dump` terjadwal — belum ada) | VM tidak lagi stateless; kehilangan VM/volume = kehilangan data kalau tidak ada backup | **Required** untuk MVP (biaya nol); **Open Question:** kapan pindah ke BaaS kalau data mulai berharga |
+| PostgreSQL di container VM (bukan BaaS) | BaaS terkelola (keputusan lama) | Container `postgres` + named volume di VM yang sama dengan `api` | Tidak ada dependensi/biaya ke penyedia eksternal; backup jadi tanggung jawab sendiri (`deploy/backup-db.sh` via cron, sudah ada) | VM tidak lagi stateless; kehilangan VM/volume tanpa backup terpisah dari VM itu sendiri tetap berisiko | **Required** untuk MVP (biaya nol); **Open Question:** kapan pindah ke BaaS kalau data mulai berharga |
 | Prisma | Query SQL manual | ORM + migrasi berversi | Tipe otomatis dan migrasi terlacak | Lapisan abstraksi; kadang query kompleks lebih sulit | **Required** |
 | Hono | Express/Fastify | Hono | Ringan, tipe RPC, berbasis standar web | Ekosistem lebih kecil daripada Express | **Recommended** |
 | PM2 | Rencana awal (cluster mode multi-core) | Dihapus, Docker `restart: unless-stopped` saja | Satu mekanisme restart, bukan dua tumpang tindih | Kehilangan clustering multi-core — tidak relevan di skala user saat ini | **Overengineering** (dihapus) |
@@ -449,16 +495,17 @@ Beda kunci dari diagram awal: tidak ada "Application Containers" jamak — cuma 
 - **Development vs production:** Docker **tidak wajib** untuk development harian. `pnpm dev` menjalankan ketiga aplikasi secara native, dengan PostgreSQL dari `docker-compose.dev.yaml`. Docker dipakai untuk memverifikasi build produksi dan untuk deploy.
 - **Environment variables:** satu `.env` di VM (tidak masuk git; **kredensial yang pernah tampil di log/chat/transkrip harus dianggap bocor dan dirotasi** — lihat catatan pada sesi 22 September 2026 soal `docker compose config` yang mencetak `.env` mentah ke output). Wajib di production: `NODE_ENV=production`, `DATABASE_URL` (di-override eksplisit di `docker-compose.yaml` ke `postgresql://…@db:5432/postgres`, terlepas dari isi `.env`), `JWT_SECRET` (nilai acak baru), `CORS_ORIGIN` (semua origin frontend), `VITE_API_URL` (untuk build `platform`/`admin`, **build-time**, bukan runtime — lihat `apps/platform/Dockerfile`/`apps/admin/Dockerfile` untuk pola `ARG`/`ENV` yang sama berlaku di build lokal sebelum `rsync`), dan `RESEND_API_KEY`.
 - **Secrets:** file `.env` di VM, atau secrets terenkripsi di GitHub untuk workflow (kunci SSH, host VM). Tidak pernah di kode.
-- **PostgreSQL:** container `postgres` di VM yang sama, named volume `pgdata` — **bukan BaaS** (Decision change 23 September 2026). Backup jadi tanggung jawab sendiri (`pg_dump` terjadwal — **belum ada**, dicatat sebagai gap di bagian 18).
+- **PostgreSQL:** container `postgres` di VM yang sama, named volume `pgdata` — **bukan BaaS** (Decision change 23 September 2026). Backup dilakukan lewat `deploy/backup-db.sh`, dijadwalkan cron di VM (02:00 WIB).
+- **Container registry:** image `api` disimpan di GitHub Container Registry (GHCR) sebagai package **privat** (sempat dibuat publik sementara untuk simplifikasi awal, dikembalikan privat setelah deploy stabil). VPS mengotentikasi lewat `docker login ghcr.io` memakai Personal Access Token bercakupan `read:packages`, disimpan di `~/.docker/config.json`; tidak perlu perubahan kode/workflow untuk ini.
 - **NGINX (host, bukan container):** reverse proxy + TLS termination (Certbot) untuk `/api/*` → `127.0.0.1:8000`; menyajikan `dist/client` `platform`/`admin` langsung dari disk dengan SPA-fallback ke `_shell.html` (pola sama seperti `apps/platform/nginx.conf`/`apps/admin/nginx.conf`, dipasang sebagai config host — lihat `deploy/nginx.conf`). Menambahkan `X-Forwarded-For`, yang dipakai rate limiter API untuk mengenali IP klien.
 - **Domain dan cookie (wajib):** cookie refresh token bersifat `Secure` di production dan hanya terkirim bila frontend dan API berada pada **site yang sama**. Pakai subdomain dari satu domain induk, misalnya `app.<domain>`, `admin.<domain>`, `api.<domain>`. API di domain yang sama sekali berbeda membuat refresh token gagal tanpa pesan yang jelas.
 - **Migrasi database:** deploy menjalankan `prisma migrate deploy` (bukan `migrate dev`) sebelum API menerima trafik.
 - **Health check:** endpoint `GET /health` + `HEALTHCHECK` pada image `api` (sudah ada, diverifikasi).
 - **Logging dasar:** stdout container via `docker compose logs`. Kegagalan provider eksternal dicatat bersama penyebab aslinya.
-- **Backup strategy:** **Open Question / gap** — sejak Postgres pindah dari BaaS ke container-di-VM, tidak ada lagi backup otomatis bawaan penyedia; perlu `pg_dump` terjadwal (cron di host, atau container terpisah) sebelum dianggap production-ready.
+- **Backup strategy:** **Sudah ada** — `deploy/backup-db.sh` menjalankan `pg_dump` terjadwal lewat cron di host VM (02:00 WIB).
 - **Batas single instance:** rate limiter dan kode OAuth ada di memori proses; satu instance `api` adalah kondisi yang dianggap benar untuk MVP.
 
-**Production improvement (setelah MVP berjalan dan ada user):** backup database terjadwal, log aggregation terpusat, staging environment, automated rollback, monitoring dan alerting, Redis untuk state bersama, dan migrasi Postgres ke BaaS terkelola atau platform dengan redundansi bila data mulai berharga / uptime menjadi masalah nyata.
+**Production improvement (setelah ada user nyata dan traksi):** log aggregation terpusat, staging environment, automated rollback, monitoring dan alerting, Redis untuk state bersama, dan migrasi Postgres ke BaaS terkelola atau platform dengan redundansi bila data mulai berharga / uptime menjadi masalah nyata.
 
 ### Evaluasi CI/CD
 
@@ -480,7 +527,7 @@ Push / merge → main:
         - rsync dist/client platform, admin ke path yang disajikan NGINX
 ```
 
-- **Yang kurang dari alur awal:** (1) langkah push image ke registry, supaya build tidak terjadi di VM yang sumber dayanya terbatas — **tapi sekarang cuma untuk satu image (`api`)**, bukan tiga (Decision change 23 September 2026: `platform`/`admin` tidak di-container-kan, cukup `rsync` hasil build statis); (2) langkah migrasi database; (3) cek `/health` setelah deploy.
+- **Status:** alur di atas sudah diimplementasikan penuh di `.github/workflows/deployment.yaml` dan berjalan live pada tiap push/merge ke `main`. Dibanding rencana awal, ditambahkan: (1) langkah push image ke registry, supaya build tidak terjadi di VM yang sumber dayanya terbatas — **cuma untuk satu image (`api`)**, bukan tiga (Decision change 23 September 2026: `platform`/`admin` tidak di-container-kan, cukup `rsync` hasil build statis); (2) langkah migrasi database (`prisma migrate deploy`); (3) cek `/health` setelah deploy. Dua gotcha GitHub Actions yang ditemukan dan diperbaiki selama implementasi: `secrets` tidak bisa dipakai langsung di job-level `if:` (perlu job relay yang menulis ke `$GITHUB_OUTPUT`), dan variabel/secret ber-scope Environment (Settings → Environments) hanya terbaca oleh job yang eksplisit mendeklarasikan `environment: production`.
 - **Pembeda PR dan merge:** PR hanya divalidasi. Deploy hanya berjalan saat push atau merge ke `main`.
 - **Tidak perlu untuk MVP:** staging environment dan automated rollback.
 - **Catatan CI:** `pnpm --filter api test` menjalankan `db:test:setup`, yang membuat database `<nama>_test` bila belum ada. `DATABASE_URL` di CI harus menunjuk ke server PostgreSQL dengan hak `CREATE DATABASE` (service container dengan user superuser cukup).
@@ -502,7 +549,7 @@ Push / merge → main:
 - Kegagalan dipetakan ke 503 yang jelas (layanan tidak tersedia, kuota penuh, terlalu lama), termasuk provider gratis yang kewalahan dan dijawab OpenRouter dengan HTTP 200 berisi error di body, serta timeout yang terjadi saat body dibaca. Penyebab aslinya dicatat ke log.
 - Rate limit **per user** (20 per jam), bukan per IP, karena biaya menempel pada akun.
 
-**Risiko hallucination / output keliru:** AI dapat mengarang detail prospek yang tidak pernah dicatat. **Bagaimana output divalidasi:** (1) draft selalu tampil sebagai teks yang harus dibaca dan diedit manusia, tanpa jalur kirim otomatis; (2) prompt seharusnya memerintahkan model hanya memakai field yang tersimpan. **Status:** poin (1) terpenuhi; poin (2) **belum ada** di prompt (bagian 6, story 4).
+**Risiko hallucination / output keliru:** AI dapat mengarang detail prospek yang tidak pernah dicatat. **Bagaimana output divalidasi:** (1) draft selalu tampil sebagai teks yang harus dibaca dan diedit manusia, tanpa jalur kirim otomatis; (2) prompt memerintahkan model hanya memakai field yang tersimpan (notes + hingga 3 aktivitas terakhir) dan eksplisit melarang mengarang detail/angka/janji di luar itu; (3) UI memperingatkan saat catatan prospek kosong, karena draft dari input minim lebih rentan generik/mengada-ada. **Status:** ketiga poin terpenuhi (bagian 6, story 4).
 
 **Privasi:** model gratis pada provider pihak ketiga dapat menyimpan atau memakai prompt untuk pelatihan. UI memperingatkan user agar tidak menaruh data sensitif di catatan. Beralih ke model berbayar dengan kebijakan tanpa pelatihan cukup dengan mengganti satu variabel environment.
 
@@ -528,7 +575,7 @@ Push / merge → main:
 - VM mandiri berarti tanggung jawab keamanan OS (patching, firewall) ada pada pemilik; satu VM adalah single point of failure. Diterima sadar untuk MVP.
 - Rate limiter dan kode OAuth di memori: tidak aman untuk lebih dari satu instance, dan state hilang saat restart.
 - Layanan AI gratis: latensi tidak stabil, kuota harian, dan kemungkinan penyimpanan prompt oleh penyedia.
-- Resend mode sandbox hanya mengirim ke pemilik akun, sehingga reset password tidak berfungsi untuk pengguna lain sampai domain diverifikasi.
+- ~~Resend mode sandbox hanya mengirim ke pemilik akun~~ — **Resolved (25 September 2026):** domain email sudah diverifikasi di Resend, email (termasuk reset password) sudah terkonfirmasi masuk ke inbox penerima mana pun, bukan hanya pemilik akun.
 - Role user disematkan di access token; perubahan role baru berlaku pada refresh atau sign-in berikutnya (maksimal sekitar 15 menit).
 - Kredensial yang pernah tampil di log, chat, atau transkrip harus dianggap bocor dan dirotasi.
 
@@ -540,11 +587,12 @@ Push / merge → main:
 
 Urutan ditentukan oleh hasil validasi (bagian 13), bukan oleh daya tarik teknis.
 
-1. **Menutup gap MVP:** penegakan aturan tanggal aktivitas, instruksi anti-karangan dan konteks aktivitas terakhir di prompt AI, dan peringatan catatan kosong.
-2. **Deploy:** Dockerfile, `docker-compose.yaml` production, workflow CI/CD, dan deployment ke VM.
-3. **Setelah umpan balik penguji, bila terbukti relevan:** channel WhatsApp kelas satu dengan field nomor kontak dan tombol "kirim via WhatsApp" yang membawa draft AI; pengingat di luar aplikasi.
-4. **Peningkatan kualitas:** tag prospek, import CSV, UI daftar sesi dan pencabutan sesi perangkat lain, dan tes end-to-end di browser.
-5. **Bila ada traksi nyata:** multi-user/team, integrasi pengiriman email/LinkedIn langsung, dashboard visual, i18n dua bahasa, log aggregation terpusat, staging environment, dan migrasi ke platform dengan redundansi atau pivot menjadi produk kecil dengan billing.
+1. ~~Menutup gap MVP~~ — **Selesai (26 September 2026):** penegakan aturan tanggal aktivitas, instruksi anti-karangan dan konteks aktivitas terakhir di prompt AI, peringatan catatan kosong, dan pembersihan skema `Tag`/`ProspectTag` yang tidak terpakai.
+2. ~~Deploy~~ — **Selesai (25 September 2026):** Dockerfile, `docker-compose.yaml` production, workflow CI/CD, VM IDCloudHost, domain + Cloudflare, NGINX+Certbot, dan backup database terjadwal. Live di `https://app.wahyukurnwn.com`.
+3. **Sekarang — validasi pemakaian nyata (bagian 13):** kirim materi ke kelompok penguji, kumpulkan umpan balik terhadap 6 poin validasi, tentukan apakah channel WhatsApp jadi prioritas.
+4. **Setelah umpan balik penguji, bila terbukti relevan:** channel WhatsApp kelas satu dengan field nomor kontak dan tombol "kirim via WhatsApp" yang membawa draft AI; pengingat di luar aplikasi.
+5. **Peningkatan kualitas:** import CSV, UI daftar sesi dan pencabutan sesi perangkat lain, error tracking (Sentry), dan tes end-to-end di browser.
+6. **Bila ada traksi nyata:** multi-user/team, integrasi pengiriman email/LinkedIn langsung, dashboard visual, i18n dua bahasa, log aggregation terpusat, staging environment, dan migrasi ke platform dengan redundansi atau pivot menjadi produk kecil dengan billing.
 
 ---
 
