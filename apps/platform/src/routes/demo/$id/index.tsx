@@ -46,7 +46,7 @@ function DemoProspectContent() {
 				className="flex items-center gap-2 text-[13px] text-muted"
 			>
 				<Link to="/demo" className="transition-colors hover:text-ink">
-					Contoh pipeline
+					Sample pipeline
 				</Link>
 				{prospectQuery.data ? (
 					<>

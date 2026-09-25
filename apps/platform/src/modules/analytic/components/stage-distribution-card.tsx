@@ -16,7 +16,7 @@ export const StageDistributionCard = ({
 }: StageDistributionCardProps) => (
 	<Card className="flex flex-col gap-4">
 		<SectionHeader
-			title="Sebaran stage"
+			title="Stage distribution"
 			icon={
 				<IconBox tone="lavender">
 					<Layers className="size-[15px]" />

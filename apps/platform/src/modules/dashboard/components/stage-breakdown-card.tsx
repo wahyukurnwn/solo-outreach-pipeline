@@ -18,7 +18,7 @@ export const StageBreakdownCard = ({
 	return (
 		<Card className="flex flex-col gap-4">
 			<SectionHeader
-				title="Sebaran stage"
+				title="Stage breakdown"
 				icon={
 					<IconBox tone="lavender">
 						<ChartColumn className="size-[15px]" />

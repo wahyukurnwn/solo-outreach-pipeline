@@ -30,7 +30,7 @@ function DemoPage() {
 
 			<div className="mx-auto flex max-w-6xl flex-col gap-7 px-4 py-8 sm:px-8 sm:py-10">
 				<PageHeader
-					title="Contoh pipeline"
+					title="Sample pipeline"
 					description="The data below is sample data, not your account — explore freely, nothing can change."
 					action={
 						<Link
