@@ -41,7 +41,9 @@ function buildPrompt(prospect: {
 
 ${lines.join("\n")}
 
-Write ONE outreach message draft in natural, friendly English (or in the language the notes are written in, if it is not English). Keep it short (at most 5 sentences), polite, and relevant to the stage and notes above. Skip overly formal greetings and signatures. Reply with ONLY the message text, no extra explanation.`;
+Write ONE outreach message draft in natural, friendly English (or in the language the notes are written in, if it is not English). Keep it short (at most 5 sentences), polite, and relevant to the stage and notes above. Skip overly formal greetings and signatures. Reply with ONLY the message text, no extra explanation.
+
+Only use the facts given above. Do not invent details that are not stated — no specific project outcomes, prior conversations, numbers, dates, or promises that aren't in the notes. If the notes are empty or say little, write a brief, generic-but-relevant message instead of making something up to fill the gap.`;
 }
 
 export const draftService = {
